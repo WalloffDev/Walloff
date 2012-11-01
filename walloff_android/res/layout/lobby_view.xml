@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/lobby_view_parent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:weightSum="1.0" >
+
+    <LinearLayout
+        android:id="@+id/lobby_view_info_holder"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.25"
+        android:weightSum="0.9" >
+
+        <TextView
+            android:id="@+id/lobby_view_lobby_name"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.3"
+            android:gravity="center"
+            android:text="@string/join_lobby_elt_lobbyname"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <TextView
+            android:id="@+id/lobby_view_countdown"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.3"
+            android:gravity="center"
+            android:text="@string/lobby_view_count_down"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@color/Red" />
+        
+        <TextView
+            android:id="@+id/lobby_view_map_name"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.3"
+            android:gravity="center"
+            android:text="@string/join_lobby_elt_mapname"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/lobby_view_player_info_holder"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.75"
+        android:weightSum="1.0" >
+
+        <include android:id="@+id/lobby_view_p1" layout="@layout/lobby_view_def_playerview" />
+        <include android:id="@+id/lobby_view_p2" layout="@layout/lobby_view_def_playerview" />
+        <include android:id="@+id/lobby_view_p3" layout="@layout/lobby_view_def_playerview" />
+        <include android:id="@+id/lobby_view_p4" layout="@layout/lobby_view_def_playerview" />
+
+    </LinearLayout>
+
+</LinearLayout>

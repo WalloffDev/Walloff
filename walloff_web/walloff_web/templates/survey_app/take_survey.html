@@ -1,0 +1,16 @@
+<form method="POST">
+	{% csrf_token %}
+	{{ formset.management_form }}
+	<h1>{{ survey.name }}</h1>
+
+	{% for form in formset.forms %}
+		<p style="color: red;">{{ form.answer.errors }}</p>
+		<p>
+			{{ form.answer.label }}<br>
+			{{ form.answer }}<br>
+			<div style="color: blue; display: none;">q{{ form.question }}</div>
+		</p>
+	{% endfor %}
+
+	<input type="submit" value="Submit"/>
+</form>

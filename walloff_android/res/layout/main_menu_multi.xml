@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main_menu_multiplayer_parent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:id="@+id/main_menu_multiplayer_btn_holder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/main_menu_multiplayer_btn_create"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/main_menu_multiplayer_create" />
+
+        <Button
+            android:id="@+id/main_menu_btn_join"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/main_menu_multiplayer_join" />
+    </LinearLayout>
+
+    <ViewFlipper
+        android:id="@+id/main_menu_multiplayer_flipper"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+        
+        <include android:id="@+id/create_lobby" layout="@layout/multi_create_lobby"/>
+        <include android:id="@+id/join_lobby" layout="@layout/multi_join_lobby"/>
+    </ViewFlipper>
+
+</LinearLayout>

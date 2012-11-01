@@ -1,0 +1,33 @@
+<resources>
+
+    <string name="app_name">walloff_android</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_main_menu">MainMenuActivity</string>
+    <string name="cred_store_username">username</string>
+    <string name="cred_store_password">password</string>
+    <string name="cred_store_btn">Ok</string>
+    <string name="cred_store_password2">password again</string>
+    <string name="todo">TODO</string>
+    <string name="main_menu_banner">Walloff 2.0</string>
+    <string name="main_menu_multiplayer_create">Create lobby</string>
+    <string name="main_menu_multiplayer_join">Join lobby</string>
+    <string name="join_lobby_elt_lobbyname">Lobby name</string>
+    <string name="join_lobby_elt_mapname">Map name</string>
+    <string name="join_lobby_elt_numplayers">Num players</string>
+    <string name="multi_create_lobby_lobbyname">Lobby name</string>
+    <string name="create_lobby_map_select">Map: </string>
+    <string name="create_lobby_size_select">Size: </string>
+    <string name="create_lobby_moving_select">Moving obstacles: </string>
+    <string name="create_lobby_numobj_select"># obstacles: </string>
+    <string name="create_lobby_shrink_select">Shrinkable: </string>
+    <string name="create_lobby_btncreate">Create</string>
+	<string name="create_lobby_tog_on">Yes</string>
+    <string name="create_lobby_tog_off">No</string>
+    <string name="lobby_view_count_down">0:00</string>
+    
+    <color name="Black">#000000</color>
+    <color name="White">#ffffff</color>
+    <color name="Red">#ff0000</color>
+	
+</resources>

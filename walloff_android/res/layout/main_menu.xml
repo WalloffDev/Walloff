@@ -1,0 +1,12 @@
+<ViewFlipper xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_menu_parent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <include android:id="@+id/def" layout="@layout/main_menu_default"/>
+    <include android:id="@+id/multiplayer" layout="@layout/main_menu_multi"/>
+    <include android:id="@+id/player" layout="@layout/main_menu_player"/>
+    <include android:id="@+id/options" layout="@layout/main_menu_options"/>
+
+</ViewFlipper>

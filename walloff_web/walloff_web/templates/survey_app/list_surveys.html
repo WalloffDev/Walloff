@@ -1,0 +1,9 @@
+<h1> Wall Off Surveys </h1>
+
+{% if all_surveys %}
+	{% for survey in all_surveys %}
+		<p><a href="{% url survey_app.views.take_survey survey.id %}">{{ survey.name }}</p>
+	{% endfor %}
+{% else %}
+	<br><h2 style="color: red;">No surveys available at this time</h2>
+{% endif %}
