@@ -50,6 +50,7 @@ div.nav_bar {
 	color: #18CAE6;
 	/*border: medium solid #18CAE6;*/
 	text-shadow: 0 0 0.2em #18CAE6;
+	
 }
 
 /* Main Content */
@@ -62,6 +63,10 @@ div.main_cont {
 }
 
 /* Links */
-a { color: #18CAE6 }
-a:link { color: #18CAE6 }
-a:hover { color: #ff0000; text-shadow: 0 0 0.3em #ff0000; } 
+div.nav_bar a { color: #18CAE6 }
+div.nav_bar a:link { color: #18CAE6 }
+div.nav_bar a:hover { color: #ff0000; text-shadow: 0 0 0.3em #ff0000; } 
+
+div.main_cont a { color: #0000ff; }
+div.main_cont a:link { color: #0000ff; }
+div.main_cont a:hover { color: #ffffff; }
