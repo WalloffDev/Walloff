@@ -20,7 +20,8 @@ m_join = 'join'
 m_leave = 'leave'
 m_get_available_lobbies = 'get_available_lobbies'
 m_update_map = 'update_map' 
-m_Success = 'SUCCESS'
+m_success = 'SUCCESS'
+m_fail = 'FAIL'
 
 # Server
 class RequestHandler( SocketServer.BaseRequestHandler ):
@@ -41,7 +42,7 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 				m_shrinkable = data[ 'shrinkable' ]
 				m_host = data[ 'host' ]
 
-				#create the table and populate it with the current player's req information and the parsed value				
+				#create the table and populate it with the current player's req information and the parsed value	
 				new_lobby = Lobby()
 				new_lobby.set_data( m_name, False, m_map, m_size, m_moving_obstacles, m_number_obstacles, m_shrinkable )
 				new_lobby.save()
@@ -49,16 +50,32 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 				# get player by username ( auth_token ), add them to lobby
 				player = Player.objects.get( m_host )
 				player.lobby = new_lobby
-				player.save()
-				
+				player.save()		
 				
 				#creat a json object and send SUCCESS back
+				success( self )
 			except:
 				#create a json object and sen FAIL back. (possably issue a reason of the fail. i.e. map name already taken)
+				fail( self )
+
 		elif tag == m_join:
 			print m_leave
+
 		elif tag == m_leave:
-			print m_leave
+			try:
+				#obtain the player that is currently leaving the lobby
+				m_host = [ 'player' ]
+				player = Player.objects.get( m_host )
+				
+				#remove the player in the lobby by setting that player's lobby to nothing
+				player.lobby = None
+
+				#send a success message
+				success( self )
+			except:
+				#send an error message
+				fail( self )
+						
 		elif tag == m_get_available_lobbies:
 			print m_get_available_lobbies
 		elif tag == m_update_map:
@@ -68,6 +85,16 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 	
 	#def finish( ):
 		
+	def success( self ):
+		content = { 'return' : m_success }
+		content = json.dumps( content )
+		self.write( content )
+
+	def fail( self ):
+		content = { 'return' : m_fail }
+		content = json.dumps( content )
+		self.write( content )
+
 
 class Server( SocketServer.ThreadingMixIn, SocketServer.TCPServer ):
 	allow_reuse_address = True
