@@ -19,6 +19,8 @@ div.divider {
 	background: #EA3088;
 	margin-top: 1%;
 	margin-bottom: 1%;
+	-moz-box-shadow: 0 0 0.3em #EA3088;
+	-webkit-box-shadow: 0 0 0.3em #EA3088;
 	box-shadow: 0 0 0.3em #EA3088;
 }
 

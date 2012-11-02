@@ -1,6 +1,7 @@
 # Helper Server for Walloff_Android
 
 import socket, threading, SocketServer, datetime, os
+import json
 from django.core.management import setup_environ
 from walloff_web import settings
 
@@ -11,21 +12,15 @@ from lobby_app.models import *
 # Server settings
 HOST = 'walloff.cslabs.clarkson.edu'
 PORT = 8080
+MAX_BUF = 1024
 
-class iPlayer( ):
-
-	def __init__( self, uname, pub_ip, pub_port, priv_ip, priv_port ):
-		self.uname = uname
-		self.pub_ip = pub_ip
-		self.priv_ip = priv_ip
-		self.pub_port = pub_port
-		self.priv_port = priv_port
-		self.in_game = False
-	
-	def get_info( self ):
-		print 'Username: ' + str( self.uname ) + '\n\t' + \
-			'Public: ' + str( self.pub_ip ) + ' ' + str( self.pub_port ) + \
-			'Private: ' + str( self.priv_ip ) + ' ' + str( self.priv_port )
+#Tags for what commands the server accepts
+m_create = 'create'
+m_join = 'join'
+m_leave = 'leave'
+m_get_available_lobbies = 'get_available_lobbies'
+m_update_map = 'update_map' 
+m_Success = 'SUCCESS'
 
 # Server
 class RequestHandler( SocketServer.BaseRequestHandler ):
@@ -33,9 +28,43 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 	#def setup( self ):
 
 	def handle( self ):
-		players = Player.objects.all( )
-		print len( players )		
-		print 'Connection established'
+		data = json.loads( str( self.request.recv( MAX_BUF ) ) )
+		tag = data[ 'tag' ]
+	
+		if tag == m_create:
+			try:
+				m_name = data[ 'name' ]
+				m_map = data[ 'map' ]
+				m_size = data[ 'size' ]
+				m_moving_obstacles = data[ 'moving_obstacles' ]
+				m_number_obstacles = data[ 'number_obstacles' ]
+				m_shrinkable = data[ 'shrinkable' ]
+				m_host = data[ 'host' ]
+
+				#create the table and populate it with the current player's req information and the parsed value				
+				new_lobby = Lobby()
+				new_lobby.set_data( m_name, False, m_map, m_size, m_moving_obstacles, m_number_obstacles, m_shrinkable )
+				new_lobby.save()
+
+				# get player by username ( auth_token ), add them to lobby
+				player = Player.objects.get( m_host )
+				player.lobby = new_lobby
+				player.save()
+				
+				
+				#creat a json object and send SUCCESS back
+			except:
+				#create a json object and sen FAIL back. (possably issue a reason of the fail. i.e. map name already taken)
+		elif tag == m_join:
+			print m_leave
+		elif tag == m_leave:
+			print m_leave
+		elif tag == m_get_available_lobbies:
+			print m_get_available_lobbies
+		elif tag == m_update_map:
+			print m_update_map
+		else:
+			print 'Error: unrecognized tag'
 	
 	#def finish( ):
 		
