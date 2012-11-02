@@ -14,6 +14,9 @@ HOST = 'walloff.cslabs.clarkson.edu'
 PORT = 8080
 MAX_BUF = 1024
 
+# Constants
+MAX_LOB_SIZE = 4
+
 #Tags for what commands the server accepts
 m_create = 'create'
 m_join = 'join'
@@ -59,19 +62,43 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 				fail( self )
 
 		elif tag == m_join:
-			print m_leave
-
+			try:
+				# obtain player that is joining the lobby
+				m_host = data[ 'player' ]
+				m_lobby = data[ 'lobby' ]
+				player = Player.objects.get( m_host )
+				
+				# check number of players currently in lobby
+				players = Lobby.objects.get( m_lobby ).player_set
+				if len( players.all( ) ) < MAX_LOB_SIZE:
+		
+					# add playet to lobby
+					player.lobby = Lobby.objects.get( m_lobby )
+					player.save( )
+	
+					# TODO: send success and player arrays
+					# dts = json.dumps( str( players.all( ) ) ) 
+					success( self )
+				else:
+					# TODO: notify host that lobby is no longer available
+					fail( self )
+			except:
+				fail( self )
+	
 		elif tag == m_leave:
 			try:
 				#obtain the player that is currently leaving the lobby
-				m_host = [ 'player' ]
+				m_host = data[ 'player' ]
 				player = Player.objects.get( m_host )
 				
 				#remove the player in the lobby by setting that player's lobby to nothing
 				player.lobby = None
+				player.save( )
 
 				#send a success message
 				success( self )
+
+				#TODO: send updated player arrays to lobby members
 			except:
 				#send an error message
 				fail( self )
@@ -94,6 +121,9 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 		content = { 'return' : m_fail }
 		content = json.dumps( content )
 		self.write( content )
+
+	def send_to_all( self ):
+		print 'Sending out player arrays'
 
 
 class Server( SocketServer.ThreadingMixIn, SocketServer.TCPServer ):
