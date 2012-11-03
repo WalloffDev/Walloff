@@ -21,6 +21,15 @@ class Lobby( models.Model ):
 		self.moving_obstacles = mo
 		self.obstacle_count = oc
 		self.shrinkable = shrink
+		self.save( )
+
+	def update( self, _map, size, mo, oc, shrink ):
+                self._map = _map
+                self.size = size
+                self.moving_obstacles = mo
+                self.obstacle_count = oc
+                self.shrinkable = shrink
+		self.save( )
 
 class Player( models.Model ):
 
@@ -31,6 +40,7 @@ class Player( models.Model ):
 	first_name = models.CharField( max_length=512 )
 	last_name = models.CharField( max_length=512 )
 	username = models.CharField( max_length=50, primary_key=True, unique=True )
+	gcm_id = models.IntegerField( unique=True )
 	_active = models.BooleanField( verbose_name='Player activation status', default=True )
 	_create_date = models.DateTimeField( auto_now_add=True )
 	pub_ip = models.CharField( max_length=15, default='0.0.0.0' )
@@ -42,3 +52,14 @@ class Player( models.Model ):
 	# METHOD(S)
 	def __unicode__( self ):
 		return self.username
+
+	def natural_key( self ):
+		return ( self.username, self.pub_ip, self.priv_ip, self.pub_port, self.priv_port )
+
+	def join_lobby( self, lob ):
+		self.lobby = lob
+		self.save( )	
+
+	def leave_lobby( self ):
+		self.lobby = None
+		self.save( )
