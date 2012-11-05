@@ -1,0 +1,68 @@
+/* CSS for CSi459 Human Computer Interaction Project */
+
+/*  - COLORS -
+ * 	tron_blue: #18CAE6
+ * 	dark_magenta: #EA3088
+ *	orange: #FF4719
+*/
+
+/* Body */
+body {
+	background: #000000;
+	font-family: helvetica;
+	color: #18CAE6;
+}
+div.divider {
+	position: relative;
+	left: 12.5%;
+	width: 75%; height: 0.2em;
+	/*margin-top: 1%;*/
+	margin-bottom: 1%;
+	-moz-box-shadow: 0 0 0.3em #18CAE6;
+	-webkit-box-shadow: 0 0 0.3em #18CAE6;
+	box-shadow: 0 0 0.3em #18CAE6;
+}
+
+/* Header */
+div.header {
+	position: relative;
+	left: 12.5%;
+	width: 75%;
+	text-align: center;
+	line-height: 100%;
+	font-size: 3.0em;
+	box-shadow: inset 0 -7px 10px -8px #18CAE6;
+	text-shadow: 0 0 0.3em #18CAE6;
+}
+
+/* Navigation Bar */
+div.nav_bar {
+	position: relative;
+	left: 12.5%;
+	width: 75%; 
+	line-height: 100%;
+	text-align: center;
+	/*margin-bottom: 2%;*/
+	color: #18CAE6;
+	text-shadow: 0 0 0.2em #18CAE6;
+	
+}
+div.nav_sec {
+	position: relative;	
+}
+
+/* Main Content */
+div.main_cont {
+	position: relative;
+	left: 12.5%;
+	width: 75%;
+	text-align: center;
+}
+
+/* Links */
+div.nav_bar a { color: #18CAE6 }
+div.nav_bar a:link { color: #18CAE6 }
+div.nav_bar a:hover { color: #ff0000; text-shadow: 0 0 0.3em #ff0000; } 
+div.main_cont a { color: #0000ff; }
+div.main_cont a:link { color: #0000ff; }
+div.main_cont a:hover { color: #ffffff; }
