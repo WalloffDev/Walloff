@@ -33,14 +33,11 @@ class Lobby( models.Model ):
 
 class Player( models.Model ):
 
-	#TODO:	# Implement Player password field, set, check, change, recover
-		# Game statistics
-
 	# CLASS VAR(S)
-	first_name = models.CharField( max_length=512 )
-	last_name = models.CharField( max_length=512 )
+	first_name = models.CharField( max_length=512, blank=True )
+	last_name = models.CharField( max_length=512, blank=True )
 	username = models.CharField( max_length=50, primary_key=True, unique=True )
-	gcm_id = models.IntegerField( unique=True )
+	gcm_id = models.TextField( )
 	_active = models.BooleanField( verbose_name='Player activation status', default=True )
 	_create_date = models.DateTimeField( auto_now_add=True )
 	pub_ip = models.CharField( max_length=15, default='0.0.0.0' )
@@ -52,6 +49,11 @@ class Player( models.Model ):
 	# METHOD(S)
 	def __unicode__( self ):
 		return self.username
+
+	def set_data( self, uname, gcmid ):
+		self.username = uname
+		self.gcm_id = gcmid
+		self.save( )
 
 	def natural_key( self ):
 		return ( self.username, self.pub_ip, self.priv_ip, self.pub_port, self.priv_port )

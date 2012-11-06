@@ -1,43 +1,88 @@
-# Helper Server for Walloff_Android
+# Lobby Manager Server for Walloff_Android
 
-# Setup environment
+# Setup server environment --------------------------------------------------------------------------------------------#
 from django.core.management import setup_environ
-from walloff_web import settings # Grab walloff_web settings for access to Django apps
-setup_environ( settings )
+from walloff_web import settings 			# Grab walloff_web settings for access to Django apps
+setup_environ( settings )				# Set server environment to Django instance environment
+#----------------------------------------------------------------------------------------------------------------------#
 
-# Imports
+# Imports -------------------------------------------------------------------------------------------------------------#
 import socket, threading, SocketServer, datetime, os, json
 from django.core import serializers
+from django.db import IntegrityError, DatabaseError
 from lobby_app.models import *
-from gcm import GCM
+from gcm import GCM						# Python Google Cloud Messaging client
+#----------------------------------------------------------------------------------------------------------------------#
 
-# Server metadata
+# Server metadata ----------------------------------#
 HOST = 'walloff.cslabs.clarkson.edu'
 PORT = 8080
-#GCM_KEY = 'AIzaSyBDkOmbiJ_CLOs3JW8Gy-04PXm2LO7qx3E'
 GCM_KEY = 'AIzaSyATBxZaCI6D3rSyZaHjwswkdcmIWHjztaE'
+#---------------------------------------------------#
 
-# Constants
-MAX_BUF = 1024
-MAX_LOB_SIZE = 4
+# Constants ----------------------------------------------------------------#
+MAX_BUF = 1024		# Sets max buffer size to receive from request
+MAX_LOB_SIZE = 4	# Sets maximum number of allowed players in a lobby
+#---------------------------------------------------------------------------#
 
-# Tags
-m_create = 'create'
-m_join = 'join'
-m_leave = 'leave'
-m_get_available_lobbies = 'get_available_lobbies'
-m_update_map = 'update_map' 
-m_success = 'SUCCESS'
-m_fail = 'FAIL'
+# Tags --------------------------------------------------------------------------------#
+m_login = 'login'					# Create new user req.
+m_create = 'create'					# Create new lobby req.
+m_join = 'join'						# Join existing lobby req.
+m_leave = 'leave'					# Leave current lobby req.
+m_get_available_lobbies = 'get_lobbies'			# Query existing lobbies req.
+m_update_map = 'update_map' 				# Lobby map update req.
+m_success = 'SUCCESS'					# Server success msg to client
+m_fail = 'FAIL'						# Server error msg to client
+#--------------------------------------------------------------------------------------#
 
-# Connection Handler
+# Error messages ---------------------------------------#
+err_unknown = 'unknown error'
+err_uname_exists = 'username not available'
+err_lname_exists = 'lobby name already exists'
+err_lobb_unavail = 'lobby is no longer available'
+#-------------------------------------------------------#
+
+# Connection Handler ------------------------------------------------------------------------------#
 class RequestHandler( SocketServer.BaseRequestHandler ):
 	
 	def handle( self ):
+
 		data = json.loads( str( self.request.recv( MAX_BUF ) ) )
 		tag = data[ 'tag' ]
 	
-		if tag == m_create:
+		if tag == m_login:
+				# Get info for new player
+				m_uname = data[ 'uname' ]
+				m_gcmid = data[ 'gcmid' ]
+
+				try:
+					# Check if username already exists
+					p = Player.objects.filter( username=str(m_uname).lower() )
+					if len( p.all() ) > 0:
+						raise IntegrityError			
+
+					# Create new user
+					new_player = Player( )				
+					new_player.set_data( str( m_uname ).lower( ), str( m_gcmid ) )
+					print 'Created new player: ' + str( m_uname )
+					self.success( )
+		
+					# Test GCM
+					data = { 'msg' : 'test message' }
+					reg_ids = list( str( new_player.gcm_id ) )
+					self.send_single( reg_ids, data )					
+
+				except IntegrityError:
+					print 'Error: m_login - username already exists'
+					self.fail( err_uname_exists )
+				#except:
+				#	print 'Error: m_login - unknown'
+				#	self.fail( err_unknown )
+				
+						
+
+		elif tag == m_create:
 
 			try:
 				# Get info for new lobby and map
@@ -56,15 +101,14 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 				# get player by username ( auth_token ), add them to lobby
 				player = Player.objects.get( username = m_host )
 				player.join_lobby( new_lobby )
-				
 				self.success( )
 			
-			# Lobby name already in use
 			except IntegrityError:
-				print 'Error: lobby name is already in use'
-				self.fail( )
-			except:
-				self.fail( )
+				print 'Error: m_create - lobby name already exists'
+				self.fail( err_lname_exists )
+			#except:
+			#	print 'Error: m_create - unknown'
+			#	self.fail( err_unknown )
 
 		elif tag == m_join:
 
@@ -87,10 +131,11 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 					self.success( )
 					self.send_to_all( )
 				else:
-					# TODO: notify host that lobby is no longer available
-					self.fail( )
+					# Lobby no longer available
+					self.fail( err_lobb_unavail )
 			except:
-				self.fail( )
+				print 'Error: m_join - unknown'
+				self.fail( err_unknown )
 	
 		elif tag == m_leave:
 
@@ -108,7 +153,8 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 				data = serializers.serialize( 'json', lobby.player_set.all( ) )
 				self.send_to_all( lobby.player_set.all( ), data )
 			except:
-				self.fail( )
+				print 'Error: m_leave - unknown'
+				self.fail( err_unknown )
 						
 		elif tag == m_get_available_lobbies:
 				
@@ -120,7 +166,8 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 
 				self.success( )
 			except:
-				self.fail( )			
+				print 'Error: m_get_available_lobbies - unknown'
+				self.fail( err_unknown )			
 
 		elif tag == m_update_map:
 
@@ -140,19 +187,28 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 				self.send_to_all( )
 				self.success( )
 			except:
-				self.fail( )
+				print 'Error: m_update_map - unknown'
+				self.fail( err_unknown )
 
 		else:
 			# Possible foreign message received... ignore
 			print 'Error: message received with an unrecognized tag, ignoring ...'
 		
+		return
+
 	def success( self ):
 		content = json.dumps( { 'return' : m_success } )
 		self.request.sendall( content )
 
-	def fail( self ):
-		content = json.dumps( { 'return' : m_fail } )
+	def fail( self, msg ):
+		content = json.dumps( { 'return' : m_fail, 'message' : msg } )
 		self.request.sendall( content )
+
+	def send_single( self, reg_ids, msg ):
+		
+		print 'Sending push notification ...'
+		response = self.server.gcm.json_request( registration_ids = reg_ids, data = msg )
+		print 'GCM: ' + str( response )
 
 	def send_to_all( self, players, data ):		
 		gcm_ids = []
@@ -170,7 +226,9 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 		# TODO: catch exception and handle appropriately
 		except:
 			pass
+#-------------------------------------------------------------------------------------------------------------#
 
+# Server -------------------------------------------------------------#
 class Server( SocketServer.ThreadingMixIn, SocketServer.TCPServer ):
 	allow_reuse_address = True
 	timeout = None
@@ -178,14 +236,18 @@ class Server( SocketServer.ThreadingMixIn, SocketServer.TCPServer ):
 	def now( self ):
         	d = datetime.datetime.now( )
         	return d.strftime( "%d/%m/%y %H:%M:%S" )
+#---------------------------------------------------------------------#
 
-# Main
+# Main --------------------------------------------------------------#
 if __name__ == "__main__":
 
 	server = Server( ( HOST, PORT ), RequestHandler )
 	server.gcm = GCM( GCM_KEY )
 	print 'Walloff helper server now running: ' + server.now( ) 
 	try:
-		server.serve_forever( )
+		while 1:
+			server.handle_request( )
+		#server.serve_forever( )
 	except KeyboardInterrupt:
 		pass
+#--------------------------------------------------------------------#
