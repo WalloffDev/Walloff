@@ -7,7 +7,6 @@ bin/
 gen/
 local.properties
 .classpath
-.project
 
 # Django
 *.pyc
