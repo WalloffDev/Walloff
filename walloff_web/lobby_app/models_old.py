@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from django.db import models
 
 class Lobby( models.Model ):
@@ -34,12 +33,13 @@ class Lobby( models.Model ):
 
 class Player( models.Model ):
 
-	# Django User
-	django_user = models.OneToOneField( User )
-	User._meta.get_field( 'username' )._unique = True
-
-	# Player spec. info
+	# CLASS VAR(S)
+	first_name = models.CharField( max_length=512, blank=True )
+	last_name = models.CharField( max_length=512, blank=True )
+	username = models.CharField( max_length=50, primary_key=True, unique=True )
 	gcm_id = models.TextField( )
+	_active = models.BooleanField( verbose_name='Player activation status', default=True )
+	_create_date = models.DateTimeField( auto_now_add=True )
 	pub_ip = models.CharField( max_length=15, default='0.0.0.0' )
 	priv_ip = models.CharField( max_length=15, default='0.0.0.0' )
 	pub_port = models.IntegerField( default=0 )
@@ -48,19 +48,15 @@ class Player( models.Model ):
 
 	# METHOD(S)
 	def __unicode__( self ):
-		return self.django_user.username
+		return self.username
 
-	def set_data( self, uname, passwd, gcmid ):
-		new_user = User( )
-		new_user.username = uname
-		new_user.set_password( passwd )
-		new_user.save( )
-		self.django_user = new_user
+	def set_data( self, uname, gcmid ):
+		self.username = uname
 		self.gcm_id = gcmid
 		self.save( )
 
 	def natural_key( self ):
-		return ( self.django_user.username, self.pub_ip, self.priv_ip, self.pub_port, self.priv_port )
+		return ( self.username, self.pub_ip, self.priv_ip, self.pub_port, self.priv_port )
 
 	def join_lobby( self, lob ):
 		self.lobby = lob

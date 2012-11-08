@@ -55,16 +55,17 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 		if tag == m_login:
 				# Get info for new player
 				m_uname = data[ 'uname' ]
+				m_passwd = data[ 'passwd' ]
 				m_gcmid = data[ 'gcmid' ]
 				try:
 					# Check if username already exists
-					p = Player.objects.filter( username=str(m_uname).lower() )
+					p = Player.objects.filter( django_user__username=str(m_uname).lower() )
 					if len( p.all() ) > 0:
 						raise IntegrityError			
 
 					# Create new user
 					new_player = Player( )				
-					new_player.set_data( str( m_uname ).lower( ), str( m_gcmid ) )
+					new_player.set_data( str( m_uname ).lower( ), str( m_passwd ), str( m_gcmid ) )
 					print 'Created new player: ' + str( m_uname )
 					self.success( )
 		
@@ -96,7 +97,7 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 				new_lobby.set_data( m_name, False, m_map, m_size, m_moving_obstacles, m_number_obstacles, m_shrinkable )
 
 				# get player by username ( auth_token ), add them to lobby
-				player = Player.objects.get( username = m_host )
+				player = Player.objects.get( django_user__username = m_host )
 				player.join_lobby( new_lobby )
 				self.success( )
 			
@@ -113,7 +114,7 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 				# Obtain player that is joining the lobby
 				m_host = data[ 'player' ]
 				m_lobby = data[ 'lobby' ]
-				player = Player.objects.get( username = m_host )
+				player = Player.objects.get( django_user__username = m_host )
 				
 				# Assure #players in lobby is less than MAX_LOB_SIZE
 				players = Lobby.objects.get( name = m_lobby ).player_set
@@ -139,7 +140,7 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 			try:
 				# Obtain the player that is currently leaving the lobby
 				m_host = data[ 'player' ]
-				player = Player.objects.get( username = m_host )
+				player = Player.objects.get( django_user__username = m_host )
 				lobby = player.lobby
 				
 				# Remove the player from the lobby
