@@ -1,8 +1,8 @@
 # Constants to be used by gcm module
 
 # 3RD PARTY SERVER
-backoff_initial_delay = 1000
-backoff_max_delay = 1024000
+backoff_initial_delay = 1
+backoff_max_delay = 1024
 utf_8 = 'UTF-8'
 
 # TOKEN FIELD(S)
@@ -15,7 +15,7 @@ gcm_url = 'https://android.googleapis.com/gcm/send'
 param_collapse_key = 'collapse_key'
 param_delay_while_idle = 'delay_while_idle'
 param_data = 'data'
-param_registration_id = 'registration_id'
+param_registration_ids = 'registration_ids'
 param_time_to_live = 'time_to_live'
 
 # JSON PARAM(S)
@@ -25,7 +25,7 @@ json_failure = 'failure'
 json_message_id = 'message_id'
 json_multicast_id = 'multicast_id'
 json_data = 'data'
-json_registration_ids = 'registration_ids'
+json_registration_id = 'registration_id'
 json_results = 'results'
 json_success = 'success'
 
@@ -47,4 +47,3 @@ class MessageParamException( Exception ) : pass
 class MalformedJsonException( Exception ) : pass
 class AuthenticationException( Exception ) : pass
 class UnavailableException( Exception ) : pass
-class CanonicalIdsException( Exception ) : pass

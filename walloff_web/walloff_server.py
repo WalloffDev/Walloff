@@ -74,11 +74,10 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 					self.send( players=players, msg=data )					
 
 				except IntegrityError:
-					print 'Error: m_login - username already exists'
 					self.fail( err_uname_exists )
-				#except:
-				#	print 'Error: m_login - unknown'
-				#	self.fail( err_unknown )
+				except:
+					print 'Error: m_login - unknown'
+					self.fail( err_unknown )
 				
 		elif tag == m_create:
 
@@ -209,10 +208,7 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 			reg_ids.append( player.gcm_id )
 
 		print 'Sending push notification ...'
-		#try:
-		self.server.gcm.send_message( reg_ids=reg_ids, data=msg, retries=2 )				
-		#except:
-		#	print 'Error sending message'
+		result = self.server.gcm.send_message( reg_ids=reg_ids, data=msg, retries=2 )
 
 #-------------------------------------------------------------------------------------------------------------#
 

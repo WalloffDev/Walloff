@@ -2,7 +2,7 @@
 # - utility for 3rd-party servers written in python to contact android clients via GCM servers
 
 from types import *
-import urllib2, json, sys
+import urllib2, json, time
 from constants import *
 
 class Message:
@@ -44,6 +44,7 @@ class gcm( object ):
 	
 	def __init__( self, api_key ):
 		self.api_key = api_key
+		self.backoff = backoff_initial_delay
 	
 	def build_payload( self, data, reg_ids, ttl, ck, dwi ):
 
@@ -51,7 +52,7 @@ class gcm( object ):
 		message = Message( reg_ids, data, ck, dwi, ttl )
 
 		# Construct payload
-		payload = { json_registration_ids : message.registration_ids }
+		payload = { param_registration_ids : message.registration_ids }
 		if message.data:
 			payload[ param_data ] = message.data
 		if message.collapse_key:
@@ -84,30 +85,53 @@ class gcm( object ):
                                 response = urllib2.urlopen( req ).read( )
 				response = json.loads( response )
 				if response[ json_failure ] == 0 and response[ json_canonical_ids ] == 0:
-					print 'Great success!'
-					break
+					return ( ) 
 				else:
-					self.handle_200_response( response )
-					
+					return self.handle_200_response( response )
 
-			# TODO: don't raise exceptions, handle nicely
-			# http://developer.android.com/guide/google/gcm/gcm.html#response
 			except urllib2.HTTPError as e:
-				handle_GCM_error( e )
+				handle_GCM_error( e, attempt )
 				continue
 
 	def handle_200_response( self, response ):
-		if response[ json_canonical_ids ] > 0:
-			print str( response[ json_canonical_ids ] ) + 'ID updates required'
-			#raise CanonicalIdsException( )
 
-	def handle_GCM_error( self, e ):
+		# Make dict to pass back ( map old reg_ids to new reg_ids )
+		id_updates = dict( )
+		failures = dict( )
+
+		if response[ json_canonical_ids ] > 0:
+
+			result_values = response[ json_results ]
+
+			for index in range( len( result_values ) ):
+				d = dict( result_values[ index ] )
+				if json_registration_id in d:
+					id_updates[ index ] = d[ json_registration_id ]
+
+		if response[ json_failure ] > 0:
+
+			result_values = response[ json_results ]
+
+			for index in range( len( result_values ) ):
+				d = dict( result_values[ index ] )
+				if json_error in d:
+					failures[ index ] = d[ json_error ]
+
+		return ( id_updates, failures )
+
+	def handle_GCM_error( self, e, attempt ):
 		if e.code == 400:
 			raise MalformedJsonException( "The request could not be parsed as JSON" )
                 elif e.code == 401:
 			raise AuthenticationException( "There was an error authenticating the sender account" )
-		elif e.code == 503:
-			# adjust backoff
-			print 'fuck'
+		elif e.code >= 500:
+			
+			# Delay send
+			time.sleep( self.backoff )
+
+			# Adjust backoff	
+			self.backoff = self.backoff * 2 
+			if self.backoff >= backoff_max_delay:
+				raise UnavailableException( "GCM Service is unavailable" )
+
 			return
-                        #raise UnavailableException( "GCM service is unavailable" )
