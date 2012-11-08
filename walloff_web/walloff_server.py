@@ -11,13 +11,14 @@ import socket, threading, SocketServer, datetime, os, json
 from django.core import serializers
 from django.db import IntegrityError, DatabaseError
 from lobby_app.models import *
-from gcm import GCM						# Python Google Cloud Messaging client
+from gcm.gcm import *					# Python Google Cloud Messaging client
+from gcm.constants import *
 #----------------------------------------------------------------------------------------------------------------------#
 
 # Server metadata ----------------------------------#
 HOST = 'walloff.cslabs.clarkson.edu'
 PORT = 8080
-GCM_KEY = 'AIzaSyATBxZaCI6D3rSyZaHjwswkdcmIWHjztaE'
+GCM_KEY = 'AIzaSyC5M-ip4-1pnm0gExQow1CS9xIPke7EvAw'
 #---------------------------------------------------#
 
 # Constants ----------------------------------------------------------------#
@@ -55,7 +56,6 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 				# Get info for new player
 				m_uname = data[ 'uname' ]
 				m_gcmid = data[ 'gcmid' ]
-
 				try:
 					# Check if username already exists
 					p = Player.objects.filter( username=str(m_uname).lower() )
@@ -70,8 +70,8 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 		
 					# Test GCM
 					data = { 'msg' : 'test message' }
-					reg_ids = list( str( new_player.gcm_id ) )
-					self.send_single( reg_ids, data )					
+					players = [new_player]
+					self.send( players=players, msg=data )					
 
 				except IntegrityError:
 					print 'Error: m_login - username already exists'
@@ -80,8 +80,6 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 				#	print 'Error: m_login - unknown'
 				#	self.fail( err_unknown )
 				
-						
-
 		elif tag == m_create:
 
 			try:
@@ -204,28 +202,18 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 		content = json.dumps( { 'return' : m_fail, 'message' : msg } )
 		self.request.sendall( content )
 
-	def send_single( self, reg_ids, msg ):
+	def send( self, players, msg ):
 		
+		reg_ids = list( )
+		for player in players:
+			reg_ids.append( player.gcm_id )
+
 		print 'Sending push notification ...'
-		response = self.server.gcm.json_request( registration_ids = reg_ids, data = msg )
-		print 'GCM: ' + str( response )
+		#try:
+		self.server.gcm.send_message( reg_ids=reg_ids, data=msg, retries=2 )				
+		#except:
+		#	print 'Error sending message'
 
-	def send_to_all( self, players, data ):		
-		gcm_ids = []
-
-		try:
-			# Get player gcm_id's
-			for player in players:
-				gcm_ids.append( player.gcm_id )
-
-			response = gcm.json_request( registration_ids = gcm_ids, data = data )
-
-			# Check response
-			print response			
-
-		# TODO: catch exception and handle appropriately
-		except:
-			pass
 #-------------------------------------------------------------------------------------------------------------#
 
 # Server -------------------------------------------------------------#
@@ -242,12 +230,12 @@ class Server( SocketServer.ThreadingMixIn, SocketServer.TCPServer ):
 if __name__ == "__main__":
 
 	server = Server( ( HOST, PORT ), RequestHandler )
-	server.gcm = GCM( GCM_KEY )
+	server.gcm = gcm( GCM_KEY )
 	print 'Walloff helper server now running: ' + server.now( ) 
 	try:
-		while 1:
-			server.handle_request( )
-		#server.serve_forever( )
+		#while 1:
+		#	server.handle_request( )
+		server.serve_forever( )
 	except KeyboardInterrupt:
 		pass
 #--------------------------------------------------------------------#
