@@ -24,4 +24,14 @@ public class MainMenuActivity extends Activity {
         Tasks.SendToWalloffServer send_ws = new SendToWalloffServer( MainMenuActivity.this );
         send_ws.execute(  );
     }
+
+	@Override
+	protected void onResume( ) {
+		super.onResume( );
+		
+		/* Check SharedPreferences for existing user credentials */
+		
+		
+	}
+    
 }
