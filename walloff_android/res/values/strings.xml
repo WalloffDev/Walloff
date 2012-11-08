@@ -6,7 +6,7 @@
     <string name="title_activity_main_menu">MainMenuActivity</string>
     <string name="cred_store_username">username</string>
     <string name="cred_store_password">password</string>
-    <string name="cred_store_btn">Ok</string>
+    <string name="cred_store_btn">Save</string>
     <string name="cred_store_password2">password again</string>
     <string name="todo">TODO</string>
     <string name="main_menu_banner">Walloff 2.0</string>

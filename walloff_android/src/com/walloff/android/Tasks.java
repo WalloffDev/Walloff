@@ -5,6 +5,7 @@ import java.net.Socket;
 
 import org.json.JSONObject;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.os.AsyncTask;
 
@@ -13,6 +14,7 @@ public class Tasks {
 	public static class SendToWalloffServer extends AsyncTask< JSONObject, Void, Void > {
 
 		/* Class members */
+		Dialog dialog = null;
 		Context activity_context = null;
 		Socket soc = null;
 		DataOutputStream dos = null;
@@ -20,6 +22,10 @@ public class Tasks {
 		public SendToWalloffServer( Context activity_context ) {
 			super( );
 			this.activity_context = activity_context;
+		}
+		
+		public void setDialog( Dialog dialog ) {
+			this.dialog = dialog;
 		}
 		
 		@Override
@@ -62,6 +68,9 @@ public class Tasks {
 		@Override
 		protected void onPostExecute( Void result ) {
 			super.onPostExecute( result );
+			
+			if( this.dialog != null )
+				this.dialog.dismiss( );
 		}
 		
 	}
