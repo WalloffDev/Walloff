@@ -7,14 +7,21 @@ import android.app.Dialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+import android.view.GestureDetector.OnGestureListener;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ViewFlipper;
 
 import com.google.android.gcm.GCMRegistrar;
 import com.walloff.android.Tasks.SendToWalloffServer;
 
 public class MainMenuActivity extends Activity {
+	
+	/* gesture listener that will be used to change views */
+	private GestureDetection gestureDetector;
 	
 	/* AsyncTask(s) */
 	private Tasks.SendToWalloffServer send_ws = null;
@@ -24,6 +31,12 @@ public class MainMenuActivity extends Activity {
 	private Button cred_store_save = null;
 	private EditText username = null, password = null, password_again = null;
 	
+	/* register out custom gesture detector */
+	@Override
+	public boolean onTouchEvent(MotionEvent me) {
+        return gestureDetector.onTouchEvent(me);
+    }
+	
     @Override
     public void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
@@ -31,6 +44,10 @@ public class MainMenuActivity extends Activity {
         
         /* Register AsyncTask(s) */
         send_ws = new SendToWalloffServer( MainMenuActivity.this );
+
+    	
+        /* Register our gesture listener */
+		gestureDetector = new GestureDetection( this, (ViewFlipper)findViewById(R.id.main_menu_parent) );
     }
 
 	@Override
@@ -40,6 +57,7 @@ public class MainMenuActivity extends Activity {
 		/* Check SharedPreferences for existing user credentials */
 		SharedPreferences prefs = getSharedPreferences( Constants.PREFS_FILENAME, MainMenuActivity.MODE_PRIVATE );
 		String creds = prefs.getString( Constants.PREFS_CREDS_KEY, "" );
+		
 		if( creds.equals( "" ) ) {
 			
 			/* Setup cred_store dialog */
@@ -101,5 +119,4 @@ public class MainMenuActivity extends Activity {
 			/* Do nothing */
 		}
 	}
-    
 }

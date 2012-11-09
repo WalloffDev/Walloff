@@ -21,4 +21,5 @@ public final class Constants {
 	public static final String L_USERNAME = "uname";
 	public static final String L_PASSWORD = "passwd";
 	public static final String L_GCMID = "gcmid";
+	
 }
