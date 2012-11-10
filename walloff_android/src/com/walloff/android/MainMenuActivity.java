@@ -1,15 +1,12 @@
 package com.walloff.android;
 
 import org.json.JSONObject;
-
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
-import android.view.GestureDetector.OnGestureListener;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -20,7 +17,7 @@ import com.walloff.android.Tasks.SendToWalloffServer;
 
 public class MainMenuActivity extends Activity {
 	
-	/* gesture listener that will be used to change views */
+	/* Gesture listener that will be used to change views */
 	private GestureDetection gestureDetector;
 	
 	/* AsyncTask(s) */
@@ -31,7 +28,7 @@ public class MainMenuActivity extends Activity {
 	private Button cred_store_save = null;
 	private EditText username = null, password = null, password_again = null;
 	
-	/* register out custom gesture detector */
+	/* Register out custom gesture detector */
 	@Override
 	public boolean onTouchEvent(MotionEvent me) {
         return gestureDetector.onTouchEvent(me);
@@ -45,7 +42,6 @@ public class MainMenuActivity extends Activity {
         /* Register AsyncTask(s) */
         send_ws = new SendToWalloffServer( MainMenuActivity.this );
 
-    	
         /* Register our gesture listener */
 		gestureDetector = new GestureDetection( this, (ViewFlipper)findViewById(R.id.main_menu_parent) );
     }
@@ -87,6 +83,9 @@ public class MainMenuActivity extends Activity {
 				public void onClick( View arg0 ) {
 					
 					/* TODO: check that passwords match before committing and check length at least 5 characters*/
+					if( username.getText().toString( ).equals( "" ) ) {
+						
+					}
 					
 					/* Save info to preferences */
 					SharedPreferences prefs = getSharedPreferences( Constants.PREFS_FILENAME, MainMenuActivity.MODE_PRIVATE );

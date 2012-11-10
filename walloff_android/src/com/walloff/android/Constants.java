@@ -1,5 +1,8 @@
 package com.walloff.android;
 
+import android.content.Context;
+import android.widget.Toast;
+
 public final class Constants {
 	
 	/* GCM */
@@ -22,4 +25,18 @@ public final class Constants {
 	public static final String L_PASSWORD = "passwd";
 	public static final String L_GCMID = "gcmid";
 	
+	/* Main Menu Veiws */
+	public static final int MAX_X_VIEWS = 2; // Don't include the default ( 0 )
+	public static final int MAX_Y_VIEWS = 2; // Don't include the default ( 0 )
+	
+	/* Generic helper functions */
+	public boolean verify_credential_input( Context context, String username, String password, 
+																			String password2 ) {
+		/* Check username: ( Can't be empty, at most 30 characters ), Django will return error otherwise */
+		if( username.equals( "" ) || username.length( ) > 30 ) {
+			return false;
+		}
+		
+		return true;
+	}
 }
