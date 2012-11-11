@@ -3,7 +3,8 @@
     android:id="@+id/profile_parent"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
+    android:orientation="vertical"
+    android:tag="@string/profile_tag" >
 
     <ImageView
         android:id="@+id/profile_pic"

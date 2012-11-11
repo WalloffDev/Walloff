@@ -3,70 +3,16 @@
     android:id="@+id/main_menu_def_parent"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
+    android:orientation="vertical" 
+    android:tag="@string/home_tag">
 
-    <ImageView
-        android:id="@+id/single_player_img"
+    <TextView
+        android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:src="@drawable/single_player" />
-
-    <ImageView
-        android:id="@+id/character_img"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
-        android:src="@drawable/character" />
-
-    <ImageView
-        android:id="@+id/options_img"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:src="@drawable/options" />
-
-    <ImageView
-        android:id="@+id/multiplayer_img"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"
-        android:src="@drawable/multi_player" />
-
-    <ImageView
-        android:id="@+id/options_arrow"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_toLeftOf="@+id/options_img"
-        android:src="@drawable/arrow_down" />
-
-    <ImageView
-        android:id="@+id/imageView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_toRightOf="@+id/single_player_img"
-        android:src="@drawable/arrow_up" />
-
-    <ImageView
-        android:id="@+id/imageView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/multiplayer_img"
-        android:src="@drawable/arrow_right" />
-
-    <ImageView
-        android:id="@+id/imageView3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/character_img"
-        android:layout_alignParentLeft="true"
-        android:src="@drawable/arrow_left" />
+        android:text="@string/main_menu_banner"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
 </RelativeLayout>

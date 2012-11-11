@@ -1,5 +1,11 @@
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <style name="AppTheme" parent="android:Theme.Light" />
-
+    <style name="WalloffTheme" parent="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+        <item name="android:textColorPrimary">@color/TronBlue</item>
+    </style>
+    
+ 	<style name="WalloffCommand" parent="@android:style/Theme.Dialog">
+ 	    <item name="android:windowBackground">@android:color/transparent</item>
+ 	</style>   
+    
 </resources>

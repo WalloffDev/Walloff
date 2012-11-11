@@ -43,7 +43,7 @@ public class MainMenuActivity extends Activity {
         send_ws = new SendToWalloffServer( MainMenuActivity.this );
 
         /* Register our gesture listener */
-		gestureDetector = new GestureDetection( this, (ViewFlipper)findViewById(R.id.main_menu_parent) );
+		gestureDetector = new GestureDetection( this, ( ViewFlipper )findViewById( R.id.main_menu_parent ) );
     }
 
 	@Override
@@ -56,10 +56,10 @@ public class MainMenuActivity extends Activity {
 		
 		if( creds.equals( "" ) ) {
 			
-			/* Setup cred_store dialog */
-			this.cred_store_dialog = new Dialog( this );
+			/* Setup cred_store dialog and dialog elements */
+			this.cred_store_dialog = new Dialog( MainMenuActivity.this );
+			this.cred_store_dialog.setTitle( R.string.cred_store_title_content );
 			this.cred_store_dialog.setContentView( R.layout.cred_store );
-			this.cred_store_dialog.setTitle( Constants.CREDSTORE_DIA_TITLE );
 			this.cred_store_dialog.setCancelable( false );
 			this.username = ( EditText )this.cred_store_dialog.findViewById( R.id.cred_store_username );
 			this.password = ( EditText )this.cred_store_dialog.findViewById( R.id.cred_store_password );
@@ -82,9 +82,10 @@ public class MainMenuActivity extends Activity {
 	        this.cred_store_save.setOnClickListener( new View.OnClickListener( ) {
 				public void onClick( View arg0 ) {
 					
-					/* TODO: check that passwords match before committing and check length at least 5 characters*/
-					if( username.getText().toString( ).equals( "" ) ) {
-						
+					/* TODO: check user input for credentials before committing to preferences */
+					if( !Constants.verify_credential_input( MainMenuActivity.this, username.getText( ).toString( ), 
+							password.getText( ).toString( ), password_again.getText( ).toString( ) ) ) {
+						return;
 					}
 					
 					/* Save info to preferences */
