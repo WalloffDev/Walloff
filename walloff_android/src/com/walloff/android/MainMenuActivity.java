@@ -6,8 +6,11 @@ import android.app.Dialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnLongClickListener;
+import android.view.View.OnTouchListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ViewFlipper;
@@ -34,16 +37,47 @@ public class MainMenuActivity extends Activity {
         return gestureDetector.onTouchEvent(me);
     }
 	
+	/* long press event listener */
+//	Boolean isSpeakButtonLongPressed = false;
+//	private View.OnLongClickListener speakHoldListener = new View.OnLongClickListener() {
+//
+//        public boolean onLongClick(View pView) {
+//             // Do something when your hold starts here.
+//             isSpeakButtonLongPressed = true;
+//             return true;
+//        }
+//   };
+	
     @Override
     public void onCreate( Bundle savedInstanceState ) {
-        super.onCreate( savedInstanceState );
+        super.onCreate( savedInstanceState );        
         setContentView( R.layout.main_menu );
+        
+        /* get the height and width of our window */
+		Display display = getWindowManager().getDefaultDisplay();
+		Constants.window_size_y = (float) display.getHeight();
+		Constants.window_size_x = (float) display.getWidth();
         
         /* Register AsyncTask(s) */
         send_ws = new SendToWalloffServer( MainMenuActivity.this );
 
         /* Register our gesture listener */
-		gestureDetector = new GestureDetection( this, ( ViewFlipper )findViewById( R.id.main_menu_parent ) );
+		gestureDetector = new GestureDetection( this, ( ViewFlipper )findViewById( R.id.main_menu_parent ) );	
+		
+
+//		Button b = (Button)findViewById(R.id.button1);
+//		b.setOnLongClickListener(speakHoldListener);
+//		b.setOnTouchListener(new OnTouchListener() {
+//			
+//			public boolean onTouch(View v, MotionEvent event) {
+//				if ( isSpeakButtonLongPressed )
+//				{
+//					gestureDetector.onLongPress(event);
+//					isSpeakButtonLongPressed = false;
+//				}
+//				return false;
+//			}
+//		});
     }
 
 	@Override
@@ -76,7 +110,7 @@ public class MainMenuActivity extends Activity {
 	        if( regId.equals( "" ) ) {
 	          GCMRegistrar.register( MainMenuActivity.this, Constants.project_id );
 	        } else {
-	          Log.i( Constants.TAG, "Already registered" );
+	        	Log.i( Constants.TAG, "Already registered" );
 	        }
 	        
 	        this.cred_store_save.setOnClickListener( new View.OnClickListener( ) {

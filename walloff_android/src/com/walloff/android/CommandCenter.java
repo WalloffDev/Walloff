@@ -8,7 +8,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ViewFlipper;
 
-public class CommandCenter {
+public class CommandCenter extends View {
 
 	/* Class members */
 	private Context activity_context = null;
@@ -19,16 +19,10 @@ public class CommandCenter {
 	private int curr_index = 0;
 	
 	public CommandCenter( Context context, int num_buttons, ViewFlipper vf ) {
-		super( );
+		super( context );
 		this.activity_context = context;
 		this.num_buttons = num_buttons;
 		this.vf = vf;
-		
-		/* Initialize dialog */
-		this.frame = new Dialog( this.activity_context, R.style.WalloffCommand );
-		this.frame.setContentView( R.layout.command_center );
-		this.frame.setTitle( Constants.COMMAND_TITLE );
-		this.frame.setCancelable( true );
 		
 		LinearLayout parent = ( LinearLayout )this.frame.findViewById( R.id.command_center_parent );
 		parent.setLayoutParams( new LayoutParams( LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT ) );
@@ -47,8 +41,9 @@ public class CommandCenter {
 	
 	public void show( ) { 
 		this.initialize( this.curr_index );
-		this.frame.show( ); 
+		frame.show( ); 
 	}
+	
 	public void hide( ) { this.frame.dismiss( ); }
 	
 	public void initialize( int curr_index ) {

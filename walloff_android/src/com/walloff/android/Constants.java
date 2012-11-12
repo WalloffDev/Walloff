@@ -32,6 +32,10 @@ public final class Constants {
 	public static final int I_COMMAND = 5;
 	public static final String COMMAND_TITLE = "where do you want to go";
 	
+	/* Display object is used to get dimensions of the screen */
+	public static float window_size_x;
+	public static float window_size_y;
+	
 	/* Generic helper functions */
 	public static boolean verify_credential_input( Context context, String username, String password, 
 																			String password2 ) {

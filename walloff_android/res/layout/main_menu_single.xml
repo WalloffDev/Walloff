@@ -4,6 +4,12 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:tag="@string/single_tag" >
-    
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/single_tag"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
 </LinearLayout>

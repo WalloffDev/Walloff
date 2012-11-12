@@ -1,5 +1,6 @@
 package com.walloff.android;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
@@ -10,6 +11,7 @@ import android.widget.ViewFlipper;
 public class GestureDetection implements OnGestureListener {
 	
 	private Context activity_context = null;
+	Dialog selectionDial = null;
 	
 	/* View resources used by the system */
 	private ViewFlipper viewFlipper;
@@ -17,8 +19,8 @@ public class GestureDetection implements OnGestureListener {
 	/* Gesture detector */
 	GestureDetector gesture;
 	
-	/* Command Center */
-	private CommandCenter command_center = null;
+	/* HUDOptions object */
+	HUDOptions selectionDisplay;
 	
 	/* Activate the gesture listener */
 	public boolean onTouchEvent( MotionEvent me ) {
@@ -31,15 +33,20 @@ public class GestureDetection implements OnGestureListener {
 		this.viewFlipper.setInAnimation( this.activity_context, R.anim.fade_in );
 		this.viewFlipper.setOutAnimation( this.activity_context, R.anim.fade_out );
 		this.gesture = new GestureDetector( context, this );
-		this.command_center = new CommandCenter( context, flipper.getChildCount( ) - 1, flipper );
+		
+		selectionDial = new Dialog(context,  R.style.WalloffCommand);
+		selectionDisplay = new HUDOptions(context, viewFlipper, selectionDial);
+		
 	}
 	
 	public boolean onDown( MotionEvent e ) {
 		return false;
 	}
 
-	public void onLongPress( MotionEvent e ) {
-		this.command_center.show( );
+	public void onLongPress( MotionEvent e ) {		
+		selectionDisplay.updateTouchLocation( e.getRawX(), e.getRawY() );		
+		selectionDial.setContentView(selectionDisplay);
+		selectionDial.show();
 	}
 
 	public boolean onScroll( MotionEvent e1, MotionEvent e2, float distanceX, float distanceY ) { return false;	}
