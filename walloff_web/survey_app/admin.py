@@ -1,13 +1,16 @@
 from django.contrib import admin
-from models import Survey, Question, Response, Answer
+from models import *
 
 class QuestionInline( admin.TabularInline ):
 	model = Question
 
+class ChoiceInline( admin.TabularInline ):
+	model = Choice
+
 class SurveyAdmin( admin.ModelAdmin ):
 	list_display = [ 'id', 'name', ]
 	search_fields = [ 'name', ]
-	inlines = [ QuestionInline, ]
+	inlines = [ QuestionInline, ChoiceInline, ]
 
 class AnswerInline( admin.TabularInline ):
 	model = Answer
@@ -18,7 +21,7 @@ class ResponseAdmin( admin.ModelAdmin ):
 	list_display = [ 'id', 'survey', ]
 	list_filter = [ 'survey', ]
 	readonly_fields = [ 'survey', ]
-	inlines = [ AnswerInline, ]
+	#inlines = [ AnswerInline, ]
 
 admin.site.register( Response, ResponseAdmin )
 admin.site.register( Survey, SurveyAdmin )

@@ -1,15 +1,37 @@
-<form method="POST">
+{% load static %}
+
+<link rel=stylesheet type="text/css" href="/static/css/survey_app/survey.css">
+
+<form method="POST" action="/surveys/submit_survey/{{ survey.id }}">
 	{% csrf_token %}
-	{{ formset.management_form }}
+
 	<h1>{{ survey.name }}</h1>
 
-	{% for form in formset.forms %}
-		<p style="color: red;">{{ form.answer.errors }}</p>
-		<p>
-			{{ form.answer.label }}<br>
-			{{ form.answer }}<br>
-			<div style="color: blue; display: none;">q{{ form.question }}</div>
-		</p>
+	{% for question in questions %}
+		{% if question.ans_type == 'T' %}
+		
+			<p>{{ question.question }}:</p>
+			<input type="text" name="{{ question.pk }}"/></br></br>
+
+		{% elif question.ans_type == 'R' %}
+
+			<p>{{ question.question }}:</p></br>
+			{% for choice in question.choices.all %}
+				<input type="radio" name="{{ question.pk }}" value="{{ choice.choice }}">{{ choice.choice }}&emsp;</input>
+			{% endfor %}
+			</br></br>
+
+		{% elif question.ans_type == 'C' %}
+
+			<p>{{ question.question }}:</p></br>
+			{% for choice in question.choices.all %}
+				<input type="checkbox" name="{{ question.pk }}">{{ choice.choice }}&emsp;</input>
+			{% endfor %}
+			</br></br>
+
+		{% else %}
+			<p>Unrecognized Field</p>
+		{% endif %}
 	{% endfor %}
 
 	<input type="submit" value="Submit"/>

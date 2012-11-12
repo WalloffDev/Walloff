@@ -1,0 +1,5 @@
+/* CSS for survey_app */
+
+input[type=text] {
+	width: 20%; height: 5%;
+}

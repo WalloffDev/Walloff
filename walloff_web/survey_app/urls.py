@@ -8,9 +8,8 @@ admin.autodiscover( )
 urlpatterns = patterns( '',
 	( r'^surveys/$', views.list_surveys ),
 	( r'^surveys/(?P<survey_id>\d+)/$', views.take_survey ),
+	( r'^surveys/submit_survey/(?P<survey_id>\d+)$', views.submit_response ),
 	( r'^data/(.*)', databrowse.site.root ),
 )
 
 databrowse.site.register( Survey, Response, Question, Answer )
-
-
