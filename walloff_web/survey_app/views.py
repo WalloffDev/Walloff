@@ -45,7 +45,7 @@ def submit_response( request, survey_id ):
 	response.survey = survey
 	response.save( )
 
-	# Add 
+	# Add the question/answer pairs to a response
 	for question in questions:
 		if question.ans_type == 'T':
 			answer = Answer( )
@@ -59,6 +59,5 @@ def submit_response( request, survey_id ):
 			answer.question = question
 			answer.answer = str( request.POST[ str( question.pk ) ] )
 			answer.save( )
-				
 		
-	return render_to_response( 'survey_app/not_active.html' )
+	return render_to_response( 'index.html' )
