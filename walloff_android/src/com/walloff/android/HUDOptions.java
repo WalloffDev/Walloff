@@ -39,6 +39,7 @@ public class HUDOptions extends View {
 	
 	/* paint object used for drawing */
 	Paint paint;
+	Paint blur;
 	
 	Dialog dialog = null;
 	
@@ -49,7 +50,8 @@ public class HUDOptions extends View {
 		this.viewFlipper = vf;
 		
 		/* create our new paint selector */
-		paint = new Paint();		
+		paint = new Paint();
+		blur = new Paint();
 		
 		//obtain the dialog passed in
 		this.dialog = dia;
@@ -82,6 +84,9 @@ public class HUDOptions extends View {
 		
 	}
 	
+	/*
+	 * Check the location of the image_location. The image location takes the left and bottom locations of the boxes.
+	 */
 	@Override	public boolean onTouchEvent(MotionEvent me) {
 		//get the location of where the person selected
 		float e_x = me.getX();
@@ -104,147 +109,11 @@ public class HUDOptions extends View {
 		return false;
 	} 
 	
-	@Override
-	protected void onDraw(Canvas canvas){		
-		canvas.drawColor(Color.TRANSPARENT, Mode.CLEAR);
-		paint.setAntiAlias(true);
-		//canvas.drawCircle(touchedX, touchedY, radius, paint);
-		
-//		paint.setColor(Color.BLACK);
-//		canvas.drawCircle(touchedX, touchedY, radius-5.0f, paint);
-//		
-//		paint.setColor( getResources().getColor( R.color.TronBlue ));
-//		canvas.drawCircle(touchedX, touchedY, 20.0f, paint);
-		
-		//set our text size and stroke sizethis.initialize( this.curr_index );
-		paint.setColor( getResources().getColor( R.color.TronBlue ));
-		paint.setStrokeWidth(8f);
-		paint.setTextSize(24f);
-		
-		//we are in the middle of the screen
-		if ( touchedX >= ( 26 * Constants.window_size_x)/60  && touchedX <= (54 * Constants.window_size_x)/60 
-			&& touchedY <= (2 * Constants.window_size_y	)/3  && touchedY >= Constants.window_size_y/3)
-		{
-			float arm_1_x = Constants.window_size_x/7;
-			float arm_2_y = Constants.window_size_y/8;
-			float arm_2_x = Constants.window_size_x/10;
-			
-			// we have touched near the right of the screen
-//			if( touchedX + radius + ( boxWidth/2 ) + default_arm_x_size >= Constants.window_size_x )
-//			{
-//				arm_1_x =  Constants.window_size_x - ( touchedX + radius + ( boxWidth/2 ) );
-//			}
-//			//we have touched near the left of the screen
-//			else if( touchedX - radius - ( boxWidth/2 ) - default_arm_x_size <= 0 )
-//			{
-//				arm_1_x = touchedX - radius - ( boxWidth/2 );
-//			},
-//			else
-//			{
-//				arm_1_x = Constants.window_size_x/5.5f;
-//			}
-//			
-//			//we are in the upper half of the screen for where we touched
-//			if ( Constants.window_size_y - touchedY >= (Constants.window_size_y/2) )
-//			{
-//				/* check the y height we can use */
-//				arm_2_y = touchedY - boxHeight - radius * FloatMath.sin(PI/4);
-//			}
-//			//we are in the lower half of the screen
-//			else if ( Constants.window_size_y - touchedY < (Constants.window_size_y/2) )
-//			{
-//				arm_2_y = Constants.window_size_y - touchedY - boxHeight - radius * FloatMath.sin(PI/4);
-//			}
-			
-			//top right line
-			canvas.drawLine(touchedX + (radius)*FloatMath.cos(angle),
-							touchedY - (radius)*FloatMath.sin(angle),
-							touchedX + (radius)*FloatMath.cos(angle) + arm_1_x,
-						    touchedY - (radius)*FloatMath.sin(angle), paint);
-			//top left line
-			canvas.drawLine(touchedX - (radius)*FloatMath.cos(angle),
-							touchedY - (radius)*FloatMath.sin(angle),
-							touchedX - (radius)*FloatMath.cos(angle) - arm_1_x,
-							touchedY - (radius)*FloatMath.sin(angle), paint);
-			//bottom right line
-			canvas.drawLine(touchedX + (radius)*FloatMath.cos(angle), 
-							touchedY + (radius)*FloatMath.sin(angle),
-							touchedX + (radius)*FloatMath.cos(angle) + arm_1_x, 
-							touchedY + (radius)*FloatMath.sin(angle), paint);
-			//bottom left line
-			canvas.drawLine(touchedX - (radius)*FloatMath.cos(angle),
-							touchedY + (radius)*FloatMath.sin(angle),
-							touchedX - (radius)*FloatMath.cos(angle) - arm_1_x,
-							touchedY + (radius)*FloatMath.sin(angle), paint);
-			
-			//top right 2nd arm
-			canvas.drawLine(touchedX + (radius)*FloatMath.cos(angle) + arm_1_x - correction_constant, 
-							touchedY - (radius)*FloatMath.sin(angle),
-							touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x - correction_constant, 
-							touchedY - (radius)*FloatMath.sin(angle) - arm_2_y, paint);			
-			//top left 2nd arm
-			canvas.drawLine(touchedX - (radius)*FloatMath.cos(angle) - arm_1_x + correction_constant, 
-							touchedY - (radius)*FloatMath.sin(angle),
-							touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x + correction_constant, 
-							touchedY - (radius)*FloatMath.sin(angle) - arm_2_y, paint);
-			//bottom right 2nd arm
-			canvas.drawLine(touchedX + (radius)*FloatMath.cos(angle) + arm_1_x - correction_constant, 
-							touchedY + (radius)*FloatMath.sin(angle),
-							touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x - correction_constant, 
-							touchedY + (radius)*FloatMath.sin(angle) + arm_2_y, paint);
-			//bottom left 2nd arm
-			canvas.drawLine(touchedX - (radius)*FloatMath.cos(angle) - arm_1_x + correction_constant, 
-							touchedY + (radius)*FloatMath.sin(angle),
-							touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x + correction_constant, 
-							touchedY + (radius)*FloatMath.sin(angle) + arm_2_y, paint);
-			
-			//top right box
-			drawSelectableLocation(canvas, views[0], 
-								   touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x - 4*correction_constant, 
-								   touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x + boxWidth - 4*correction_constant,
-								   touchedY - (radius)*FloatMath.sin(angle) - arm_2_y - boxHeight + 4*correction_constant,
-								   touchedY - (radius)*FloatMath.sin(angle) - arm_2_y + 4*correction_constant);
-			
-			image_locations[0][0] = touchedX + (radius)*FloatMath.cos(angle) 
-									+ arm_1_x + arm_2_x - correction_constant - 4*correction_constant;
-			image_locations[0][1] = touchedY - (radius)*FloatMath.sin(angle) - arm_2_y - boxHeight + 4*correction_constant;
-			
-			//top left box
-			drawSelectableLocation(canvas, views[1], 
-								   touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x - boxWidth + 4*correction_constant, 
-								   touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x + 4*correction_constant,
-								   touchedY - (radius)*FloatMath.sin(angle) - arm_2_y - boxHeight + 4*correction_constant,
-								   touchedY - (radius)*FloatMath.sin(angle) - arm_2_y + 4*correction_constant);
-			
-			image_locations[1][0] = touchedX - (radius)*FloatMath.cos(angle) 
-									- arm_1_x - arm_2_x - boxWidth - 4*correction_constant;
-			image_locations[1][1] = touchedY - (radius)*FloatMath.sin(angle) - arm_2_y - boxHeight + 4*correction_constant ;
-			
-			
-			//bottom right box
-			drawSelectableLocation(canvas, views[2], 
-								   touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x - 4*correction_constant, 
-								   touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x + boxWidth - 4*correction_constant,
-								   touchedY + (radius)*FloatMath.sin(angle) + arm_2_y,
-								   touchedY + (radius)*FloatMath.sin(angle) + arm_2_y + boxHeight);
-			
-			image_locations[2][0] = touchedX + (radius)*FloatMath.cos(angle) + arm_1_x - boxWidth/2 - correction_constant;
-			image_locations[2][1] = touchedY + (radius)*FloatMath.sin(angle) + arm_2_y;
-			
-			//bottom left box
-			drawSelectableLocation(canvas, views[3],
-					   			   touchedX - (radius)*FloatMath.cos(PI/4) - arm_1_x - boxWidth/2 + correction_constant, 
-					   			   touchedX - (radius)*FloatMath.cos(PI/4) - arm_1_x + boxWidth/2 + correction_constant,
-					   			   touchedY + (radius)*FloatMath.sin(PI/4) + arm_2_y,
-					   			   touchedY + (radius)*FloatMath.sin(PI/4) + arm_2_y + boxHeight);
-			
-			image_locations[3][0] = touchedX - (radius)*FloatMath.cos(PI/4) - arm_1_x - boxWidth/2 + correction_constant;
-			image_locations[3][1] = touchedY + (radius)*FloatMath.sin(PI/4) + arm_2_y;
-		}
-		
+	/* draw the main circle where a player has pressed */
+	private void drawPressCircle( Canvas canvas )
+	{
 		paint.setStyle(Paint.Style.STROKE);
 		
-		Paint blur = new Paint();
 		blur.set(paint);
 		blur.setColor( getResources().getColor( R.color.TronBlue ) );
 		blur.setStrokeWidth(15f);
@@ -257,10 +126,7 @@ public class HUDOptions extends View {
 		
 		RectF outer_oval = new RectF(touchedX - radius, touchedY - radius, touchedX + radius, touchedY + radius);
 		RectF inner_oval = new RectF(touchedX - radius/2, touchedY - radius/2, touchedX + radius/2, touchedY + radius/2);
-		/*canvas.drawArc(oval, 180, 180, false, blur);
-		canvas.drawArc(oval, 180, 180, false, paint);
-	
-		canvas.drawArc(oval, 0, 180, false, paint);*/
+		
 		/* Draw outer ring */
 		canvas.drawArc(outer_oval, 180, 360, false, blur);
 		canvas.drawArc(outer_oval, 180, 360, false, paint);
@@ -271,6 +137,148 @@ public class HUDOptions extends View {
 		/* Remove shader */
 		paint.setShader( null );
 		paint.setStyle(Paint.Style.FILL);
+	}
+	
+	/* draw the main menue center selection */
+	private void drawCenterSelection( Canvas canvas )
+	{
+		float arm_1_x = Constants.window_size_x/7;
+		float arm_2_y = Constants.window_size_y/9;
+		float arm_2_x = Constants.window_size_x/10;
+		
+		// we have touched near the right of the screen
+//		if( touchedX + radius + ( boxWidth/2 ) + default_arm_x_size >= Constants.window_size_x )
+//		{
+//			arm_1_x =  Constants.window_size_x - ( touchedX + radius + ( boxWidth/2 ) );
+//		}
+//		//we have touched near the left of the screen
+//		else if( touchedX - radius - ( boxWidth/2 ) - default_arm_x_size <= 0 )
+//		{
+//			arm_1_x = touchedX - radius - ( boxWidth/2 );
+//		},
+//		else
+//		{
+//			arm_1_x = Constants.window_size_x/5.5f;
+//		}
+//		
+//		//we are in the upper half of the screen for where we touched
+//		if ( Constants.window_size_y - touchedY >= (Constants.window_size_y/2) )
+//		{
+//			/* check the y height we can use */
+//			arm_2_y = touchedY - boxHeight - radius * FloatMath.sin(PI/4);
+//		}
+//		//we are in the lower half of the screen
+//		else if ( Constants.window_size_y - touchedY < (Constants.window_size_y/2) )
+//		{
+//			arm_2_y = Constants.window_size_y - touchedY - boxHeight - radius * FloatMath.sin(PI/4);
+//		}
+		
+		//top right line
+		canvas.drawLine(touchedX + (radius)*FloatMath.cos(angle),
+						touchedY - (radius)*FloatMath.sin(angle),
+						touchedX + (radius)*FloatMath.cos(angle) + arm_1_x,
+					    touchedY - (radius)*FloatMath.sin(angle), paint);
+		//top left line
+		canvas.drawLine(touchedX - (radius)*FloatMath.cos(angle),
+						touchedY - (radius)*FloatMath.sin(angle),
+						touchedX - (radius)*FloatMath.cos(angle) - arm_1_x,
+						touchedY - (radius)*FloatMath.sin(angle), paint);
+		//bottom right line
+		canvas.drawLine(touchedX + (radius)*FloatMath.cos(angle), 
+						touchedY + (radius)*FloatMath.sin(angle),
+						touchedX + (radius)*FloatMath.cos(angle) + arm_1_x, 
+						touchedY + (radius)*FloatMath.sin(angle), paint);
+		//bottom left line
+		canvas.drawLine(touchedX - (radius)*FloatMath.cos(angle),
+						touchedY + (radius)*FloatMath.sin(angle),
+						touchedX - (radius)*FloatMath.cos(angle) - arm_1_x,
+						touchedY + (radius)*FloatMath.sin(angle), paint);
+		
+		//top right 2nd arm
+		canvas.drawLine(touchedX + (radius)*FloatMath.cos(angle) + arm_1_x - correction_constant, 
+						touchedY - (radius)*FloatMath.sin(angle),
+						touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x - correction_constant, 
+						touchedY - (radius)*FloatMath.sin(angle) - arm_2_y, paint);			
+		//top left 2nd arm
+		canvas.drawLine(touchedX - (radius)*FloatMath.cos(angle) - arm_1_x + correction_constant, 
+						touchedY - (radius)*FloatMath.sin(angle),
+						touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x + correction_constant, 
+						touchedY - (radius)*FloatMath.sin(angle) - arm_2_y, paint);
+		//bottom right 2nd arm
+		canvas.drawLine(touchedX + (radius)*FloatMath.cos(angle) + arm_1_x - correction_constant, 
+						touchedY + (radius)*FloatMath.sin(angle),
+						touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x - correction_constant, 
+						touchedY + (radius)*FloatMath.sin(angle) + arm_2_y, paint);
+		//bottom left 2nd arm
+		canvas.drawLine(touchedX - (radius)*FloatMath.cos(angle) - arm_1_x + correction_constant, 
+						touchedY + (radius)*FloatMath.sin(angle),
+						touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x + correction_constant, 
+						touchedY + (radius)*FloatMath.sin(angle) + arm_2_y, paint);
+		
+		//top right box
+		drawSelectableLocation(canvas, views[0], 
+							   touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x - 4*correction_constant, 
+							   touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x + boxWidth - 4*correction_constant,
+							   touchedY - (radius)*FloatMath.sin(angle) - arm_2_y - boxHeight + 4*correction_constant,
+							   touchedY - (radius)*FloatMath.sin(angle) - arm_2_y + 4*correction_constant);
+		
+		image_locations[0][0] = touchedX + (radius)*FloatMath.cos(angle) 
+								+ arm_1_x + arm_2_x - correction_constant - 4*correction_constant;
+		image_locations[0][1] = touchedY - (radius)*FloatMath.sin(angle) - arm_2_y - boxHeight + 4*correction_constant;
+		
+		//top left box
+		drawSelectableLocation(canvas, views[1], 
+							   touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x - boxWidth + 4*correction_constant, 
+							   touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x + 4*correction_constant,
+							   touchedY - (radius)*FloatMath.sin(angle) - arm_2_y - boxHeight + 4*correction_constant,
+							   touchedY - (radius)*FloatMath.sin(angle) - arm_2_y + 4*correction_constant);
+		
+		image_locations[1][0] = touchedX - (radius)*FloatMath.cos(angle) 
+								- arm_1_x - arm_2_x - boxWidth - 4*correction_constant;
+		image_locations[1][1] = touchedY - (radius)*FloatMath.sin(angle) - arm_2_y - boxHeight + 4*correction_constant ;
+		
+		
+		//bottom right box
+		drawSelectableLocation(canvas, views[2], 
+							   touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x - 4*correction_constant, 
+							   touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x + boxWidth - 4*correction_constant,
+							   touchedY + (radius)*FloatMath.sin(angle) + arm_2_y - 4*correction_constant,
+							   touchedY + (radius)*FloatMath.sin(angle) + arm_2_y + boxHeight - 4*correction_constant);
+		
+		image_locations[2][0] = touchedX + (radius)*FloatMath.cos(angle) 
+								+ arm_1_x + arm_2_x - correction_constant - 4*correction_constant;
+		image_locations[2][1] = touchedY + (radius)*FloatMath.sin(angle) + arm_2_y + 4*correction_constant;
+		
+		//bottom left box
+		drawSelectableLocation(canvas, views[3],
+				   			   touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x - boxWidth + 4*correction_constant, 
+				   			   touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x + 4*correction_constant,
+				   			   touchedY + (radius)*FloatMath.sin(angle) + arm_2_y - 4*correction_constant,
+				   			   touchedY + (radius)*FloatMath.sin(angle) + arm_2_y + boxHeight - 4*correction_constant);
+		
+		image_locations[3][0] = touchedX - (radius)*FloatMath.cos(angle) 
+								- arm_1_x - arm_2_x - boxWidth - 4*correction_constant;
+		image_locations[3][1] = touchedY + (radius)*FloatMath.sin(PI/4) + arm_2_y + 4*correction_constant;
+	}
+	
+	@Override
+	protected void onDraw(Canvas canvas){		
+		canvas.drawColor(Color.TRANSPARENT, Mode.CLEAR);
+		
+		//set our text size and stroke sizethis.initialize( this.curr_index );
+		paint.setAntiAlias(true);
+		paint.setColor( getResources().getColor( R.color.TronBlue ));
+		paint.setStrokeWidth(8f);
+		paint.setTextSize(24f);
+		
+		//we are in the middle of the screen
+		if ( touchedX >= ( 26 * Constants.window_size_x)/60  && touchedX <= (54 * Constants.window_size_x)/60 
+			&& touchedY <= (2 * Constants.window_size_y	)/3  && touchedY >= Constants.window_size_y/3)
+		{
+			drawCenterSelection(canvas);
+		}
+		
+		drawPressCircle(canvas);
 		
 	}
 	
