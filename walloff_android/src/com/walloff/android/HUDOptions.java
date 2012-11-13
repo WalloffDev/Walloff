@@ -15,17 +15,18 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
+import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 public class HUDOptions extends View {	
-	/* used to keep track of views */
+	/* Used to keep track of views */
 	private ViewFlipper viewFlipper = null;
 	private String views[]= new String[4];
 	private int view_selector[] = new int[4];
 	private int curr_index = 0;
 	private float image_locations[][] = new float[4][2];
 	
-	/* keep track of where the user pressed on the screen */
+	/* Keep track of where the user pressed on the screen */
 	private float touchedX = 0;
 	private float touchedY = 0;
 	
@@ -37,14 +38,22 @@ public class HUDOptions extends View {
 	private float boxWidth = ( Constants.window_size_x/4.8f );
 	private final float correction_constant = 2.0f;
 	
-	/* paint object used for drawing */
+	/* Paint object used for drawing */
 	Paint paint;
 	Paint blur;
 	
+	/* Container for our canvas */
 	Dialog dialog = null;
 	
+	/** TEMP **/
+	private Context activity_context = null;
+	
+	/* Constructor(s) */
 	public HUDOptions(Context context, ViewFlipper vf, Dialog dia ) {
 		super(context);
+		
+		/** TEMP **/
+		this.activity_context = context;
 		
 		//ViewFlipper needs these
 		this.viewFlipper = vf;
@@ -84,10 +93,9 @@ public class HUDOptions extends View {
 		
 	}
 	
-	/*
-	 * Check the location of the image_location. The image location takes the left and bottom locations of the boxes.
-	 */
-	@Override	public boolean onTouchEvent(MotionEvent me) {
+	/* Check the location of the image_location. The image location takes the left and bottom locations of the boxes. */
+	@Override	
+	public boolean onTouchEvent(MotionEvent me) {
 		//get the location of where the person selected
 		float e_x = me.getX();
 		float e_y = me.getY();
@@ -109,7 +117,7 @@ public class HUDOptions extends View {
 		return false;
 	} 
 	
-	/* draw the main circle where a player has pressed */
+	/* Draw the main circle where a player has pressed */
 	private void drawPressCircle( Canvas canvas )
 	{
 		paint.setStyle(Paint.Style.STROKE);
@@ -139,7 +147,7 @@ public class HUDOptions extends View {
 		paint.setStyle(Paint.Style.FILL);
 	}
 	
-	/* draw the main menue center selection */
+	/* Draw the main menue center selection */
 	private void drawCenterSelection( Canvas canvas )
 	{
 		float arm_1_x = Constants.window_size_x/7;
@@ -261,28 +269,80 @@ public class HUDOptions extends View {
 		image_locations[3][1] = touchedY + (radius)*FloatMath.sin(PI/4) + arm_2_y + 4*correction_constant;
 	}
 	
+	/* Draw the main menue corner(s) selection */
+	private void drawCornerSelection( Canvas canvas ) {
+		
+		float spacer_y = 0;		// Controls spacing between boxes vertically and is proportional to the box_height
+		float spacer_x = 10;	// Pads the start and end x values the boxes will accompany past 1/3 of screen width
+		float box_width = 0;
+		float box_height = 0;
+		
+		/* Setup our params */
+		spacer_y = ( ( Constants.window_size_y - ( this.touchedY + this.radius ) ) / 17 );
+		box_height = ( 3 * spacer_y );
+		box_width = 2 * ( ( 2 * ( Constants.window_size_x / 3 ) - spacer_x ) / 5 );
+		
+		/* Draw the boxes */
+		float left = ( Constants.window_size_x / 3 ) - ( box_width / 2 );
+		float right = left + box_width;
+		float top = ( this.touchedY + this.radius + spacer_y ) - ( box_height + spacer_y );
+		float bottom = top + box_height;
+		for( int i = 0; i < this.views.length; i++ ) {
+			left += ( box_width / 2 );
+			Log.i( "DEBUG", "box_width" + box_width );
+			right = left + box_width;
+			top += ( box_height + spacer_y );
+			bottom = top + box_height;
+			drawSelectableLocation( canvas, views[ i ], left, right, top, bottom );
+			
+			/* Register new input locations */
+			image_locations[ i ][ 0 ] = left;
+			image_locations[ i ][ 1 ] = top;
+		}
+		
+		/* Draw connections */
+		float threshold = ( Constants.window_size_x / 4 );
+		for( int i = 0; i < this.views.length; i++ ) {
+			drawConnection( canvas, paint, threshold, image_locations[ i ][ 0 ], image_locations[ i ][ 1 ] + ( box_height / 2 ) );
+		}
+	
+	}
+	
+	private void drawConnection( Canvas canvas, Paint paint, float threshold, float dest_x, float dest_y ) {
+		canvas.drawLine( this.touchedX, this.touchedY, threshold, dest_y, paint );
+		canvas.drawLine( threshold, dest_y, dest_x, dest_y, paint );
+	}
+	
 	@Override
 	protected void onDraw(Canvas canvas){		
 		canvas.drawColor(Color.TRANSPARENT, Mode.CLEAR);
 		
-		//set our text size and stroke sizethis.initialize( this.curr_index );
+		// Set our text size and stroke sizethis.initialize( this.curr_index );
 		paint.setAntiAlias(true);
 		paint.setColor( getResources().getColor( R.color.TronBlue ));
 		paint.setStrokeWidth(8f);
 		paint.setTextSize(24f);
 		
-		//we are in the middle of the screen
-		if ( touchedX >= ( 26 * Constants.window_size_x)/60  && touchedX <= (54 * Constants.window_size_x)/60 
-			&& touchedY <= (2 * Constants.window_size_y	)/3  && touchedY >= Constants.window_size_y/3)
+		// We are in the middle of the screen
+		if ( touchedX >= ( 26 * Constants.window_size_x) / 60  && touchedX <= (54 * Constants.window_size_x) / 60 
+			&& touchedY <= ( 2 * Constants.window_size_y ) / 3  && touchedY >= Constants.window_size_y / 3 )
 		{
 			drawCenterSelection(canvas);
 		}
 		
-		drawPressCircle(canvas);
+		// We are in one of the corner regions
+		else if ( ( ( touchedX <= ( Constants.window_size_x / 3 ) ) && ( touchedY <= ( Constants.window_size_y / 3 ) ) ) ||					// top left-hand corner
+				  ( ( touchedX <= ( Constants.window_size_x / 3 ) ) && ( touchedY >= ( 2 * ( Constants.window_size_y / 3 ) ) ) ) ||			// bottom left-hand corner
+				  ( ( touchedX >= ( 2 * ( Constants.window_size_x / 3 ) ) ) && ( touchedY <= ( Constants.window_size_y / 3 ) ) ) ||			// top right-hand corner
+				  ( ( touchedX >= ( 2 * ( Constants.window_size_x / 3 ) ) ) && ( touchedY >= ( 2 * ( Constants.window_size_y / 3 ) ) ) ) )	// bottom right-hand corner	
+		{
+			drawCornerSelection( canvas );
+		}
 		
+		drawPressCircle( canvas );
 	}
 	
-	private void drawSelectableLocation(Canvas canvas, String s, float left, float right, float top, float bottom)
+	private void drawSelectableLocation( Canvas canvas, String s, float left, float right, float top, float bottom )
 	{
 		//create an outline for our rectangles
 		canvas.drawRect(left, top, right, bottom, paint);
