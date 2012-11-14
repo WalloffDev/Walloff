@@ -37,6 +37,7 @@ public class HUDOptions extends View {
 	private float boxHeight = ( Constants.window_size_y/7 );
 	private float boxWidth = ( Constants.window_size_x/4.8f );
 	private final float correction_constant = 2.0f;
+	private final float stroke_width = 8f;
 	
 	/* Paint object used for drawing */
 	Paint paint;
@@ -312,6 +313,7 @@ public class HUDOptions extends View {
 		float arm_1_x_dist = 0;
 		float threshold = 0;
 		float extra_length_x = 0;
+		float extra_length_y = 0;
 
 		
 		//determine how much space we have if we touched the right or left side of the screen
@@ -327,8 +329,9 @@ public class HUDOptions extends View {
 		//determine the screen width if touched the top or bottom of the screen
 		if( side == 0 || side == 1)
 		{
-			padding_x = ( Constants.window_size_x - views.length * boxWidth ) / ( views.length + 1 );
+			padding_x = ( Constants.window_size_x - ( views.length * boxWidth ) ) / ( views.length + 1 );
 			space_x = padding_x;
+			Log.i( "DEBUG", "space_x: " + space_x );
 		}
 		
 		for( int i=0; i < this.views.length; i++ )
@@ -380,13 +383,36 @@ public class HUDOptions extends View {
 				//update the y location of each box line
 				space_y += boxHeight + padding_y;
 			}
-//			else //draw boxes along the x
-//			{
-//				canvas.drawLine(this.touchedX, this.touchedY, space_x + boxWidth/2, Constants.window_size_y/2, paint);
-//				space_x += boxWidth + padding_x;
-//			}
+			else //draw boxes along the x
+			{
+				extra_length_y = 3 * ( boxHeight / 4 );
+				
+				if( i % 3 == 0 ) {
+					image_locations[ i ][ 0 ] = ( space_x + ( i * ( boxWidth + space_x ) ) );
+					if( this.touchedY < ( Constants.window_size_y / 3 ) ) {
+						image_locations[ i ][ 1 ] = ( Constants.window_size_y / 3 ) + ( 2 * boxHeight );
+						threshold = ( Constants.window_size_y / 3 );
+					}
+					else {
+						image_locations[ i ][ 1 ] = Constants.window_size_y - ( ( Constants.window_size_y / 3 ) + boxHeight );
+						threshold = Constants.window_size_y - ( Constants.window_size_y / 3 );
+					}
+					drawConnection_sides_TB( canvas, paint, threshold, image_locations[ i ][ 0 ] + ( boxWidth / 2 ), image_locations[ i ][ 1 ] );
+				}
+				else {
+					image_locations[ i ][ 0 ] = ( space_x + ( i * ( boxWidth + space_x ) ) );
+					if( this.touchedY < ( Constants.window_size_y / 3 ) ) {
+						image_locations[ i ][ 1 ] = ( Constants.window_size_y / 3 ) + extra_length_y + ( 2 * boxHeight );
+						drawConnection_sides_TB( canvas, paint, threshold + extra_length_y, image_locations[ i ][ 0 ] + ( boxWidth / 2 ), image_locations[ i ][ 1 ] );
+					}
+					else {
+						image_locations[ i ][ 1 ] = Constants.window_size_y - ( ( Constants.window_size_y / 3 ) + extra_length_y + boxHeight );
+						drawConnection_sides_TB( canvas, paint, threshold, image_locations[ i ][ 0 ] + ( boxWidth / 2 ), image_locations[ i ][ 1 ] );
+					}		
+				}
+				drawSelectableLocation( canvas, this.views[ i ], image_locations[ i ][ 0 ], image_locations[ i ][ 1 ] );
+			}
 		}
-		
 	}
 	
 	private void drawConnection_sides_LR(Canvas canvas, Paint paint, float threshold, float final_x, float final_y) {
@@ -397,6 +423,13 @@ public class HUDOptions extends View {
 		canvas.drawLine(threshold, final_y, final_x, final_y, paint);
 	}
 
+	private void drawConnection_sides_TB( Canvas canvas, Paint paint, float threshold, float final_x, float final_y ) {
+		
+		canvas.drawLine( this.touchedX, this.touchedY, final_x, threshold, paint );
+		canvas.drawCircle( final_x, threshold, ( this.stroke_width / 2 ), paint );
+		canvas.drawLine( final_x, threshold, final_x, final_y, paint );
+	}
+	
 	private void drawConnection( Canvas canvas, Paint paint, float threshold, float dest_x, float dest_y ) {
 		
 		dest_y = dest_y - boxHeight;
