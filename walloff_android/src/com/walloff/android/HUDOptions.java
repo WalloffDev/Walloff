@@ -15,7 +15,6 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
-import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 public class HUDOptions extends View {	
@@ -29,12 +28,13 @@ public class HUDOptions extends View {
 	/* Keep track of where the user pressed on the screen */
 	private float touchedX = 0;
 	private float touchedY = 0;
+	private int corner_index[] = new int[2];
+	private int side_index[] = new int[1];
 	
 	/* Constants used for layout math */
 	private float radius = Constants.window_size_x/15;
-	private float PI = (float)Math.PI;
 	private float angle = (float)Math.PI/6;
-	private float boxHeight = ( Constants.window_size_y/6 );
+	private float boxHeight = ( Constants.window_size_y/7 );
 	private float boxWidth = ( Constants.window_size_x/4.8f );
 	private final float correction_constant = 2.0f;
 	
@@ -45,15 +45,9 @@ public class HUDOptions extends View {
 	/* Container for our canvas */
 	Dialog dialog = null;
 	
-	/** TEMP **/
-	private Context activity_context = null;
-	
 	/* Constructor(s) */
 	public HUDOptions(Context context, ViewFlipper vf, Dialog dia ) {
 		super(context);
-		
-		/** TEMP **/
-		this.activity_context = context;
 		
 		//ViewFlipper needs these
 		this.viewFlipper = vf;
@@ -105,7 +99,7 @@ public class HUDOptions extends View {
 			for( int i = 0; i < 4; i++ )
 			{
 				if( ( e_x >= image_locations[i][0] && e_x <= image_locations[i][0] + boxWidth ) &&
-						( e_y >= image_locations[i][1] && e_y <= image_locations[i][1] + boxHeight ) ) 
+						( e_y <= image_locations[i][1] && e_y >= image_locations[i][1] - boxHeight ) ) 
 				{
 					curr_index = view_selector[i];
 					viewFlipper.setDisplayedChild( view_selector[i] );
@@ -147,39 +141,42 @@ public class HUDOptions extends View {
 		paint.setStyle(Paint.Style.FILL);
 	}
 	
-	/* Draw the main menue center selection */
+	/* Draw the main menu center selection */
 	private void drawCenterSelection( Canvas canvas )
 	{
 		float arm_1_x = Constants.window_size_x/7;
 		float arm_2_y = Constants.window_size_y/9;
 		float arm_2_x = Constants.window_size_x/10;
-		
-		// we have touched near the right of the screen
-//		if( touchedX + radius + ( boxWidth/2 ) + default_arm_x_size >= Constants.window_size_x )
-//		{
-//			arm_1_x =  Constants.window_size_x - ( touchedX + radius + ( boxWidth/2 ) );
-//		}
-//		//we have touched near the left of the screen
-//		else if( touchedX - radius - ( boxWidth/2 ) - default_arm_x_size <= 0 )
-//		{
-//			arm_1_x = touchedX - radius - ( boxWidth/2 );
-//		},
-//		else
-//		{
-//			arm_1_x = Constants.window_size_x/5.5f;
-//		}
-//		
-//		//we are in the upper half of the screen for where we touched
-//		if ( Constants.window_size_y - touchedY >= (Constants.window_size_y/2) )
-//		{
-//			/* check the y height we can use */
-//			arm_2_y = touchedY - boxHeight - radius * FloatMath.sin(PI/4);
-//		}
-//		//we are in the lower half of the screen
-//		else if ( Constants.window_size_y - touchedY < (Constants.window_size_y/2) )
-//		{
-//			arm_2_y = Constants.window_size_y - touchedY - boxHeight - radius * FloatMath.sin(PI/4);
-//		}
+
+		float i = .1f;
+		while (true)
+		{
+			// we have touched near the right of the screen or the left of the screen
+			if(touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x + boxWidth - 4*correction_constant > Constants.window_size_x || 
+				touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x - boxWidth + 4*correction_constant < 0)
+			{
+				arm_1_x = Constants.window_size_x/(7 + i);
+				arm_2_x = Constants.window_size_x/(10 + i);
+				
+				//we are in the upper half of the screen for where we touched
+				if ( touchedY - (radius)*FloatMath.sin(angle) - arm_2_y - boxHeight + 4*correction_constant < 0 )
+				{
+					arm_2_y = Constants.window_size_y/(9 + i);
+				}
+				//we are in the lower half of the screen
+				else if ( touchedY + (radius)*FloatMath.sin(angle) + arm_2_y + boxHeight - 4*correction_constant > Constants.window_size_y )
+				{
+					arm_2_y = Constants.window_size_y/(9 + i);
+				}
+				
+				i += .1f;
+			}
+			else
+			{
+				Log.v("breaking 3", "breaking 3" );
+				break;
+			}
+		}
 		
 		//top right line
 		canvas.drawLine(touchedX + (radius)*FloatMath.cos(angle),
@@ -225,92 +222,205 @@ public class HUDOptions extends View {
 		
 		//top right box
 		drawSelectableLocation(canvas, views[0], 
-							   touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x - 4*correction_constant, 
-							   touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x + boxWidth - 4*correction_constant,
-							   touchedY - (radius)*FloatMath.sin(angle) - arm_2_y - boxHeight + 4*correction_constant,
+							   touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x - 4*correction_constant,
 							   touchedY - (radius)*FloatMath.sin(angle) - arm_2_y + 4*correction_constant);
 		
 		image_locations[0][0] = touchedX + (radius)*FloatMath.cos(angle) 
 								+ arm_1_x + arm_2_x - correction_constant - 4*correction_constant;
-		image_locations[0][1] = touchedY - (radius)*FloatMath.sin(angle) - arm_2_y - boxHeight + 4*correction_constant;
+		image_locations[0][1] = touchedY - (radius)*FloatMath.sin(angle) - arm_2_y + 4*correction_constant;
 		
 		//top left box
 		drawSelectableLocation(canvas, views[1], 
-							   touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x - boxWidth + 4*correction_constant, 
-							   touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x + 4*correction_constant,
-							   touchedY - (radius)*FloatMath.sin(angle) - arm_2_y - boxHeight + 4*correction_constant,
+							   touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x - boxWidth + 4*correction_constant,
 							   touchedY - (radius)*FloatMath.sin(angle) - arm_2_y + 4*correction_constant);
 		
 		image_locations[1][0] = touchedX - (radius)*FloatMath.cos(angle) 
 								- arm_1_x - arm_2_x - boxWidth - 4*correction_constant;
-		image_locations[1][1] = touchedY - (radius)*FloatMath.sin(angle) - arm_2_y - boxHeight + 4*correction_constant ;
+		image_locations[1][1] = touchedY - (radius)*FloatMath.sin(angle) - arm_2_y + 4*correction_constant;
 		
 		
 		//bottom right box
 		drawSelectableLocation(canvas, views[2], 
-							   touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x - 4*correction_constant, 
-							   touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x + boxWidth - 4*correction_constant,
-							   touchedY + (radius)*FloatMath.sin(angle) + arm_2_y - 4*correction_constant,
+							   touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x - 4*correction_constant,
 							   touchedY + (radius)*FloatMath.sin(angle) + arm_2_y + boxHeight - 4*correction_constant);
 		
 		image_locations[2][0] = touchedX + (radius)*FloatMath.cos(angle) 
 								+ arm_1_x + arm_2_x - correction_constant - 4*correction_constant;
-		image_locations[2][1] = touchedY + (radius)*FloatMath.sin(angle) + arm_2_y + 4*correction_constant;
+		image_locations[2][1] = touchedY + (radius)*FloatMath.sin(angle) + arm_2_y + boxHeight - 4*correction_constant;
 		
 		//bottom left box
 		drawSelectableLocation(canvas, views[3],
-				   			   touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x - boxWidth + 4*correction_constant, 
-				   			   touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x + 4*correction_constant,
-				   			   touchedY + (radius)*FloatMath.sin(angle) + arm_2_y - 4*correction_constant,
+				   			   touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x - boxWidth + 4*correction_constant,
 				   			   touchedY + (radius)*FloatMath.sin(angle) + arm_2_y + boxHeight - 4*correction_constant);
 		
 		image_locations[3][0] = touchedX - (radius)*FloatMath.cos(angle) 
 								- arm_1_x - arm_2_x - boxWidth - 4*correction_constant;
-		image_locations[3][1] = touchedY + (radius)*FloatMath.sin(PI/4) + arm_2_y + 4*correction_constant;
+		image_locations[3][1] = touchedY + (radius)*FloatMath.sin(angle) + arm_2_y + boxHeight - 4*correction_constant;
 	}
 	
-	/* Draw the main menue corner(s) selection */
+	/* Draw the main menu corner(s) selection */
 	private void drawCornerSelection( Canvas canvas ) {
+
+		float spacer_x = ( ( 2 * Constants.window_size_x ) / 3 - views.length * boxWidth ) / ( views.length + 1 ) ;	// Pads the start and end x values the boxes will accompany
+		spacer_x = Math.abs( spacer_x );
+		float threshold = 0;	// Pivot x coordinate for connections
+		float left, top;
 		
-		float spacer_y = 0;		// Controls spacing between boxes vertically and is proportional to the box_height
-		float spacer_x = 10;	// Pads the start and end x values the boxes will accompany past 1/3 of screen width
-		float box_width = 0;
-		float box_height = 0;
+		/* Setup params */
+		// Controls spacing between boxes vertically and is proportional to the this.boxHeight
+		float spacer_y = ( ( Constants.window_size_y - ( Math.abs( ( ( Constants.window_size_y * corner_index[ 1 ] ) 
+				         - this.touchedY ) ) + this.radius ) ) - this.views.length * this.boxHeight) / (this.views.length + 1);
+		left = ( ( corner_index[ 0 ] * ( Constants.window_size_x / 3 ) ) - ( boxWidth / 2 ) );
 		
-		/* Setup our params */
-		spacer_y = ( ( Constants.window_size_y - ( this.touchedY + this.radius ) ) / 17 );
-		box_height = ( 3 * spacer_y );
-		box_width = 2 * ( ( 2 * ( Constants.window_size_x / 3 ) - spacer_x ) / 5 );
+		if( corner_index[ 1 ] == 0 )
+			top = ( ( this.touchedY + this.radius + spacer_y ) ) - ( this.boxHeight + ( spacer_y ) );
+		else
+			top = -this.boxHeight;
 		
-		/* Draw the boxes */
-		float left = ( Constants.window_size_x / 3 ) - ( box_width / 2 );
-		float right = left + box_width;
-		float top = ( this.touchedY + this.radius + spacer_y ) - ( box_height + spacer_y );
-		float bottom = top + box_height;
 		for( int i = 0; i < this.views.length; i++ ) {
-			left += ( box_width / 2 );
-			Log.i( "DEBUG", "box_width" + box_width );
-			right = left + box_width;
-			top += ( box_height + spacer_y );
-			bottom = top + box_height;
-			drawSelectableLocation( canvas, views[ i ], left, right, top, bottom );
+			left += ( this.boxWidth / 2 ) + spacer_x;
+			top += ( this.boxHeight + spacer_y );
+			drawSelectableLocation( canvas, views[ i ], left, ( top + this.boxHeight ) );
 			
 			/* Register new input locations */
 			image_locations[ i ][ 0 ] = left;
-			image_locations[ i ][ 1 ] = top;
+			image_locations[ i ][ 1 ] = top + this.boxHeight;
 		}
+		if( corner_index[ 0 ] == 1 )
+			threshold = ( Constants.window_size_x / 4 );
+		else
+			threshold = 3 * ( Constants.window_size_x / 4 );
 		
 		/* Draw connections */
-		float threshold = ( Constants.window_size_x / 4 );
-		for( int i = 0; i < this.views.length; i++ ) {
-			drawConnection( canvas, paint, threshold, image_locations[ i ][ 0 ], image_locations[ i ][ 1 ] + ( box_height / 2 ) );
-		}
-	
+		for( int i = 0; i < this.views.length; i++ ) {			
+			if( corner_index[ 0 ] == 1 )
+				drawConnection( canvas, paint, threshold, image_locations[ i ][ 0 ], image_locations[ i ][ 1 ] + ( this.boxHeight / 2 ) );
+			else
+				drawConnection( canvas, paint, threshold, image_locations[ i ][ 0 ] + boxWidth, image_locations[ i ][ 1 ] + ( this.boxHeight / 2 ) );
+		}	
 	}
 	
+	/* Draw the main menu side(s) selections */
+	/* side's will be 0 for top, 1 for bottom, 2 for left and 3 for right */
+	private void drawSideSelection( Canvas canvas, int side )
+	{
+		// Controls spacing between boxes vertically and is proportional to the this.boxHeight
+		float space_x = 0;
+		float padding_x = 0;
+		float space_y = 0;
+		float padding_y = 0;
+		float arm_1_x_dist = 0;
+		float threshold = 0;
+		float extra_length_x = 0;
+
+		
+		//determine how much space we have if we touched the right or left side of the screen
+		if( side == 2 || side == 3 )
+		{
+			padding_y = ( Constants.window_size_y - views.length * boxHeight ) / ( views.length + 1 );
+			space_y = padding_y;
+			if( side == 2 ) //right side of screen extend to 3/4
+				arm_1_x_dist = Constants.window_size_x / 4;
+			else //left side of screen threshold is 1/4
+				arm_1_x_dist = (3 * Constants.window_size_x ) / 4;
+		}
+		//determine the screen width if touched the top or bottom of the screen
+		if( side == 0 || side == 1)
+		{
+			padding_x = ( Constants.window_size_x - views.length * boxWidth ) / ( views.length + 1 );
+			space_x = padding_x;
+		}
+		
+		for( int i=0; i < this.views.length; i++ )
+		{
+			if ( side == 2 || side == 3) //draw boxes along the y
+			{
+				//reset the extra_length and threshold back to their defaults. (the top and bottom lines use these values )
+				if( i == 0 || i == 3)
+				{
+					extra_length_x = 0;
+					threshold = arm_1_x_dist;
+					
+					if( side == 2)
+						image_locations[i][0] = arm_1_x_dist + Constants.window_size_x/4;
+					else
+						image_locations[i][0] = arm_1_x_dist - Constants.window_size_x/4 - boxWidth;
+				}
+				//add extra distance for the the middle lines
+				else
+				{
+					if( side == 2 )
+					{
+						extra_length_x = boxWidth / 2;
+						image_locations[i][0] = arm_1_x_dist + Constants.window_size_x/4 + boxWidth/2;
+						threshold = arm_1_x_dist + extra_length_x;
+					}
+					else
+					{
+						extra_length_x = boxWidth / 2;
+						image_locations[i][0] = arm_1_x_dist - Constants.window_size_x/4 - boxWidth/2 - boxWidth;
+						threshold = arm_1_x_dist - extra_length_x;
+					}
+				}
+				
+				//set the location of the box's height
+				image_locations[i][1] = space_y + boxHeight;
+				
+				if( side == 2 )
+				{
+					drawSelectableLocation(canvas, views[i], image_locations[i][0], image_locations[i][1]);
+					drawConnection_sides_LR(canvas, paint, threshold, image_locations[i][0], image_locations[i][1] - boxHeight/2 );
+				}
+				else
+				{
+					drawSelectableLocation(canvas, views[i], image_locations[i][0], image_locations[i][1]);
+					drawConnection_sides_LR(canvas, paint, threshold, image_locations[i][0] + boxWidth, image_locations[i][1] - boxHeight/2 );
+				}
+				
+				//update the y location of each box line
+				space_y += boxHeight + padding_y;
+			}
+//			else //draw boxes along the x
+//			{
+//				canvas.drawLine(this.touchedX, this.touchedY, space_x + boxWidth/2, Constants.window_size_y/2, paint);
+//				space_x += boxWidth + padding_x;
+//			}
+		}
+		
+	}
+	
+	private void drawConnection_sides_LR(Canvas canvas, Paint paint, float threshold, float final_x, float final_y) {
+//		float theta = (float)Math.acos( (touchedX - threshold)/
+//				 Math.sqrt( Math.pow( touchedX - threshold, 2) + Math.pow(touchedY - final_y, 2) ) );
+		
+		canvas.drawLine(this.touchedX, this.touchedY, threshold, final_y, paint);
+		canvas.drawLine(threshold, final_y, final_x, final_y, paint);
+	}
+
 	private void drawConnection( Canvas canvas, Paint paint, float threshold, float dest_x, float dest_y ) {
-		canvas.drawLine( this.touchedX, this.touchedY, threshold, dest_y, paint );
-		canvas.drawLine( threshold, dest_y, dest_x, dest_y, paint );
+		
+		dest_y = dest_y - boxHeight;
+		
+		float theta = (float)Math.acos( (touchedX - threshold)/
+				 Math.sqrt( Math.pow( touchedX - threshold, 2) + Math.pow(touchedY - dest_y, 2) ) );
+		
+		if( corner_index[1] == 1 )
+		{
+			theta = (float)Math.PI - theta;
+			
+			canvas.drawLine( this.touchedX + radius*FloatMath.cos(theta), this.touchedY - radius*FloatMath.sin(theta),
+							threshold, dest_y, paint );
+			canvas.drawLine( threshold, dest_y, dest_x , dest_y, paint );
+			canvas.drawCircle(threshold, dest_y, 4, paint);
+		}
+		else
+		{
+			canvas.drawLine( this.touchedX - radius*FloatMath.cos(theta), this.touchedY + radius*FloatMath.sin(theta),
+							threshold, dest_y, paint );
+			canvas.drawLine( threshold, dest_y, dest_x , dest_y, paint );
+			canvas.drawCircle(threshold, dest_y, 4, paint);
+		}
+
 	}
 	
 	@Override
@@ -324,35 +434,72 @@ public class HUDOptions extends View {
 		paint.setTextSize(24f);
 		
 		// We are in the middle of the screen
-		if ( touchedX >= ( 26 * Constants.window_size_x) / 60  && touchedX <= (54 * Constants.window_size_x) / 60 
-			&& touchedY <= ( 2 * Constants.window_size_y ) / 3  && touchedY >= Constants.window_size_y / 3 )
+		if ( touchedX <= ( 2 * Constants.window_size_x)/3  && touchedX >= Constants.window_size_x/3 
+				&& touchedY <= (2 * Constants.window_size_y	)/3  && touchedY >= Constants.window_size_y/3)
 		{
 			drawCenterSelection(canvas);
 		}
 		
 		// We are in one of the corner regions
-		else if ( ( ( touchedX <= ( Constants.window_size_x / 3 ) ) && ( touchedY <= ( Constants.window_size_y / 3 ) ) ) ||					// top left-hand corner
-				  ( ( touchedX <= ( Constants.window_size_x / 3 ) ) && ( touchedY >= ( 2 * ( Constants.window_size_y / 3 ) ) ) ) ||			// bottom left-hand corner
-				  ( ( touchedX >= ( 2 * ( Constants.window_size_x / 3 ) ) ) && ( touchedY <= ( Constants.window_size_y / 3 ) ) ) ||			// top right-hand corner
-				  ( ( touchedX >= ( 2 * ( Constants.window_size_x / 3 ) ) ) && ( touchedY >= ( 2 * ( Constants.window_size_y / 3 ) ) ) ) )	// bottom right-hand corner	
+		else if( ( touchedX <= ( Constants.window_size_x / 3 ) ) && ( touchedY <= ( Constants.window_size_y / 3 ) ) )// top left-hand corner
 		{
+			corner_index[ 0 ] = 1;
+			corner_index[ 1 ] = 0;
 			drawCornerSelection( canvas );
+		}
+		else if( ( touchedX <= ( Constants.window_size_x / 3 ) ) && ( touchedY >= ( 2 * ( Constants.window_size_y / 3 ) ) ) )// bottom left-hand corner
+		{
+			corner_index[ 0 ] = 1;
+			corner_index[ 1 ] = 1;
+			drawCornerSelection( canvas );
+		}
+		else if( ( touchedX >= ( 2 * ( Constants.window_size_x / 3 ) ) ) && ( touchedY <= ( Constants.window_size_y / 3 ) ) )// top right-hand corner
+		{
+			corner_index[ 0 ] = 0;
+			corner_index[ 1 ] = 0;
+			drawCornerSelection( canvas );
+		}
+		else if( ( touchedX >= ( 2 * ( Constants.window_size_x / 3 ) ) ) && ( touchedY >= ( 2 * ( Constants.window_size_y / 3 ) ) ) )// bottom right-hand corner	
+		{
+			corner_index[ 0 ] = 0;
+			corner_index[ 1 ] = 1;
+			drawCornerSelection( canvas );
+		}
+		
+		/* We are in one of the side regions */
+		else if( ( ( touchedX > ( Constants.window_size_x / 3 ) ) && ( touchedX < ( 2 * ( Constants.window_size_x / 3 ) ) ) ) //touched the top
+				&& ( ( touchedY < ( Constants.window_size_y / 3 )) ) ) 
+		{ 
+			drawSideSelection(canvas, 0);
+		}
+		else if( ( ( touchedX > ( Constants.window_size_x / 3 ) ) && ( touchedX < ( 2 * ( Constants.window_size_x / 3 ) ) ) ) //touched the bottom
+				&& ( ( touchedY > ( Constants.window_size_y / 3 )) ) ) 
+		{ 
+			drawSideSelection(canvas, 1);
+		}
+		else if( touchedX < ( Constants.window_size_x/3 ) ) // touched the left side of the screen
+		{
+			drawSideSelection(canvas, 2);
+		}
+		else //the only thing left to press is the right side of the screen
+		{
+			drawSideSelection(canvas, 3);
 		}
 		
 		drawPressCircle( canvas );
 	}
 	
-	private void drawSelectableLocation( Canvas canvas, String s, float left, float right, float top, float bottom )
+	private void drawSelectableLocation( Canvas canvas, String s, float left, float bottom )
 	{
 		//create an outline for our rectangles
-		canvas.drawRect(left, top, right, bottom, paint);
+		canvas.drawRect(left, ( bottom - boxHeight ), ( left + boxWidth ), bottom, paint);
 		paint.setColor(Color.BLACK);
-		canvas.drawRect(left+5, top+5, right-5, bottom-5, paint);
+		canvas.drawRect(left+5, ( bottom - boxHeight ) + 5, ( left + boxWidth ) - 5, bottom-5, paint);
 		
 		//reset the paint object to our tron blue
 		paint.setColor( getResources().getColor( R.color.TronBlue ));
 		
 		//set the text within each box
-		canvas.drawText(s, left + 10, top+(boxHeight/2), paint);
+		canvas.drawText(s, left + 10, ( bottom - boxHeight/2 ), paint);
 	}
 }
