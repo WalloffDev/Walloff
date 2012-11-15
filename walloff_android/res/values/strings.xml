@@ -37,5 +37,9 @@
     <color name="White">#ffffff</color>
     <color name="Red">#ff0000</color>
     <color name="TronBlue">#18cae6</color>
+    <color name="TronPurple">#cc33ff</color>
+    <color name="TronGreen">#7FFF00</color>
+    <color name="TronRed">#ff0066</color>
+    <color name="TronYellow">#f3f315</color>
 	
 </resources>

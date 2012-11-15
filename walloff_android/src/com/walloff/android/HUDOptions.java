@@ -9,7 +9,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff.Mode;
 import android.graphics.RectF;
-import android.graphics.SweepGradient;
 import android.util.FloatMath;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -29,7 +28,6 @@ public class HUDOptions extends View {
 	private float touchedX = 0;
 	private float touchedY = 0;
 	private int corner_index[] = new int[2];
-	private int side_index[] = new int[1];
 	
 	/* Constants used for layout math */
 	private float radius = Constants.window_size_x/15;
@@ -40,8 +38,15 @@ public class HUDOptions extends View {
 	private final float stroke_width = 8f;
 	
 	/* Paint object used for drawing */
-	Paint paint;
-	Paint blur;
+	private Paint paint;
+	private Paint blur;
+	private int colors[] = {
+			getResources().getColor( R.color.TronRed ),
+			getResources().getColor(R.color.TronGreen),
+			getResources().getColor(R.color.TronYellow),
+			getResources().getColor(R.color.TronPurple)
+	};
+	
 	
 	/* Container for our canvas */
 	Dialog dialog = null;
@@ -123,9 +128,8 @@ public class HUDOptions extends View {
 		blur.setMaskFilter(new BlurMaskFilter(7.5f, Blur.NORMAL));
 		
 		paint.setColor( getResources().getColor( R.color.TronBlue ));
-		paint.setAntiAlias(true);	
-		paint.setShader( new SweepGradient( touchedX, touchedY, 
-				getResources( ).getColor( R.color.TronBlue ), Color.CYAN ) );
+		//paint.setShader( new SweepGradient( touchedX, touchedY, 
+		//		getResources( ).getColor( R.color.TronBlue ), getResources( ).getColor( R.color.TronBlue ) ) );
 		
 		RectF outer_oval = new RectF(touchedX - radius, touchedY - radius, touchedX + radius, touchedY + radius);
 		RectF inner_oval = new RectF(touchedX - radius/2, touchedY - radius/2, touchedX + radius/2, touchedY + radius/2);
@@ -138,8 +142,7 @@ public class HUDOptions extends View {
 		canvas.drawArc(inner_oval, 180, 360, false, paint);
 		
 		/* Remove shader */
-		paint.setShader( null );
-		paint.setStyle(Paint.Style.FILL);
+		//paint.setShader( null );
 	}
 	
 	/* Draw the main menu center selection */
@@ -153,8 +156,8 @@ public class HUDOptions extends View {
 		while (true)
 		{
 			// we have touched near the right of the screen or the left of the screen
-			if(touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x + boxWidth - 4*correction_constant > Constants.window_size_x || 
-				touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x - boxWidth + 4*correction_constant < 0)
+			if(touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x + boxWidth > Constants.window_size_x || 
+				touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x - boxWidth < 0)
 			{
 				arm_1_x = Constants.window_size_x/(7 + i);
 				arm_2_x = Constants.window_size_x/(10 + i);
@@ -174,53 +177,33 @@ public class HUDOptions extends View {
 			}
 			else
 			{
-				Log.v("breaking 3", "breaking 3" );
 				break;
 			}
 		}
 		
+		/*********************************** TOP RIGHT IMAGE ********************************************************/
+		paint.setStyle(Paint.Style.STROKE);
+		paint.setColor( colors[0] );
+		blur.set(paint);
+		blur.setMaskFilter(new BlurMaskFilter(12f, Blur.NORMAL));
 		//top right line
 		canvas.drawLine(touchedX + (radius)*FloatMath.cos(angle),
 						touchedY - (radius)*FloatMath.sin(angle),
 						touchedX + (radius)*FloatMath.cos(angle) + arm_1_x,
-					    touchedY - (radius)*FloatMath.sin(angle), paint);
-		//top left line
-		canvas.drawLine(touchedX - (radius)*FloatMath.cos(angle),
+					    touchedY - (radius)*FloatMath.sin(angle), blur);
+		canvas.drawLine(touchedX + (radius)*FloatMath.cos(angle),
 						touchedY - (radius)*FloatMath.sin(angle),
-						touchedX - (radius)*FloatMath.cos(angle) - arm_1_x,
-						touchedY - (radius)*FloatMath.sin(angle), paint);
-		//bottom right line
-		canvas.drawLine(touchedX + (radius)*FloatMath.cos(angle), 
-						touchedY + (radius)*FloatMath.sin(angle),
-						touchedX + (radius)*FloatMath.cos(angle) + arm_1_x, 
-						touchedY + (radius)*FloatMath.sin(angle), paint);
-		//bottom left line
-		canvas.drawLine(touchedX - (radius)*FloatMath.cos(angle),
-						touchedY + (radius)*FloatMath.sin(angle),
-						touchedX - (radius)*FloatMath.cos(angle) - arm_1_x,
-						touchedY + (radius)*FloatMath.sin(angle), paint);
-		
+						touchedX + (radius)*FloatMath.cos(angle) + arm_1_x,
+					    touchedY - (radius)*FloatMath.sin(angle), paint);		
 		//top right 2nd arm
 		canvas.drawLine(touchedX + (radius)*FloatMath.cos(angle) + arm_1_x - correction_constant, 
 						touchedY - (radius)*FloatMath.sin(angle),
 						touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x - correction_constant, 
-						touchedY - (radius)*FloatMath.sin(angle) - arm_2_y, paint);			
-		//top left 2nd arm
-		canvas.drawLine(touchedX - (radius)*FloatMath.cos(angle) - arm_1_x + correction_constant, 
-						touchedY - (radius)*FloatMath.sin(angle),
-						touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x + correction_constant, 
-						touchedY - (radius)*FloatMath.sin(angle) - arm_2_y, paint);
-		//bottom right 2nd arm
+						touchedY - (radius)*FloatMath.sin(angle) - arm_2_y, blur);	
 		canvas.drawLine(touchedX + (radius)*FloatMath.cos(angle) + arm_1_x - correction_constant, 
-						touchedY + (radius)*FloatMath.sin(angle),
+						touchedY - (radius)*FloatMath.sin(angle),
 						touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x - correction_constant, 
-						touchedY + (radius)*FloatMath.sin(angle) + arm_2_y, paint);
-		//bottom left 2nd arm
-		canvas.drawLine(touchedX - (radius)*FloatMath.cos(angle) - arm_1_x + correction_constant, 
-						touchedY + (radius)*FloatMath.sin(angle),
-						touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x + correction_constant, 
-						touchedY + (radius)*FloatMath.sin(angle) + arm_2_y, paint);
-		
+						touchedY - (radius)*FloatMath.sin(angle) - arm_2_y, paint);		
 		//top right box
 		drawSelectableLocation(canvas, views[0], 
 							   touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x - 4*correction_constant,
@@ -230,6 +213,29 @@ public class HUDOptions extends View {
 								+ arm_1_x + arm_2_x - correction_constant - 4*correction_constant;
 		image_locations[0][1] = touchedY - (radius)*FloatMath.sin(angle) - arm_2_y + 4*correction_constant;
 		
+		/*********************************** TOP LEFT IMAGE ********************************************************/
+		paint.setStyle(Paint.Style.STROKE);
+		paint.setColor( colors[1] );
+		blur.set(paint);
+		blur.setMaskFilter(new BlurMaskFilter(12f, Blur.NORMAL));
+		//top left line
+		canvas.drawLine(touchedX - (radius)*FloatMath.cos(angle),
+						touchedY - (radius)*FloatMath.sin(angle),
+						touchedX - (radius)*FloatMath.cos(angle) - arm_1_x,
+						touchedY - (radius)*FloatMath.sin(angle), blur);	
+		canvas.drawLine(touchedX - (radius)*FloatMath.cos(angle),
+						touchedY - (radius)*FloatMath.sin(angle),
+						touchedX - (radius)*FloatMath.cos(angle) - arm_1_x,
+						touchedY - (radius)*FloatMath.sin(angle), paint);		
+		//top left 2nd arm
+		canvas.drawLine(touchedX - (radius)*FloatMath.cos(angle) - arm_1_x + correction_constant, 
+						touchedY - (radius)*FloatMath.sin(angle),
+						touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x + correction_constant, 
+						touchedY - (radius)*FloatMath.sin(angle) - arm_2_y, blur);
+		canvas.drawLine(touchedX - (radius)*FloatMath.cos(angle) - arm_1_x + correction_constant, 
+						touchedY - (radius)*FloatMath.sin(angle),
+						touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x + correction_constant, 
+						touchedY - (radius)*FloatMath.sin(angle) - arm_2_y, paint);
 		//top left box
 		drawSelectableLocation(canvas, views[1], 
 							   touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x - boxWidth + 4*correction_constant,
@@ -238,8 +244,30 @@ public class HUDOptions extends View {
 		image_locations[1][0] = touchedX - (radius)*FloatMath.cos(angle) 
 								- arm_1_x - arm_2_x - boxWidth - 4*correction_constant;
 		image_locations[1][1] = touchedY - (radius)*FloatMath.sin(angle) - arm_2_y + 4*correction_constant;
-		
-		
+				
+		/*********************************** BOTTOM RIGHT IMAGE ********************************************************/
+		paint.setStyle(Paint.Style.STROKE);
+		paint.setColor( colors[2] );
+		blur.set(paint);
+		blur.setMaskFilter(new BlurMaskFilter(12f, Blur.NORMAL));
+		//bottom right line
+		canvas.drawLine(touchedX + (radius)*FloatMath.cos(angle), 
+						touchedY + (radius)*FloatMath.sin(angle),
+						touchedX + (radius)*FloatMath.cos(angle) + arm_1_x, 
+						touchedY + (radius)*FloatMath.sin(angle), blur);
+		canvas.drawLine(touchedX + (radius)*FloatMath.cos(angle), 
+						touchedY + (radius)*FloatMath.sin(angle),
+						touchedX + (radius)*FloatMath.cos(angle) + arm_1_x, 
+						touchedY + (radius)*FloatMath.sin(angle), paint);
+		//bottom right 2nd arm
+		canvas.drawLine(touchedX + (radius)*FloatMath.cos(angle) + arm_1_x - correction_constant, 
+						touchedY + (radius)*FloatMath.sin(angle),
+						touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x - correction_constant, 
+						touchedY + (radius)*FloatMath.sin(angle) + arm_2_y, blur);
+		canvas.drawLine(touchedX + (radius)*FloatMath.cos(angle) + arm_1_x - correction_constant, 
+						touchedY + (radius)*FloatMath.sin(angle),
+						touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x - correction_constant, 
+						touchedY + (radius)*FloatMath.sin(angle) + arm_2_y, paint);
 		//bottom right box
 		drawSelectableLocation(canvas, views[2], 
 							   touchedX + (radius)*FloatMath.cos(angle) + arm_1_x + arm_2_x - 4*correction_constant,
@@ -249,6 +277,31 @@ public class HUDOptions extends View {
 								+ arm_1_x + arm_2_x - correction_constant - 4*correction_constant;
 		image_locations[2][1] = touchedY + (radius)*FloatMath.sin(angle) + arm_2_y + boxHeight - 4*correction_constant;
 		
+		/*********************************** BOTTOM LEFT IMAGE ********************************************************/
+		paint.setStyle(Paint.Style.STROKE);
+		paint.setColor( colors[3] );
+		blur.set(paint);
+		blur.setMaskFilter(new BlurMaskFilter(12f, Blur.NORMAL));
+		//bottom left line
+		canvas.drawLine(touchedX - (radius)*FloatMath.cos(angle),
+						touchedY + (radius)*FloatMath.sin(angle),
+						touchedX - (radius)*FloatMath.cos(angle) - arm_1_x,
+						touchedY + (radius)*FloatMath.sin(angle), blur);
+		
+		canvas.drawLine(touchedX - (radius)*FloatMath.cos(angle),
+						touchedY + (radius)*FloatMath.sin(angle),
+						touchedX - (radius)*FloatMath.cos(angle) - arm_1_x,
+						touchedY + (radius)*FloatMath.sin(angle), paint);
+		//bottom left 2nd arm
+		canvas.drawLine(touchedX - (radius)*FloatMath.cos(angle) - arm_1_x + correction_constant, 
+						touchedY + (radius)*FloatMath.sin(angle),
+						touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x + correction_constant, 
+						touchedY + (radius)*FloatMath.sin(angle) + arm_2_y, blur);		
+		
+		canvas.drawLine(touchedX - (radius)*FloatMath.cos(angle) - arm_1_x + correction_constant, 
+						touchedY + (radius)*FloatMath.sin(angle),
+						touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x + correction_constant, 
+						touchedY + (radius)*FloatMath.sin(angle) + arm_2_y, paint);		
 		//bottom left box
 		drawSelectableLocation(canvas, views[3],
 				   			   touchedX - (radius)*FloatMath.cos(angle) - arm_1_x - arm_2_x - boxWidth + 4*correction_constant,
@@ -259,7 +312,7 @@ public class HUDOptions extends View {
 		image_locations[3][1] = touchedY + (radius)*FloatMath.sin(angle) + arm_2_y + boxHeight - 4*correction_constant;
 	}
 	
-	/* Draw the main menu corner(s) selection */
+	/* Draw function for corner presses */
 	private void drawCornerSelection( Canvas canvas ) {
 
 		float spacer_x = ( ( 2 * Constants.window_size_x ) / 3 - views.length * boxWidth ) / ( views.length + 1 ) ;	// Pads the start and end x values the boxes will accompany
@@ -279,8 +332,14 @@ public class HUDOptions extends View {
 			top = -this.boxHeight;
 		
 		for( int i = 0; i < this.views.length; i++ ) {
+			paint.setStyle(Paint.Style.STROKE);
+			paint.setColor( colors[i] );
+			blur.set(paint);
+			blur.setMaskFilter(new BlurMaskFilter(12f, Blur.NORMAL));
+			
 			left += ( this.boxWidth / 2 ) + spacer_x;
 			top += ( this.boxHeight + spacer_y );
+			
 			drawSelectableLocation( canvas, views[ i ], left, ( top + this.boxHeight ) );
 			
 			/* Register new input locations */
@@ -293,7 +352,12 @@ public class HUDOptions extends View {
 			threshold = 3 * ( Constants.window_size_x / 4 );
 		
 		/* Draw connections */
-		for( int i = 0; i < this.views.length; i++ ) {			
+		for( int i = 0; i < this.views.length; i++ ) {
+			paint.setStyle(Paint.Style.STROKE);
+			paint.setColor( colors[i] );
+			blur.set(paint);
+			blur.setMaskFilter(new BlurMaskFilter(12f, Blur.NORMAL));
+			
 			if( corner_index[ 0 ] == 1 )
 				drawConnection( canvas, paint, threshold, image_locations[ i ][ 0 ], image_locations[ i ][ 1 ] + ( this.boxHeight / 2 ) );
 			else
@@ -322,9 +386,9 @@ public class HUDOptions extends View {
 			padding_y = ( Constants.window_size_y - views.length * boxHeight ) / ( views.length + 1 );
 			space_y = padding_y;
 			if( side == 2 ) //right side of screen extend to 3/4
-				arm_1_x_dist = Constants.window_size_x / 4;
+				arm_1_x_dist = Constants.window_size_x / 3;
 			else //left side of screen threshold is 1/4
-				arm_1_x_dist = (3 * Constants.window_size_x ) / 4;
+				arm_1_x_dist = (2 * Constants.window_size_x ) / 3;
 		}
 		//determine the screen width if touched the top or bottom of the screen
 		if( side == 0 || side == 1)
@@ -345,9 +409,9 @@ public class HUDOptions extends View {
 					threshold = arm_1_x_dist;
 					
 					if( side == 2)
-						image_locations[i][0] = arm_1_x_dist + Constants.window_size_x/4;
+						image_locations[i][0] = arm_1_x_dist + Constants.window_size_x/6;
 					else
-						image_locations[i][0] = arm_1_x_dist - Constants.window_size_x/4 - boxWidth;
+						image_locations[i][0] = arm_1_x_dist - Constants.window_size_x/6 - boxWidth;
 				}
 				//add extra distance for the the middle lines
 				else
@@ -357,6 +421,7 @@ public class HUDOptions extends View {
 						extra_length_x = boxWidth / 2;
 						image_locations[i][0] = arm_1_x_dist + Constants.window_size_x/4 + boxWidth/2;
 						threshold = arm_1_x_dist + extra_length_x;
+						
 					}
 					else
 					{
@@ -371,13 +436,23 @@ public class HUDOptions extends View {
 				
 				if( side == 2 )
 				{
+					paint.setStyle(Paint.Style.STROKE);
+					paint.setColor( colors[i] );
+					blur.set(paint);
+					blur.setMaskFilter(new BlurMaskFilter(12f, Blur.NORMAL));
+					
+					drawConnection_sides_LR(canvas, paint, threshold, image_locations[i][0], image_locations[i][1] - boxHeight/2, side );
 					drawSelectableLocation(canvas, views[i], image_locations[i][0], image_locations[i][1]);
-					drawConnection_sides_LR(canvas, paint, threshold, image_locations[i][0], image_locations[i][1] - boxHeight/2 );
 				}
 				else
 				{
-					drawSelectableLocation(canvas, views[i], image_locations[i][0], image_locations[i][1]);
-					drawConnection_sides_LR(canvas, paint, threshold, image_locations[i][0] + boxWidth, image_locations[i][1] - boxHeight/2 );
+					paint.setStyle(Paint.Style.STROKE);
+					paint.setColor( colors[i] );
+					blur.set(paint);
+					blur.setMaskFilter(new BlurMaskFilter(12f, Blur.NORMAL));
+					
+					drawConnection_sides_LR(canvas, paint, threshold, image_locations[i][0] + boxWidth, image_locations[i][1] - boxHeight/2, side );
+					drawSelectableLocation(canvas, views[i], image_locations[i][0], image_locations[i][1]);	
 				}
 				
 				//update the y location of each box line
@@ -385,8 +460,12 @@ public class HUDOptions extends View {
 			}
 			else //draw boxes along the x
 			{
-				extra_length_y = 3 * ( boxHeight / 4 );
+				paint.setStyle(Paint.Style.STROKE);
+				paint.setColor( colors[i] );
+				blur.set(paint);
+				blur.setMaskFilter(new BlurMaskFilter(12f, Blur.NORMAL));
 				
+				extra_length_y = 3 * ( boxHeight / 4 );
 				if( i % 3 == 0 ) {
 					image_locations[ i ][ 0 ] = ( space_x + ( i * ( boxWidth + space_x ) ) );
 					if( this.touchedY < ( Constants.window_size_y / 3 ) ) {
@@ -415,19 +494,40 @@ public class HUDOptions extends View {
 		}
 	}
 	
-	private void drawConnection_sides_LR(Canvas canvas, Paint paint, float threshold, float final_x, float final_y) {
-//		float theta = (float)Math.acos( (touchedX - threshold)/
-//				 Math.sqrt( Math.pow( touchedX - threshold, 2) + Math.pow(touchedY - final_y, 2) ) );
+	private void drawConnection_sides_LR(Canvas canvas, Paint paint, float threshold, float final_x, float final_y, int side) {		
+		//obtain the theta for the edge coming out of where we pressed
+		float theta = (float)Math.acos( (threshold - touchedX)/
+				 Math.sqrt( Math.pow( touchedX - threshold, 2) + Math.pow(touchedY - final_y, 2) ) );
+
+		if (final_y >= Constants.window_size_y / 2)
+			theta = (float) (2*Math.PI - theta);
 		
-		canvas.drawLine(this.touchedX, this.touchedY, threshold, final_y, paint);
+		canvas.drawLine(this.touchedX  + radius*FloatMath.cos(theta), this.touchedY - radius*FloatMath.sin(theta), threshold, final_y, blur);
+		canvas.drawLine(threshold, final_y, final_x, final_y, blur);
+		
+		canvas.drawLine(this.touchedX  + radius*FloatMath.cos(theta), this.touchedY - radius*FloatMath.sin(theta), threshold, final_y, paint);
 		canvas.drawLine(threshold, final_y, final_x, final_y, paint);
+		
+		//draw a small circle where lines join to smooth out edges
+		//canvas.drawCircle(threshold, final_y, 1.1f, paint);
 	}
 
 	private void drawConnection_sides_TB( Canvas canvas, Paint paint, float threshold, float final_x, float final_y ) {
+		//obtain the theta for the edge coming out of where we pressed
+		float theta = (float)Math.acos( (threshold - touchedY)/
+				 Math.sqrt( Math.pow( touchedY - threshold, 2) + Math.pow(touchedX - final_x, 2) ) );
+
+		if (final_x >= Constants.window_size_x / 2)
+			theta = (float) (2*Math.PI - theta);	
 		
-		canvas.drawLine( this.touchedX, this.touchedY, final_x, threshold, paint );
-		canvas.drawCircle( final_x, threshold, ( this.stroke_width / 2 ), paint );
+		canvas.drawLine( this.touchedX - radius*FloatMath.sin(theta), this.touchedY + radius*FloatMath.cos(theta), final_x, threshold, blur );
+		canvas.drawLine( this.touchedX - radius*FloatMath.sin(theta), this.touchedY + radius*FloatMath.cos(theta), final_x, threshold, paint );
+		
+		canvas.drawLine( final_x, threshold, final_x, final_y, blur );
 		canvas.drawLine( final_x, threshold, final_x, final_y, paint );
+		
+	    //canvas.drawCircle( final_x, threshold, ( 2 ), paint );
+		//canvas.drawCircle( final_x, threshold, ( 2 ), blur );
 	}
 	
 	private void drawConnection( Canvas canvas, Paint paint, float threshold, float dest_x, float dest_y ) {
@@ -444,27 +544,27 @@ public class HUDOptions extends View {
 			canvas.drawLine( this.touchedX + radius*FloatMath.cos(theta), this.touchedY - radius*FloatMath.sin(theta),
 							threshold, dest_y, paint );
 			canvas.drawLine( threshold, dest_y, dest_x , dest_y, paint );
-			canvas.drawCircle(threshold, dest_y, 4, paint);
+			//canvas.drawCircle(threshold, dest_y, 4, paint);
 		}
 		else
 		{
 			canvas.drawLine( this.touchedX - radius*FloatMath.cos(theta), this.touchedY + radius*FloatMath.sin(theta),
 							threshold, dest_y, paint );
 			canvas.drawLine( threshold, dest_y, dest_x , dest_y, paint );
-			canvas.drawCircle(threshold, dest_y, 4, paint);
+			//canvas.drawCircle(threshold, dest_y, 4, paint);
 		}
 
 	}
 	
+	/* automatically called when this view is shown */
 	@Override
 	protected void onDraw(Canvas canvas){		
 		canvas.drawColor(Color.TRANSPARENT, Mode.CLEAR);
 		
 		// Set our text size and stroke sizethis.initialize( this.curr_index );
 		paint.setAntiAlias(true);
-		paint.setColor( getResources().getColor( R.color.TronBlue ));
+		paint.setStyle(Paint.Style.STROKE);
 		paint.setStrokeWidth(8f);
-		paint.setTextSize(24f);
 		
 		// We are in the middle of the screen
 		if ( touchedX <= ( 2 * Constants.window_size_x)/3  && touchedX >= Constants.window_size_x/3 
@@ -483,7 +583,7 @@ public class HUDOptions extends View {
 		else if( ( touchedX <= ( Constants.window_size_x / 3 ) ) && ( touchedY >= ( 2 * ( Constants.window_size_y / 3 ) ) ) )// bottom left-hand corner
 		{
 			corner_index[ 0 ] = 1;
-			corner_index[ 1 ] = 1;
+			paint.setStyle(Paint.Style.STROKE);		corner_index[ 1 ] = 1;
 			drawCornerSelection( canvas );
 		}
 		else if( ( touchedX >= ( 2 * ( Constants.window_size_x / 3 ) ) ) && ( touchedY <= ( Constants.window_size_y / 3 ) ) )// top right-hand corner
@@ -522,17 +622,29 @@ public class HUDOptions extends View {
 		drawPressCircle( canvas );
 	}
 	
+	/* Draw the clickable box locations */
 	private void drawSelectableLocation( Canvas canvas, String s, float left, float bottom )
-	{
-		//create an outline for our rectangles
-		canvas.drawRect(left, ( bottom - boxHeight ), ( left + boxWidth ), bottom, paint);
-		paint.setColor(Color.BLACK);
-		canvas.drawRect(left+5, ( bottom - boxHeight ) + 5, ( left + boxWidth ) - 5, bottom-5, paint);
+	{			
+		//save the current paint color, this will be needed for the text color
+		Paint text_paint = new Paint();
+		text_paint.setColor( paint.getColor() );
+		text_paint.setTextSize(24f);
+		blur.setMaskFilter(new BlurMaskFilter(7.5f, Blur.NORMAL));
+				
+		//draw the outer edge of the rectangle blue
+		RectF rect = new RectF(left, ( bottom - boxHeight ), ( left + boxWidth ), bottom);		
+		canvas.drawRoundRect(rect, 5, 5, blur);
 		
-		//reset the paint object to our tron blue
-		paint.setColor( getResources().getColor( R.color.TronBlue ));
+		//set the style to fill else the text will get messed up.
+		paint.setStyle(Paint.Style.FILL);
+		canvas.drawRoundRect(rect, 5, 5, paint);
+		
+		//draw the inner black portion of our rectangle
+		paint.setColor( getResources().getColor( R.color.Black_Transparent ) );	
+		RectF rect_2 = new RectF(left + 5, ( bottom - boxHeight ) + 5, ( left + boxWidth ) - 5, bottom - 5);
+		canvas.drawRoundRect(rect_2, 5, 5, paint);
 		
 		//set the text within each box
-		canvas.drawText(s, left + 10, ( bottom - boxHeight/2 ), paint);
+		canvas.drawText(s, left + 10, ( bottom - boxHeight/2 ) + 5, text_paint);
 	}
 }
