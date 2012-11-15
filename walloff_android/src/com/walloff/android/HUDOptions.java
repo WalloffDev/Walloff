@@ -7,6 +7,7 @@ import android.graphics.BlurMaskFilter.Blur;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PorterDuff.Mode;
 import android.graphics.RectF;
 import android.util.FloatMath;
@@ -347,9 +348,9 @@ public class HUDOptions extends View {
 			image_locations[ i ][ 1 ] = top + this.boxHeight;
 		}
 		if( corner_index[ 0 ] == 1 )
-			threshold = ( Constants.window_size_x / 4 );
+			threshold = ( Constants.window_size_x / 3 );
 		else
-			threshold = 3 * ( Constants.window_size_x / 4 );
+			threshold = 2 * ( Constants.window_size_x / 3 );
 		
 		/* Draw connections */
 		for( int i = 0; i < this.views.length; i++ ) {
@@ -395,7 +396,6 @@ public class HUDOptions extends View {
 		{
 			padding_x = ( Constants.window_size_x - ( views.length * boxWidth ) ) / ( views.length + 1 );
 			space_x = padding_x;
-			Log.i( "DEBUG", "space_x: " + space_x );
 		}
 		
 		for( int i=0; i < this.views.length; i++ )
@@ -441,7 +441,7 @@ public class HUDOptions extends View {
 					blur.set(paint);
 					blur.setMaskFilter(new BlurMaskFilter(12f, Blur.NORMAL));
 					
-					drawConnection_sides_LR(canvas, paint, threshold, image_locations[i][0], image_locations[i][1] - boxHeight/2, side );
+					drawConnection_sides_LR(canvas, paint, threshold, image_locations[i][0], image_locations[i][1] - boxHeight/2);
 					drawSelectableLocation(canvas, views[i], image_locations[i][0], image_locations[i][1]);
 				}
 				else
@@ -451,7 +451,7 @@ public class HUDOptions extends View {
 					blur.set(paint);
 					blur.setMaskFilter(new BlurMaskFilter(12f, Blur.NORMAL));
 					
-					drawConnection_sides_LR(canvas, paint, threshold, image_locations[i][0] + boxWidth, image_locations[i][1] - boxHeight/2, side );
+					drawConnection_sides_LR(canvas, paint, threshold, image_locations[i][0] + boxWidth, image_locations[i][1] - boxHeight/2);
 					drawSelectableLocation(canvas, views[i], image_locations[i][0], image_locations[i][1]);	
 				}
 				
@@ -465,36 +465,56 @@ public class HUDOptions extends View {
 				blur.set(paint);
 				blur.setMaskFilter(new BlurMaskFilter(12f, Blur.NORMAL));
 				
-				extra_length_y = 3 * ( boxHeight / 4 );
+				//we are on the top of the screen
+				if ( side == 0)
+				{
+					extra_length_y = ( 3 * ( boxHeight / 4 ) );
+					threshold = ( Constants.window_size_y / 3 );
+				}
+				//we have touched the bottom of the screen
+				else
+				{
+					extra_length_y = -( 3 * ( boxHeight / 4 ) );
+					threshold = (2 * Constants.window_size_y) / 3;
+				}
+				
+				 //we are drawing the left and right boxes
 				if( i % 3 == 0 ) {
 					image_locations[ i ][ 0 ] = ( space_x + ( i * ( boxWidth + space_x ) ) );
-					if( this.touchedY < ( Constants.window_size_y / 3 ) ) {
+					
+					if( this.touchedY <= ( Constants.window_size_y / 3 ) ) //top side of the screen 
+					{
 						image_locations[ i ][ 1 ] = ( Constants.window_size_y / 3 ) + ( 2 * boxHeight );
-						threshold = ( Constants.window_size_y / 3 );
 					}
-					else {
+					else  //bottom side of the screen
+					{
 						image_locations[ i ][ 1 ] = Constants.window_size_y - ( ( Constants.window_size_y / 3 ) + boxHeight );
-						threshold = Constants.window_size_y - ( Constants.window_size_y / 3 );
 					}
 					drawConnection_sides_TB( canvas, paint, threshold, image_locations[ i ][ 0 ] + ( boxWidth / 2 ), image_locations[ i ][ 1 ] );
 				}
-				else {
+				//we are drawing the 2 middle boxes
+				else { 
 					image_locations[ i ][ 0 ] = ( space_x + ( i * ( boxWidth + space_x ) ) );
-					if( this.touchedY < ( Constants.window_size_y / 3 ) ) {
+					
+					if( this.touchedY < ( Constants.window_size_y / 3 ) ) //top of the screen
+					{
 						image_locations[ i ][ 1 ] = ( Constants.window_size_y / 3 ) + extra_length_y + ( 2 * boxHeight );
-						drawConnection_sides_TB( canvas, paint, threshold + extra_length_y, image_locations[ i ][ 0 ] + ( boxWidth / 2 ), image_locations[ i ][ 1 ] );
+					}					
+					else //bottom of the screen
+					{
+						image_locations[ i ][ 1 ] = ( 2 * Constants.window_size_y / 3 ) + extra_length_y - boxHeight;
 					}
-					else {
-						image_locations[ i ][ 1 ] = Constants.window_size_y - ( ( Constants.window_size_y / 3 ) + extra_length_y + boxHeight );
-						drawConnection_sides_TB( canvas, paint, threshold, image_locations[ i ][ 0 ] + ( boxWidth / 2 ), image_locations[ i ][ 1 ] );
-					}		
+					drawConnection_sides_TB(canvas, paint, threshold + extra_length_y, image_locations[i][0] + ( boxWidth / 2 ), image_locations[i][1]);
 				}
 				drawSelectableLocation( canvas, this.views[ i ], image_locations[ i ][ 0 ], image_locations[ i ][ 1 ] );
 			}
 		}
 	}
 	
-	private void drawConnection_sides_LR(Canvas canvas, Paint paint, float threshold, float final_x, float final_y, int side) {		
+	private void drawConnection_sides_LR(Canvas canvas, Paint paint, float threshold, float final_x, float final_y) {		
+		
+		Path path = new Path();
+		
 		//obtain the theta for the edge coming out of where we pressed
 		float theta = (float)Math.acos( (threshold - touchedX)/
 				 Math.sqrt( Math.pow( touchedX - threshold, 2) + Math.pow(touchedY - final_y, 2) ) );
@@ -502,56 +522,76 @@ public class HUDOptions extends View {
 		if (final_y >= Constants.window_size_y / 2)
 			theta = (float) (2*Math.PI - theta);
 		
-		canvas.drawLine(this.touchedX  + radius*FloatMath.cos(theta), this.touchedY - radius*FloatMath.sin(theta), threshold, final_y, blur);
-		canvas.drawLine(threshold, final_y, final_x, final_y, blur);
+		//draw paths that auto correct for line spacing
+		path.moveTo(this.touchedX  + radius*FloatMath.cos(theta), this.touchedY - radius*FloatMath.sin(theta));
+		path.lineTo(threshold, final_y);
+		path.lineTo(final_x, final_y);
+		canvas.drawPath(path, blur);
 		
-		canvas.drawLine(this.touchedX  + radius*FloatMath.cos(theta), this.touchedY - radius*FloatMath.sin(theta), threshold, final_y, paint);
-		canvas.drawLine(threshold, final_y, final_x, final_y, paint);
-		
-		//draw a small circle where lines join to smooth out edges
-		//canvas.drawCircle(threshold, final_y, 1.1f, paint);
+		path.moveTo(this.touchedX  + radius*FloatMath.cos(theta), this.touchedY - radius*FloatMath.sin(theta));
+		path.lineTo(threshold, final_y);
+		path.lineTo(final_x, final_y);
+		canvas.drawPath(path, paint);
 	}
 
 	private void drawConnection_sides_TB( Canvas canvas, Paint paint, float threshold, float final_x, float final_y ) {
+		
+		Path path = new Path();
+		
 		//obtain the theta for the edge coming out of where we pressed
 		float theta = (float)Math.acos( (threshold - touchedY)/
 				 Math.sqrt( Math.pow( touchedY - threshold, 2) + Math.pow(touchedX - final_x, 2) ) );
 
 		if (final_x >= Constants.window_size_x / 2)
-			theta = (float) (2*Math.PI - theta);	
+			theta = (float) (2*Math.PI - theta);
+
+		//draw paths that auto correct for line spacing
+		path.moveTo(this.touchedX - radius*FloatMath.sin(theta), this.touchedY + radius*FloatMath.cos(theta));
+		path.lineTo(final_x, threshold);
+		path.lineTo(final_x, final_y);
+		canvas.drawPath(path, blur);
 		
-		canvas.drawLine( this.touchedX - radius*FloatMath.sin(theta), this.touchedY + radius*FloatMath.cos(theta), final_x, threshold, blur );
-		canvas.drawLine( this.touchedX - radius*FloatMath.sin(theta), this.touchedY + radius*FloatMath.cos(theta), final_x, threshold, paint );
-		
-		canvas.drawLine( final_x, threshold, final_x, final_y, blur );
-		canvas.drawLine( final_x, threshold, final_x, final_y, paint );
-		
-	    //canvas.drawCircle( final_x, threshold, ( 2 ), paint );
-		//canvas.drawCircle( final_x, threshold, ( 2 ), blur );
+		path.moveTo(this.touchedX - radius*FloatMath.sin(theta), this.touchedY + radius*FloatMath.cos(theta));
+		path.lineTo(final_x, threshold);
+		path.lineTo(final_x, final_y);
+		canvas.drawPath(path, paint);
 	}
 	
 	private void drawConnection( Canvas canvas, Paint paint, float threshold, float dest_x, float dest_y ) {
-		
 		dest_y = dest_y - boxHeight;
 		
 		float theta = (float)Math.acos( (touchedX - threshold)/
 				 Math.sqrt( Math.pow( touchedX - threshold, 2) + Math.pow(touchedY - dest_y, 2) ) );
 		
+		Path path = new Path();
+		
 		if( corner_index[1] == 1 )
 		{
 			theta = (float)Math.PI - theta;
 			
-			canvas.drawLine( this.touchedX + radius*FloatMath.cos(theta), this.touchedY - radius*FloatMath.sin(theta),
-							threshold, dest_y, paint );
-			canvas.drawLine( threshold, dest_y, dest_x , dest_y, paint );
-			//canvas.drawCircle(threshold, dest_y, 4, paint);
+			//draw paths that auto correct for line spacing
+			path.moveTo(this.touchedX + radius*FloatMath.cos(theta), this.touchedY - radius*FloatMath.sin(theta));
+			path.lineTo(threshold, dest_y);
+			path.lineTo(dest_x, dest_y);
+			canvas.drawPath(path, blur);
+			
+			path.moveTo(this.touchedX + radius*FloatMath.cos(theta), this.touchedY - radius*FloatMath.sin(theta));
+			path.lineTo(threshold, dest_y);
+			path.lineTo(dest_x, dest_y);
+			canvas.drawPath(path, paint);	
 		}
 		else
 		{
-			canvas.drawLine( this.touchedX - radius*FloatMath.cos(theta), this.touchedY + radius*FloatMath.sin(theta),
-							threshold, dest_y, paint );
-			canvas.drawLine( threshold, dest_y, dest_x , dest_y, paint );
-			//canvas.drawCircle(threshold, dest_y, 4, paint);
+			//draw paths that auto correct for line spacing
+			path.moveTo(this.touchedX - radius*FloatMath.cos(theta), this.touchedY + radius*FloatMath.sin(theta));
+			path.lineTo(threshold, dest_y);
+			path.lineTo(dest_x, dest_y);
+			canvas.drawPath(path, blur);
+			
+			path.moveTo(this.touchedX - radius*FloatMath.cos(theta), this.touchedY + radius*FloatMath.sin(theta));
+			path.lineTo(threshold, dest_y);
+			path.lineTo(dest_x, dest_y);
+			canvas.drawPath(path, paint);
 		}
 
 	}
