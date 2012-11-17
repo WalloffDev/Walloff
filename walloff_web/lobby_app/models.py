@@ -69,3 +69,10 @@ class Player( models.Model ):
 	def leave_lobby( self ):
 		self.lobby = None
 		self.save( )
+
+	def update_net_info( self, pub_ip, pub_port, priv_ip, priv_port ):
+		self.pub_ip = pub_ip
+		self.pub_port = pub_port
+		self.priv_ip = priv_ip
+		self.priv_port = priv_port
+		self.save( )

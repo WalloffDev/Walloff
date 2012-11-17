@@ -52,6 +52,13 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 		data = json.loads( str( self.request.recv( MAX_BUF ) ) )
 		tag = data[ 'tag' ]
 	
+		# Get client net info
+		client_addr = self.client_address
+		client_priv_ip = data[ 'priv_ip' ]
+		client_priv_port = data[ 'priv_port' ]
+
+		print str(client_addr) + ' ' + client_priv_ip + ' ' + str( client_priv_port )
+
 		if tag == m_login:
 				# Get info for new player
 				m_uname = data[ 'uname' ]
@@ -98,6 +105,7 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 
 				# get player by username ( auth_token ), add them to lobby
 				player = Player.objects.get( django_user__username = m_host )
+				player.update_net_info( client_addr[ 0 ], client_addr[ 1 ], client_priv_ip, client_priv_port )
 				player.join_lobby( new_lobby )
 				self.success( )
 			
