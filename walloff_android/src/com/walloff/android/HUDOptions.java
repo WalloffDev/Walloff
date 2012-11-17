@@ -11,13 +11,16 @@ import android.graphics.Path;
 import android.graphics.PorterDuff.Mode;
 import android.graphics.RectF;
 import android.util.FloatMath;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.widget.ViewFlipper;
 
 public class HUDOptions extends View {	
+	
+	private Context activity_context = null;
+	private UIEltsHelper ui_helper = null;
+	
 	/* Used to keep track of views */
 	private ViewFlipper viewFlipper = null;
 	private String views[]= new String[4];
@@ -36,7 +39,6 @@ public class HUDOptions extends View {
 	private float boxHeight = ( Constants.window_size_y/7 );
 	private float boxWidth = ( Constants.window_size_x/4.8f );
 	private final float correction_constant = 2.0f;
-	private final float stroke_width = 8f;
 	
 	/* Paint object used for drawing */
 	private Paint paint;
@@ -48,13 +50,15 @@ public class HUDOptions extends View {
 			getResources().getColor(R.color.TronPurple)
 	};
 	
-	
 	/* Container for our canvas */
 	Dialog dialog = null;
 	
 	/* Constructor(s) */
-	public HUDOptions(Context context, ViewFlipper vf, Dialog dia ) {
+	public HUDOptions( Context context, ViewFlipper vf, Dialog dia ) {
 		super(context);
+		
+		this.activity_context = context;
+		this.ui_helper = new UIEltsHelper( context, vf );
 		
 		//ViewFlipper needs these
 		this.viewFlipper = vf;
@@ -67,7 +71,7 @@ public class HUDOptions extends View {
 		this.dialog = dia;
 		this.dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 	}
-	
+		
 	public void updateTouchLocation( float x, float y )
 	{
 		/* obtain where the person touched on the screen */
@@ -111,6 +115,7 @@ public class HUDOptions extends View {
 					curr_index = view_selector[i];
 					viewFlipper.setDisplayedChild( view_selector[i] );
 					dialog.dismiss();
+					this.ui_helper.registerUIElts( i );
 					return true;
 				}
 			}

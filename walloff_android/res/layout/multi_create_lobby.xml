@@ -3,156 +3,166 @@
     android:id="@+id/multi_create_lobby_parent"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
+    android:orientation="vertical"
+    android:weightSum="1.0" >
 
-    <EditText
-        android:id="@+id/create_lobby_lobby_name"
+    
+    <RelativeLayout android:id="@+id/lobby_name_holder"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:ems="10"
-        android:hint="@string/multi_create_lobby_lobbyname" >
+        android:layout_weight="0.25" >
+	
+        
+        <TableRow android:id="@+id/lobby_name_tr"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:weightSum="1.0" >
+            
+	        <EditText
+	            android:id="@+id/create_lobby_lobby_name"
+	            android:layout_width="0dp"
+	            android:layout_height="wrap_content"
+	            android:layout_weight="0.5"
+	            android:hint="@string/multi_create_lobby_lobbyname"
+	            android:singleLine="true" />
+	
+	        <TextView
+	            android:id="@+id/lobby_name_error"
+	            android:layout_width="0dp"
+	            android:layout_height="wrap_content"
+	            android:layout_weight="0.5"
+	            android:layout_marginLeft="10dp"
+	            android:layout_marginRight="10dp"
+	            android:text="@string/blank"
+	            android:textAppearance="?android:attr/textAppearanceMedium"
+	            android:textColor="@color/Red" />
+	        
+    	</TableRow></RelativeLayout><!-- create_lobby_name_holder -->
+    
 
-        <requestFocus />
-    </EditText>
-
-    <LinearLayout
-        android:id="@+id/create_lobby_map_holder"
+	<RelativeLayout android:id="@+id/create_lobby_map_holder"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="horizontal"
-        android:weightSum="1.0" >
+        android:layout_weight="0.25" >
 
-        <TextView
-            android:id="@+id/create_lobby_map_f"
-            android:layout_width="0dp"
+	    <TableRow android:id="@+id/lobby_map_tr"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0.5"
-            android:gravity="right"
-            android:text="@string/create_lobby_map_select"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:layout_centerVertical="true"
+            android:weightSum="1.0"
+            android:gravity="center_vertical" >
+	    
+	        <TextView android:id="@+id/spacer"
+	            android:layout_width="0dp"
+	            android:layout_height="wrap_content"
+	            android:layout_weight="0.02" />
+	        
+	        <Spinner android:id="@+id/create_lobby_map_spin"
+	            android:layout_width="0dp"
+	            android:layout_height="wrap_content"
+	            android:layout_weight="0.3"
+	            android:prompt="@string/create_lobby_map_select"
+	            android:entries="@array/map_select" />
+	            
+	        <TextView android:id="@id/spacer"
+	            android:layout_width="0dp"
+	            android:layout_height="wrap_content"
+	            android:layout_weight="0.02" />
+	        
+	        <Spinner android:id="@+id/create_lobby_size_spin"
+	            android:layout_width="0dp"
+	            android:layout_height="wrap_content"
+	            android:layout_weight="0.3"
+	            android:prompt="@string/create_lobby_size_select"
+	            android:entries="@array/map_size" />
+	        
+	        <TextView android:id="@id/spacer"
+	            android:layout_width="0dp"
+	            android:layout_height="wrap_content"
+	            android:layout_weight="0.02" />
+	        
+	        <ToggleButton android:id="@+id/create_lobby_shrink_tog"
+	            android:layout_width="0dp"
+	            android:layout_height="wrap_content"
+	            android:layout_weight="0.3"
+	            android:textOn="@string/create_lobby_shrinkable"
+	            android:textOff="@string/create_lobby_shrinkable" />
+            
+    	</TableRow></RelativeLayout><!-- create_lobby_map_holder -->
 
-        <Spinner
-            android:id="@+id/create_lobby_map_spin"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.25" />
-    </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/create_lobby_size_holder"
+	<RelativeLayout android:id="@+id/create_lobby_obj_holder"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="horizontal"
-        android:weightSum="1.0" >
+        android:layout_weight="0.25" >
 
-        <TextView
-            android:id="@+id/create_lobby_size_f"
-            android:layout_width="0dp"
+	    <TableRow android:id="@+id/lobby_obj_tr"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0.5"
-            android:gravity="right"
-            android:text="@string/create_lobby_size_select"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:layout_centerVertical="true"
+            android:weightSum="1.0"
+            android:gravity="center_vertical" >
+	    
+	        <TextView android:id="@id/spacer"
+	            android:layout_width="0dp"
+	            android:layout_height="wrap_content"
+	            android:layout_weight="0.02" />
+	        
+	        <ToggleButton android:id="@+id/create_lobby_obj"
+	            android:layout_width="0dp"
+	            android:layout_height="wrap_content"
+	            android:layout_weight="0.3"
+	            android:textOn="@string/create_lobby_obstacles"
+	            android:textOff="@string/create_lobby_obstacles" />
+	        
+	        <TextView android:id="@id/spacer"
+	            android:layout_width="0dp"
+	            android:layout_height="wrap_content"
+	            android:layout_weight="0.02" />
+	        
+	        <Spinner android:id="@+id/create_lobby_numobj_spin"
+	            android:layout_width="0dp"
+	            android:layout_height="wrap_content"
+	            android:layout_weight="0.3"
+	            android:prompt="@string/create_lobby_numobj_select"
+	            android:entries="@array/map_num_obj" />
+	        
+	        <TextView android:id="@id/spacer"
+	            android:layout_width="0dp"
+	            android:layout_height="wrap_content"
+	            android:layout_weight="0.02" />
+	        
+	        <ToggleButton android:id="@+id/create_lobby_moving_tog"
+	            android:layout_width="0dp"
+	            android:layout_height="wrap_content"
+	            android:layout_weight="0.3"
+	            android:textOn="@string/create_lobby_moving"
+	            android:textOff="@string/create_lobby_moving" />
 
-        <Spinner
-            android:id="@+id/create_lobby_size_spin"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.25" />
-    </LinearLayout>
+    	</TableRow></RelativeLayout><!-- create_lobby_obj_holder -->
 
-    <LinearLayout
-        android:id="@+id/create_lobby_moving_obj_holder"
+
+	<RelativeLayout android:id="@+id/create_lobby_btn_holder"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:weightSum="1.0" >
+        android:layout_weight="0.25" >
 
-        <TextView
-            android:id="@+id/create_lobby_moving_f"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.5"
-            android:gravity="right"
-            android:text="@string/create_lobby_moving_select"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+	    <TableRow android:id="@+id/lobby_create_btn_holder"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerVertical="true"
+            android:gravity="center_horizontal"
+            android:weightSum="1.0" >
+	    
+	        <Button android:id="@+id/create_lobby_btn_create"
+	            android:layout_width="0dp"
+	            android:layout_height="match_parent"
+	            android:layout_weight="0.5"
+	            android:text="@string/create_lobby_btncreate"
+	            android:textColor="@color/TronBlue"
+	            android:background="@drawable/button_selector" />
 
-        <ToggleButton
-            android:id="@+id/create_lobby_moving_tog"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.25"
-            android:textOff="@string/create_lobby_tog_off"
-            android:textOn="@string/create_lobby_tog_on" />
+    	</TableRow></RelativeLayout><!-- create_lobby_btn_holder -->
 
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/create_lobby_num_obj_holder"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:weightSum="1.0" >
-
-        <TextView
-            android:id="@+id/create_lobby_numobj_f"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.5"
-            android:gravity="right"
-            android:text="@string/create_lobby_numobj_select"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-
-        <Spinner
-            android:id="@+id/create_lobby_numobj_spin"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.25" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/create_lobby_map_shrink_holder"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:weightSum="1.0" >
-
-        <TextView
-            android:id="@+id/create_lobby_shrink_f"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.5"
-            android:gravity="right"
-            android:text="@string/create_lobby_shrink_select"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-
-        <ToggleButton
-            android:id="@+id/create_lobby_shrink_tog"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.25"
-            android:textOff="@string/create_lobby_tog_off"
-            android:textOn="@string/create_lobby_tog_on" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/create_lobby_btn_holder"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:weightSum="1.0"
-        android:gravity="center" >
-
-        <Button
-            android:id="@+id/create_lobby_btn_create"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.25"
-            android:text="@string/create_lobby_btncreate" />
-
-    </LinearLayout>
-
-</LinearLayout>
+</LinearLayout><!-- parent -->

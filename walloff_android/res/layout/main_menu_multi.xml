@@ -4,34 +4,41 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" 
-    android:tag="@string/multi_tag">
+    android:tag="@string/multi_tag" >
 
     <LinearLayout
         android:id="@+id/main_menu_multiplayer_btn_holder"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="0.2"
         android:gravity="center"
         android:orientation="horizontal" >
 
         <Button
-            android:id="@+id/main_menu_multiplayer_btn_create"
+            android:id="@+id/main_menu_multi_btn_host"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="@string/main_menu_multiplayer_create" />
+            android:background="@drawable/button_selector"
+            android:text="@string/main_menu_multiplayer_create"
+            android:textColor="@color/TronBlue" />
 
         <Button
             android:id="@+id/main_menu_btn_join"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="@string/main_menu_multiplayer_join" />
+            android:text="@string/main_menu_multiplayer_join"
+            android:textColor="@color/TronBlue"
+            android:background="@drawable/button_selector" />
+        
     </LinearLayout>
 
     <ViewFlipper
         android:id="@+id/main_menu_multiplayer_flipper"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="0dp"
+        android:layout_weight="0.8">
         
         <include android:id="@+id/create_lobby" layout="@layout/multi_create_lobby"/>
         <include android:id="@+id/join_lobby" layout="@layout/multi_join_lobby"/>

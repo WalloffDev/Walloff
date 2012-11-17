@@ -10,8 +10,8 @@
     <string name="cred_store_password2">password again</string>
     <string name="todo">TODO</string>
     <string name="main_menu_banner">Walloff 2.0</string>
-    <string name="main_menu_multiplayer_create">Create lobby</string>
-    <string name="main_menu_multiplayer_join">Join lobby</string>
+    <string name="main_menu_multiplayer_create">Host</string>
+    <string name="main_menu_multiplayer_join">Join</string>
     <string name="join_lobby_elt_lobbyname">Lobby name</string>
     <string name="join_lobby_elt_mapname">Map name</string>
     <string name="join_lobby_elt_numplayers">Num players</string>
@@ -22,8 +22,9 @@
     <string name="create_lobby_numobj_select"># obstacles: </string>
     <string name="create_lobby_shrink_select">Shrinkable: </string>
     <string name="create_lobby_btncreate">Create</string>
-	<string name="create_lobby_tog_on">Yes</string>
-    <string name="create_lobby_tog_off">No</string>
+    <string name="create_lobby_shrinkable">Shrinkable</string>
+    <string name="create_lobby_obstacles">Obstacles</string>
+    <string name="create_lobby_moving">Moving</string>
     <string name="lobby_view_count_down">0:00</string>
     <string name="cred_store_title_content">You only need to enter this once!</string>
     <string name="options_tag">Options</string>
@@ -31,6 +32,7 @@
     <string name="multi_tag">Multiplayer</string>
     <string name="profile_tag">Profile</string>
     <string name="home_tag">Home</string>
+    <string name="blank"></string>
     
     <color name="Black">#000000</color>
     <color name="Black_Transparent">#dd000000</color>
@@ -42,4 +44,28 @@
     <color name="TronRed">#ff0066</color>
     <color name="TronYellow">#f3f315</color>
 	
+    <string-array name="map_select">
+        <item>Map</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>FU</item>
+    </string-array>
+    <string-array name="map_size">
+        <item>Size</item>
+        <item>Small</item>
+        <item>Medium</item>
+        <item>Large</item>
+    </string-array>
+    <string-array name="map_num_obj">
+        <item>#Obj</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+    </string-array>
 </resources>

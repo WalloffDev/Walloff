@@ -1,6 +1,11 @@
 package com.walloff.android;
 
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.util.Enumeration;
+
 import android.content.Context;
+import android.util.Log;
 import android.widget.Toast;
 
 public final class Constants {
@@ -20,13 +25,28 @@ public final class Constants {
 	/* Server info */
 	public static final String server_url = "walloff.cslabs.clarkson.edu";
 	public static final Integer server_port = 8080;
+	public static final Integer MAX_BUF = 1024;
 
 	/* Message TAG(s) */
 	public static final String M_TAG = "tag";
 	public static final String LOGIN = "login";
+	public static final String CREATE = "create";
+	public static final String HOST = "host";
 	public static final String L_USERNAME = "uname";
 	public static final String L_PASSWORD = "passwd";
 	public static final String L_GCMID = "gcmid";
+	public static final String MAP_NAME = "map";
+	public static final String MAP_SIZE = "size";
+	public static final String MAP_SHRINK = "shrinkable";
+	public static final String MAP_ONUM = "number_obstacles";
+	public static final String MAP_MOVE = "moving_obstacles";
+	public static final String LOB_NAME = "name";
+	public static final String RETURN = "return";
+	public static final String SUCCESS = "SUCCESS";
+	public static final String FAIL = "FAIL";
+	public static final String MESSAGE = "MESSAGE";
+	public static final String PRI_IP = "priv_ip";
+	public static final String PRI_PORT = "priv_port";
 	
 	/* ViewFlipper  necessities  */
 	public static final int I_COMMAND = 5;
@@ -57,4 +77,20 @@ public final class Constants {
 		
 		return true;
 	}
+	public static String getLocalIpAddress( ) {
+        try {
+            for( Enumeration< NetworkInterface > en = NetworkInterface.getNetworkInterfaces( ); en.hasMoreElements( ); ) {
+                NetworkInterface intf = en.nextElement( );
+                for( Enumeration< InetAddress > enumIpAddr = intf.getInetAddresses( ); enumIpAddr.hasMoreElements( ); ) {
+                    InetAddress inetAddress = enumIpAddr.nextElement( );
+                    if( !inetAddress.isLoopbackAddress( ) ) {
+                        return inetAddress.getHostAddress( ).toString( );
+                    }
+                }
+            }
+        } catch( Exception ex) {
+            Log.e( "DEBUG", ex.toString());
+        }
+        return "";
+    }
 }

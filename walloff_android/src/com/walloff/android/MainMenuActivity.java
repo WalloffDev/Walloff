@@ -9,8 +9,6 @@ import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnLongClickListener;
-import android.view.View.OnTouchListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ViewFlipper;
@@ -30,23 +28,12 @@ public class MainMenuActivity extends Activity {
 	private Dialog cred_store_dialog = null;
 	private Button cred_store_save = null;
 	private EditText username = null, password = null, password_again = null;
-	
+			
 	/* Register out custom gesture detector */
 	@Override
-	public boolean onTouchEvent(MotionEvent me) {
-        return gestureDetector.onTouchEvent(me);
+	public boolean onTouchEvent( MotionEvent me ) {
+        return gestureDetector.onTouchEvent( me );
     }
-	
-	/* long press event listener */
-//	Boolean isSpeakButtonLongPressed = false;
-//	private View.OnLongClickListener speakHoldListener = new View.OnLongClickListener() {
-//
-//        public boolean onLongClick(View pView) {
-//             // Do something when your hold starts here.
-//             isSpeakButtonLongPressed = true;
-//             return true;
-//        }
-//   };
 	
     @Override
     public void onCreate( Bundle savedInstanceState ) {
@@ -57,29 +44,16 @@ public class MainMenuActivity extends Activity {
 		Display display = getWindowManager().getDefaultDisplay();
 		Constants.window_size_y = (float) display.getHeight();
 		Constants.window_size_x = (float) display.getWidth();
-        
+		
         /* Register AsyncTask(s) */
         send_ws = new SendToWalloffServer( MainMenuActivity.this );
 
         /* Register our gesture listener */
 		gestureDetector = new GestureDetection( this, ( ViewFlipper )findViewById( R.id.main_menu_parent ) );	
-		
-
-//		Button b = (Button)findViewById(R.id.button1);
-//		b.setOnLongClickListener(speakHoldListener);
-//		b.setOnTouchListener(new OnTouchListener() {
-//			
-//			public boolean onTouch(View v, MotionEvent event) {
-//				if ( isSpeakButtonLongPressed )
-//				{
-//					gestureDetector.onLongPress(event);
-//					isSpeakButtonLongPressed = false;
-//				}
-//				return false;
-//			}
-//		});
     }
-
+  
+    
+    /** Life Cycle func(s) **/
 	@Override
 	protected void onResume( ) {
 		super.onResume( );
@@ -116,7 +90,7 @@ public class MainMenuActivity extends Activity {
 	        this.cred_store_save.setOnClickListener( new View.OnClickListener( ) {
 				public void onClick( View arg0 ) {
 					
-					/* TODO: check user input for credentials before committing to preferences */
+					/* Check user input for credentials before committing to preferences */
 					if( !Constants.verify_credential_input( MainMenuActivity.this, username.getText( ).toString( ), 
 							password.getText( ).toString( ), password_again.getText( ).toString( ) ) ) {
 						return;
@@ -152,5 +126,9 @@ public class MainMenuActivity extends Activity {
 		else {
 			/* Do nothing */
 		}
+	}
+
+	protected void onPause( ) {
+		super.onPause( ); 
 	}
 }
