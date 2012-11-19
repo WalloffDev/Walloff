@@ -9,6 +9,7 @@ setup_environ( settings )				# Set server environment to Django instance environ
 # Imports -------------------------------------------------------------------------------------------------------------#
 import socket, threading, SocketServer, datetime, os
 from django.utils import simplejson
+from django.core import serializers
 from django.db import IntegrityError, DatabaseError
 from django.db.models import Count
 from lobby_app.models import *
@@ -86,7 +87,6 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 				except IntegrityError:
 					self.fail( err_uname_exists )
 				except BaseException as e:
-					#print 'Error: m_login - unknown'
 					print e
 					self.fail( err_unknown )
 				
@@ -115,9 +115,9 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 			except IntegrityError:
 				print 'Error: m_create - lobby name already exists'
 				self.fail( err_lname_exists )
-			#except:
-			#	print 'Error: m_create - unknown'
-			#	self.fail( err_unknown )
+			except BaseException as e:
+				print e
+				self.fail( err_unknown )
 
 		elif tag == m_join:
 
@@ -162,7 +162,6 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 				#data = serializers.serialize( 'json', lobby.player_set.all( ) )
 				#self.send_to_all( lobby.player_set.all( ), data )
 			except BaseException as e:
-				#print 'Error: m_leave - unknown'
 				print e
 				self.fail( err_unknown )
 						
@@ -171,12 +170,11 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 			try:
 				# Return list of available lobbies
 				lobbies = Lobby.objects.annotate( num_players = Count( 'player' ) ).exclude( num_players = MAX_LOB_SIZE )	
-				###data = serializers.serialize( 'json', lobbies.all( ) )
-				data = { 'lobbies': 'lobs' }
+				data = serializers.serialize( 'json', lobbies.all( ) )
 				self.success( payload=data )
 
-			except:
-				print 'Error: m_get_available_lobbies - unknown'
+			except BaseException as e:
+				print e
 				self.fail( err_unknown )			
 
 		elif tag == m_update_map:
@@ -210,9 +208,7 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 		if payload == '':
 			content = json.dumps( { 'return': m_success } )
 		else:
-			content = json.dumps( { 'return' : m_success, 'payload': payload } )
-
-		#########
+			content = json.dumps( { 'return' : m_success, 'payload': json.loads( str(payload) ) } )
 		print 'Sending: ' + str( content )
 		self.request.sendall( content )
 
