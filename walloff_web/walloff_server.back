@@ -7,8 +7,8 @@ setup_environ( settings )				# Set server environment to Django instance environ
 #----------------------------------------------------------------------------------------------------------------------#
 
 # Imports -------------------------------------------------------------------------------------------------------------#
-import socket, threading, SocketServer, datetime, os
-from django.utils import simplejson
+import socket, threading, SocketServer, datetime, os, json
+from django.core import serializers
 from django.db import IntegrityError, DatabaseError
 from django.db.models import Count
 from lobby_app.models import *
@@ -58,7 +58,7 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 		client_priv_ip = data[ 'priv_ip' ]
 		client_priv_port = data[ 'priv_port' ]
 
-		print str( client_addr ) + ' ' + client_priv_ip + ' ' + str( client_priv_port )
+		print str(client_addr) + ' ' + client_priv_ip + ' ' + str( client_priv_port )
 
 		if tag == m_login:
 				# Get info for new player
@@ -73,21 +73,19 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 
 					# Create new user
 					new_player = Player( )				
-					#print 'Creating new player: ' + str( m_uname ) + ' ' + str( m_passwd ) + ' ' + str( m_gcmid )
 					new_player.set_data( str( m_uname ).lower( ), str( m_passwd ), str( m_gcmid ) )
-					
+					print 'Created new player: ' + str( m_uname )
 					self.success( )
 		
-					## Test GCM
-					#data = { 'msg' : 'test message' }
-					#players = [new_player]
-					#self.send( players=players, msg=data )					
+					# Test GCM
+					data = { 'msg' : 'test message' }
+					players = [new_player]
+					self.send( players=players, msg=data )					
 
 				except IntegrityError:
 					self.fail( err_uname_exists )
-				except BaseException as e:
-					#print 'Error: m_login - unknown'
-					print e
+				except:
+					print 'Error: m_login - unknown'
 					self.fail( err_unknown )
 				
 		elif tag == m_create:
@@ -150,7 +148,7 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 
 			try:
 				# Obtain the player that is currently leaving the lobby
-				m_host = data[ 'uname' ]
+				m_host = data[ 'player' ]
 				player = Player.objects.get( django_user__username = m_host )
 				lobby = player.lobby
 				
@@ -161,9 +159,8 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 				self.success( )
 				#data = serializers.serialize( 'json', lobby.player_set.all( ) )
 				#self.send_to_all( lobby.player_set.all( ), data )
-			except BaseException as e:
-				#print 'Error: m_leave - unknown'
-				print e
+			except:
+				print 'Error: m_leave - unknown'
 				self.fail( err_unknown )
 						
 		elif tag == m_get_available_lobbies:
@@ -207,12 +204,7 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 		return
 
 	def success( self, payload='' ):
-		if payload == '':
-			content = json.dumps( { 'return': m_success } )
-		else:
-			content = json.dumps( { 'return' : m_success, 'payload': payload } )
-
-		#########
+		content = json.dumps( { 'return' : m_success, 'payload': payload } )
 		print 'Sending: ' + str( content )
 		self.request.sendall( content )
 
