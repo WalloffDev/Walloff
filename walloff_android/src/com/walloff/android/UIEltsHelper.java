@@ -2,17 +2,17 @@ package com.walloff.android;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 import android.widget.ViewFlipper;
 
@@ -22,7 +22,7 @@ public class UIEltsHelper {
 	
 	private Context activity_context = null;
 	private ViewFlipper view_flipper = null;
-	private Dialog progress_dialog = null;
+	private ProgressDialog progress_dialog = null;
 	
 	/* Task handle(s) */
 	private Tasks.SendToWalloffServer send_ws = null;
@@ -34,12 +34,13 @@ public class UIEltsHelper {
 	public TextView error_info = null;
 	public Spinner multi_mname = null, multi_msize = null, multi_onum = null;
 	public ToggleButton multi_mshrink = null, multi_obstacles = null, multi_moving = null;
-	public ViewFlipper multi_flipper = null;
+	public ViewFlipper multi_flipper = null; //
+	public ListView avail_lobs = null;
+	
 	
 	public UIEltsHelper( Context context, ViewFlipper view_flipper ) {
 		super( );
 		
-		this.send_ws = new SendToWalloffServer( context );
 		this.view_flipper = view_flipper;
 		this.activity_context = context;
 	}
@@ -76,6 +77,23 @@ public class UIEltsHelper {
 				
 				public void onClick( View arg0 ) {	
 					multi_flipper.setDisplayedChild( 1 );
+					Log.i( "DEBUG", multi_flipper.getChildAt(1).toString());
+					avail_lobs = ( ListView )multi_flipper.getCurrentView( );
+					
+					try {
+						
+						JSONObject to_send = new JSONObject( );
+						to_send.put( Constants.M_TAG, Constants.GET_LOBBIES );
+						progress_dialog = new ProgressDialog( activity_context );
+						progress_dialog.setCancelable( false );
+						send_ws = new SendToWalloffServer( activity_context );
+						send_ws.setListView( avail_lobs );
+						send_ws.setPDialog( progress_dialog );
+						send_ws.execute( to_send );
+						
+					} catch( JSONException e ) {
+						e.printStackTrace( );
+					}					
 				}
 			});
     		this.multi_create.setOnClickListener( new View.OnClickListener( ) {
@@ -98,6 +116,10 @@ public class UIEltsHelper {
 						to_send.put( Constants.MAP_MOVE, String.valueOf( multi_moving.isChecked( ) ) );
 						
 						/* Set Intent and progress dialog */
+						progress_dialog = new ProgressDialog( activity_context );
+						progress_dialog.setCancelable( false );
+						send_ws = new SendToWalloffServer( activity_context );
+						send_ws.setPDialog( progress_dialog );
 						send_ws.setIntent( new Intent( activity_context, GameLobbyActivity.class ) );
 						send_ws.execute( to_send );
 						

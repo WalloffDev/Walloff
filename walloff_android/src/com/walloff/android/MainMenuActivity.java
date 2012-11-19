@@ -44,9 +44,6 @@ public class MainMenuActivity extends Activity {
 		Display display = getWindowManager().getDefaultDisplay();
 		Constants.window_size_y = (float) display.getHeight();
 		Constants.window_size_x = (float) display.getWidth();
-		
-        /* Register AsyncTask(s) */
-        send_ws = new SendToWalloffServer( MainMenuActivity.this );
 
         /* Register our gesture listener */
 		gestureDetector = new GestureDetection( this, ( ViewFlipper )findViewById( R.id.main_menu_parent ) );	
@@ -102,7 +99,7 @@ public class MainMenuActivity extends Activity {
 					editor.putString( Constants.PREFS_CREDS_KEY, "STORED" );
 					editor.putString( Constants.L_USERNAME, username.getText( ).toString( ) );
 					editor.putString( Constants.L_PASSWORD, password.getText( ).toString( ) );
-					editor.putString( Constants.L_GCMID, new String( regId ) );
+					editor.putString( Constants.L_GCMID, GCMRegistrar.getRegistrationId( MainMenuActivity.this ) );
 					editor.commit( );
 					
 					/* Send info to Walloff Server */
@@ -112,8 +109,9 @@ public class MainMenuActivity extends Activity {
 						to_send.put( Constants.M_TAG, Constants.LOGIN );
 						to_send.put( Constants.L_USERNAME, username.getText( ).toString( ) );
 						to_send.put( Constants.L_PASSWORD, password.getText( ).toString( ) );
-						to_send.put( Constants.L_GCMID, new String( regId ) );
+						to_send.put( Constants.L_GCMID, GCMRegistrar.getRegistrationId( MainMenuActivity.this ) );
 						
+						send_ws = new SendToWalloffServer( MainMenuActivity.this );
 						send_ws.setDialog( cred_store_dialog );
 				        send_ws.execute( to_send );
 						

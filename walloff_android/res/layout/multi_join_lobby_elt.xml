@@ -2,31 +2,35 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/multi_join_lobby_elt_parent"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="50dp"
     android:orientation="horizontal" >
 
     <TextView
         android:id="@+id/join_lobby_elt_lobby_name"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="fill_parent"
         android:layout_weight="1"
         android:gravity="center"
-        android:text="@string/join_lobby_elt_lobbyname" />
+        android:text="@string/join_lobby_elt_lobbyname"
+        android:textSize="25dp"
+        android:textColor="@color/TronBlue" />
 
     <TextView
         android:id="@+id/join_lobby_elt_map_name"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="fill_parent"
         android:layout_weight="1"
         android:gravity="center"
-        android:text="@string/join_lobby_elt_mapname" />
+        android:text="@string/join_lobby_elt_mapname"
+        android:textSize="25dp" />
 
     <TextView
         android:id="@+id/join_lobby_elt_num_players"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="fill_parent"
         android:layout_weight="1"
         android:gravity="center"
-        android:text="@string/join_lobby_elt_numplayers" />
+        android:text="@string/join_lobby_elt_numplayers"
+        android:textSize="25dp" />
 
 </LinearLayout>

@@ -3,7 +3,6 @@ package com.walloff.android;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
-
 import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
@@ -40,17 +39,20 @@ public final class Constants {
 	public static final String MAP_SHRINK = "shrinkable";
 	public static final String MAP_ONUM = "number_obstacles";
 	public static final String MAP_MOVE = "moving_obstacles";
-	public static final String LOB_NAME = "name";
+	public static final String LOB_NAME = "lname";
 	public static final String RETURN = "return";
 	public static final String SUCCESS = "SUCCESS";
 	public static final String FAIL = "FAIL";
-	public static final String MESSAGE = "MESSAGE";
+	public static final String MESSAGE = "message";
 	public static final String PRI_IP = "priv_ip";
 	public static final String PRI_PORT = "priv_port";
+	public static final String GET_LOBBIES = "get_lobbies";
+	public static final String PAYLOAD = "payload";
+	public static final String LEAVE = "leave";
+	public static final String JOIN = "join";
 	
-	/* ViewFlipper  necessities  */
-	public static final int I_COMMAND = 5;
-	public static final String COMMAND_TITLE = "where do you want to go";
+	/* Lobby list var(s)  */
+	public static final String[ ] def_keys = { "" };
 	
 	/* Display object is used to get dimensions of the screen */
 	public static float window_size_x;
