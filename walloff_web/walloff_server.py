@@ -94,7 +94,7 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 
 			try:
 				# Get info for new lobby and map
-				m_name = data[ 'name' ]
+				m_name = data[ 'lname' ]
 				m_map = data[ 'map' ]
 				m_size = data[ 'size' ]
 				m_moving_obstacles = data[ 'moving_obstacles' ]
@@ -123,8 +123,8 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 
 			try:
 				# Obtain player that is joining the lobby
-				m_host = data[ 'player' ]
-				m_lobby = data[ 'lobby' ]
+				m_host = data[ 'uname' ]
+				m_lobby = data[ 'lname' ]
 				player = Player.objects.get( django_user__username = m_host )
 				
 				# Assure #players in lobby is less than MAX_LOB_SIZE
@@ -132,18 +132,18 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 				if len( players.all( ) ) < MAX_LOB_SIZE:
 		
 					# Add player to lobby
-					player.join( Lobby.objects.get( name = m_lobby ) )
+					player.join_lobby( Lobby.objects.get( name = m_lobby ) )
 	
 					# TODO: send success and player arrays
 					# dts = json.dumps( str( players.all( ) ) ) 
 					# serializers.serialize( 'json', players.all( ), use_natural_keys=True )
 					self.success( )
-					self.send_to_all( )
+					# Send player arrays
 				else:
 					# Lobby no longer available
 					self.fail( err_lobb_unavail )
-			except:
-				print 'Error: m_join - unknown'
+			except BaseException as e:
+				print e
 				self.fail( err_unknown )
 	
 		elif tag == m_leave:
@@ -192,7 +192,7 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 				lobby.update( m_map, m_size, m_moving_obstacles, m_number_obstacles, m_shrinkable )
 
 				# TODO: Notify players
-				self.send_to_all( )
+				#self.send_to_all( )
 				self.success( )
 			except:
 				print 'Error: m_update_map - unknown'
