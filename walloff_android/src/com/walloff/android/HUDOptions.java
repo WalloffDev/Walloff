@@ -94,8 +94,6 @@ public class HUDOptions extends View {
 			view_selector[ curr_index-1 ] = 0;
 			view_itter++;
 		}
-		
-		
 	}
 	
 	/* Check the location of the image_location. The image location takes the left and bottom locations of the boxes. */
@@ -105,21 +103,39 @@ public class HUDOptions extends View {
 		float e_x = me.getX();
 		float e_y = me.getY();
 		
-		if ( me.getAction() == MotionEvent.ACTION_DOWN )
+		int selection = me.getActionMasked();
+		
+		switch(selection)
 		{
-			for( int i = 0; i < 4; i++ )
-			{
-				if( ( e_x >= image_locations[i][0] && e_x <= image_locations[i][0] + boxWidth ) &&
-						( e_y <= image_locations[i][1] && e_y >= image_locations[i][1] - boxHeight ) ) 
+			case MotionEvent.ACTION_DOWN:
+				//check if the user pressed near one of the 4 menu selections
+				for( int i = 0; i < 4; i++ )
 				{
-					curr_index = view_selector[i];
-					viewFlipper.setDisplayedChild( view_selector[i] );
+					if( ( e_x >= image_locations[i][0] && e_x <= image_locations[i][0] + boxWidth ) &&
+							( e_y <= image_locations[i][1] && e_y >= image_locations[i][1] - boxHeight ) ) 
+					{
+						curr_index = view_selector[i];
+						viewFlipper.setDisplayedChild( view_selector[i] );
+						dialog.dismiss();
+						this.ui_helper.registerUIElts( i );
+						return true;
+					}
+				}
+				
+				//see if the user pressed the circle icon to close the window
+				if( (e_x >= touchedX - radius) && (e_x <= touchedX + radius) && 
+					(e_y >= touchedY - radius) && (e_y <= touchedY + radius))
+				{
 					dialog.dismiss();
-					this.ui_helper.registerUIElts( i );
 					return true;
 				}
-			}
-		}		
+				
+				break;
+				
+			default:
+				break;
+		}
+
 		return false;
 	} 
 	
@@ -134,8 +150,6 @@ public class HUDOptions extends View {
 		blur.setMaskFilter(new BlurMaskFilter(7.5f, Blur.NORMAL));
 		
 		paint.setColor( getResources().getColor( R.color.TronBlue ));
-		//paint.setShader( new SweepGradient( touchedX, touchedY, 
-		//		getResources( ).getColor( R.color.TronBlue ), getResources( ).getColor( R.color.TronBlue ) ) );
 		
 		RectF outer_oval = new RectF(touchedX - radius, touchedY - radius, touchedX + radius, touchedY + radius);
 		RectF inner_oval = new RectF(touchedX - radius/2, touchedY - radius/2, touchedX + radius/2, touchedY + radius/2);
@@ -146,9 +160,6 @@ public class HUDOptions extends View {
 		/* Draw innner ring */
 		canvas.drawArc(inner_oval, 180, 360, false, blur);
 		canvas.drawArc(inner_oval, 180, 360, false, paint);
-		
-		/* Remove shader */
-		//paint.setShader( null );
 	}
 	
 	/* Draw the main menu center selection */
@@ -187,7 +198,7 @@ public class HUDOptions extends View {
 			}
 		}
 		
-		/*********************************** TOP RIGHT IMAGE ********************************************************/
+		/**********bottom************************* TOP RIGHT IMAGE ********************************************************/
 		paint.setStyle(Paint.Style.STROKE);
 		paint.setColor( colors[0] );
 		blur.set(paint);
@@ -547,7 +558,7 @@ public class HUDOptions extends View {
 		float theta = (float)Math.acos( (threshold - touchedY)/
 				 Math.sqrt( Math.pow( touchedY - threshold, 2) + Math.pow(touchedX - final_x, 2) ) );
 
-		if (final_x >= Constants.window_size_x / 2)
+		if ( (final_x >= Constants.window_size_x / 2) )
 			theta = (float) (2*Math.PI - theta);
 
 		//draw paths that auto correct for line spacing
@@ -692,4 +703,5 @@ public class HUDOptions extends View {
 		//set the text within each box
 		canvas.drawText(s, left + 10, ( bottom - boxHeight/2 ) + 5, text_paint);
 	}
+
 }
