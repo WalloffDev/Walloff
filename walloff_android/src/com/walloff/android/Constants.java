@@ -58,6 +58,12 @@ public final class Constants {
 	public static float window_size_x;
 	public static float window_size_y;
 	
+	/* Gesture listener that will be used to change views */
+	static GestureDetection gestureDetector;
+	
+	/* used to tell if we are in the HUD */
+	public static boolean in_HUD = false;
+	
 	/* Generic helper functions */
 	public static boolean verify_credential_input( Context context, String username, String password, 
 																			String password2 ) {

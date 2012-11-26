@@ -35,10 +35,12 @@ public class Adapters {
 			this.keys = keys;
 		}
 		
+		/* return the length of the data */
 		public int getCount( ) {
 			return data.length( );
 		}
 
+		
 		public Object getItem( int index ) {
 			return index;
 		}
@@ -47,6 +49,7 @@ public class Adapters {
 			return index;
 		}
 
+		
 		public View getView( int index, View convert_view, ViewGroup parent ) {
 			
 			if( convert_view == null ) {
@@ -54,13 +57,16 @@ public class Adapters {
 				convert_view = inflater.inflate( R.layout.multi_join_lobby_elt, null );
 			}
 			
-			try {
+			try 
+			{
 				JSONObject obj = this.data.getJSONObject( index );
 				String name = "Default";
 				TextView lname = ( TextView )convert_view.findViewById( R.id.join_lobby_elt_lobby_name );
 				name = obj.getString( "pk" );
 				lname.setText(name);
-			} catch( Exception e ) {
+			} 
+			catch( Exception e )
+			{
 				e.printStackTrace( );
 			}
 			

@@ -2,6 +2,7 @@ package com.walloff.android;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.BlurMaskFilter;
 import android.graphics.BlurMaskFilter.Blur;
 import android.graphics.Canvas;
@@ -17,8 +18,7 @@ import android.view.Window;
 import android.widget.ViewFlipper;
 
 public class HUDOptions extends View {	
-	
-	private Context activity_context = null;
+
 	private UIEltsHelper ui_helper = null;
 	
 	/* Used to keep track of views */
@@ -56,8 +56,7 @@ public class HUDOptions extends View {
 	/* Constructor(s) */
 	public HUDOptions( Context context, ViewFlipper vf, Dialog dia ) {
 		super(context);
-		
-		this.activity_context = context;
+
 		this.ui_helper = new UIEltsHelper( context, vf );
 		
 		//ViewFlipper needs these
@@ -70,6 +69,23 @@ public class HUDOptions extends View {
 		//obtain the dialog passed in
 		this.dialog = dia;
 		this.dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+		
+		//set the dialog dismiss to remove the in_hud flag
+		dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+			
+			public void onDismiss(DialogInterface dialog) {
+				Constants.in_HUD = false;
+			}
+		});
+		
+		
+		dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+			
+			public void onShow(DialogInterface dialog) {
+				Constants.in_HUD = true;
+				
+			}
+		});
 	}
 		
 	public void updateTouchLocation( float x, float y )
@@ -702,6 +718,12 @@ public class HUDOptions extends View {
 		
 		//set the text within each box
 		canvas.drawText(s, left + 10, ( bottom - boxHeight/2 ) + 5, text_paint);
+	}
+	
+	//@Override
+	protected void OnBackPress()
+	{
+		Constants.in_HUD = false;
 	}
 
 }

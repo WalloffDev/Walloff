@@ -18,9 +18,6 @@ import com.walloff.android.Tasks.SendToWalloffServer;
 
 public class MainMenuActivity extends Activity {
 	
-	/* Gesture listener that will be used to change views */
-	private GestureDetection gestureDetector;
-	
 	/* AsyncTask(s) */
 	private Tasks.SendToWalloffServer send_ws = null;
 	
@@ -32,7 +29,7 @@ public class MainMenuActivity extends Activity {
 	/* Register out custom gesture detector */
 	@Override
 	public boolean onTouchEvent( MotionEvent me ) {
-        return gestureDetector.onTouchEvent( me );
+        return Constants.gestureDetector.onTouchEvent( me );
     }
 	
     @Override
@@ -46,7 +43,7 @@ public class MainMenuActivity extends Activity {
 		Constants.window_size_x = (float) display.getWidth();
 
         /* Register our gesture listener */
-		gestureDetector = new GestureDetection( this, ( ViewFlipper )findViewById( R.id.main_menu_parent ) );	
+		Constants.gestureDetector = new GestureDetection( this, ( ViewFlipper )findViewById( R.id.main_menu_parent ) );	
     }
   
     
