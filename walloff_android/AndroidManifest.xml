@@ -36,7 +36,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".GameLobbyActivity"></activity>
+        <activity android:name=".GameLobbyActivity"
+            android:screenOrientation="landscape"></activity>
         
         <receiver 
             android:name="com.google.android.gcm.GCMBroadcastReceiver" 

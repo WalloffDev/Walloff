@@ -1,10 +1,6 @@
 package com.walloff.android;
 
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.util.Enumeration;
 import android.content.Context;
-import android.util.Log;
 import android.widget.Toast;
 
 public final class Constants {
@@ -12,6 +8,11 @@ public final class Constants {
 	/* GCM */
 	public static final String project_id = "55756868908";
 	public static final String TAG = "GCM";
+	public static final String BROADCAST_LOB_UPDATE = "com.walloff.android.lobbyupdate";
+	public static final String BROADCAST_GS = "com.walloff.android.gs";
+	public static final String LOBBY_UPDATE = "lobby_update";
+	public static final String GS = "gs";
+	public static boolean in_lobby = false;
 	
 	/* Preferences */
 	public static final String PREFS_FILENAME = "walloff_prefs";
@@ -25,6 +26,7 @@ public final class Constants {
 	public static final String server_url = "walloff.cslabs.clarkson.edu";
 	public static final Integer server_port = 8080;
 	public static final Integer MAX_BUF = 1024;
+	public static final int MAX_LOB_SIZE = 4;
 
 	/* Message TAG(s) */
 	public static final String M_TAG = "tag";
@@ -85,20 +87,4 @@ public final class Constants {
 		
 		return true;
 	}
-	public static String getLocalIpAddress( ) {
-        try {
-            for( Enumeration< NetworkInterface > en = NetworkInterface.getNetworkInterfaces( ); en.hasMoreElements( ); ) {
-                NetworkInterface intf = en.nextElement( );
-                for( Enumeration< InetAddress > enumIpAddr = intf.getInetAddresses( ); enumIpAddr.hasMoreElements( ); ) {
-                    InetAddress inetAddress = enumIpAddr.nextElement( );
-                    if( !inetAddress.isLoopbackAddress( ) ) {
-                        return inetAddress.getHostAddress( ).toString( );
-                    }
-                }
-            }
-        } catch( Exception ex) {
-            Log.e( "DEBUG", ex.toString());
-        }
-        return "";
-    }
 }

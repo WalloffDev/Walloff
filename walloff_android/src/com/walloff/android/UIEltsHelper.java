@@ -6,7 +6,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnLongClickListener;
@@ -26,10 +25,10 @@ public class UIEltsHelper {
 	private Context activity_context = null;
 	private ViewFlipper view_flipper = null;
 	private ProgressDialog progress_dialog = null;
+	private MotionEvent m_event = null;
 	
 	/* Task handle(s) */
 	private Tasks.SendToWalloffServer send_ws = null;
-	private MotionEvent m_event = null;
 	
 	/* long press event listener */
 	private View.OnLongClickListener HoldListener = new OnLongClickListener() {
@@ -51,17 +50,16 @@ public class UIEltsHelper {
 			int id = v.getId();
 			switch ( id )
 			{
-				//multiplayer host button 
+				//multiplayer host button ( tab )
 				case  R.id.main_menu_multi_btn_host:
 					if ( event.getAction() == MotionEvent.ACTION_UP && Constants.in_HUD == false )
 						multi_flipper.setDisplayedChild( 0 );
 					break;
-				//multiplayer join button
+				//multiplayer join button ( tab )
 				case R.id.main_menu_btn_join:
 					if ( event.getAction() == MotionEvent.ACTION_UP && Constants.in_HUD == false )
 					{
 						multi_flipper.setDisplayedChild( 1 );
-						Log.i( "DEBUG", multi_flipper.getChildAt(1).toString());
 						avail_lobs = ( ListView )multi_flipper.getCurrentView( );
 						
 						try {

@@ -22,8 +22,7 @@ public class Adapters {
 		/* Class members */
 		private Context context;
 		private JSONArray data = null;
-		private ViewGroup group = null;
-		private String[ ] keys = null;
+		//private String[ ] keys = null;
 		private Tasks.SendToWalloffServer send_ws = null;
 		private ProgressDialog progress_dialog;
 
@@ -32,15 +31,13 @@ public class Adapters {
 			super( );
 			this.context = context;
 			this.data = data;
-			this.keys = keys;
+			//this.keys = keys;
 		}
 		
-		/* return the length of the data */
 		public int getCount( ) {
 			return data.length( );
 		}
 
-		
 		public Object getItem( int index ) {
 			return index;
 		}
@@ -48,7 +45,6 @@ public class Adapters {
 		public long getItemId( int index ) {
 			return index;
 		}
-
 		
 		public View getView( int index, View convert_view, ViewGroup parent ) {
 			
@@ -57,16 +53,11 @@ public class Adapters {
 				convert_view = inflater.inflate( R.layout.multi_join_lobby_elt, null );
 			}
 			
-			try 
-			{
+			try {
 				JSONObject obj = this.data.getJSONObject( index );
-				String name = "Default";
 				TextView lname = ( TextView )convert_view.findViewById( R.id.join_lobby_elt_lobby_name );
-				name = obj.getString( "pk" );
-				lname.setText(name);
-			} 
-			catch( Exception e )
-			{
+				lname.setText( obj.getString( "pk" ) );
+			} catch( Exception e ) {
 				e.printStackTrace( );
 			}
 			

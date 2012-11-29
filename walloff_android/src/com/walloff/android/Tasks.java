@@ -81,7 +81,7 @@ public class Tasks {
 				this.soc = new Socket( Constants.server_url, Constants.server_port );
 
 				/* Append private net info */
-				params[ 0 ].put( Constants.PRI_IP, this.soc.getLocalAddress( ) );
+				params[ 0 ].put( Constants.PRI_IP, this.soc.getLocalAddress( ).getHostAddress( ) );
 				params[ 0 ].put( Constants.PRI_PORT, this.soc.getLocalPort( ) );
 				
 				this.dos = new DataOutputStream( this.soc.getOutputStream( ) );

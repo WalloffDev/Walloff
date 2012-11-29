@@ -54,6 +54,9 @@ public class HUDOptions extends View {
 	Dialog dialog = null;
 	
 	/* Constructor(s) */
+	public HUDOptions( Context context ) {
+		super( context );
+	}
 	public HUDOptions( Context context, ViewFlipper vf, Dialog dia ) {
 		super(context);
 

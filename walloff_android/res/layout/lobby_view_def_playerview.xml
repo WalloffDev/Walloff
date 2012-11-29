@@ -21,10 +21,17 @@
         android:orientation="vertical" >
 
         <ImageView
-            android:id="@+id/imageView1"
+            android:id="@+id/lobby_view_ppic"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_launcher" />
+
+        <TextView
+            android:id="@+id/lobby_view_pname"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/cred_store_username"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
     </LinearLayout>
 
