@@ -44,7 +44,7 @@ class Player( models.Model ):
 	priv_ip = models.CharField( max_length=15, default='0.0.0.0' )
 	pub_port = models.IntegerField( default=0 )
 	priv_port = models.IntegerField( default=0 )
-	lobby = models.ForeignKey( Lobby, blank=True, null=True )	
+	lobby = models.ForeignKey( Lobby, blank=True, null=True, on_delete=models.SET_NULL )	
 
 	# METHOD(S)
 	def __unicode__( self ):
