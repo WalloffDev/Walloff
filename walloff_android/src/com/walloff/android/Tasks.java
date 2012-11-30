@@ -1,18 +1,24 @@
 package com.walloff.android;
 
+import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.InputStreamReader;
 import java.net.Socket;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
-import com.walloff.android.Adapters.LLAdapter;
+
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.ListView;
+
+import com.walloff.android.Adapters.LLAdapter;
 
 public class Tasks {
 
@@ -26,8 +32,9 @@ public class Tasks {
 		Intent next_intent = null;
 		Socket soc = null;
 		DataOutputStream dos = null;
-		byte[ ] read = null;
 		DataInputStream dis = null;
+		BufferedReader in = null;
+		String read = null;
 		JSONObject read_in = null, net_info = null;
 		JSONArray payload = null;
 		
@@ -84,22 +91,29 @@ public class Tasks {
 				params[ 0 ].put( Constants.PRI_IP, this.soc.getLocalAddress( ).getHostAddress( ) );
 				params[ 0 ].put( Constants.PRI_PORT, this.soc.getLocalPort( ) );
 				
-				this.dos = new DataOutputStream( this.soc.getOutputStream( ) );
-				this.dis = new DataInputStream( this.soc.getInputStream( ) );
-				this.dos.write( params[ 0 ].toString( ).getBytes( ) );
+				/* Store private ip address as host player id */
+				SharedPreferences prefs = this.activity_context.getSharedPreferences( Constants.PREFS_FILENAME, MainMenuActivity.MODE_PRIVATE );
+				SharedPreferences.Editor editor = prefs.edit( );
+				editor.putString( Constants.L_IPID, this.soc.getLocalAddress( ).getHostAddress( ) );
+				editor.commit( );
 				
-				this.read = new byte[ Constants.MAX_BUF ];
-				this.dis.read( read );
-				this.read_in = parse_json( new String( read ) );
+				/* Send data to server */
+				this.dos = new DataOutputStream( this.soc.getOutputStream( ) );
+				this.dos.write( params[ 0 ].toString( ).getBytes( ) );
+				this.dos.flush( );
+				
+				this.dis = new DataInputStream( this.soc.getInputStream( ) );
+				this.in = new BufferedReader( new InputStreamReader(dis));
+				this.read = this.in.readLine( );
+				
+				this.read_in = parse_json( this.read );
 				
 			} catch( Exception e ) {
 				e.printStackTrace( );
 			} finally {
 				try {
 					this.soc.close( );
-				} catch( Exception e ) {
-					// Ignore
-				}
+				} catch( Exception e ) { }
 			}
 			
 			return read_in;
@@ -130,6 +144,7 @@ public class Tasks {
 						return;
 					}
 					else if( ( ( String )result.get( Constants.RETURN ) ).equals( Constants.SUCCESS ) ) {
+						Log.i( "SUCCESS", "SUCCESS" );
 						if( result.has( Constants.PAYLOAD ) ) {
 							this.payload = new JSONArray( result.get( Constants.PAYLOAD ).toString( ) );
 						}

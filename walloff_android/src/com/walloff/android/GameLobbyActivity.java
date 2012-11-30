@@ -52,6 +52,7 @@ public class GameLobbyActivity extends Activity {
 			@Override
 			public void onReceive( Context context, Intent intent ) {
 				Log.i( "DEBUG", "GS received" );
+				n_man.init_gconns( );
 			}
 		};
 	}

@@ -35,6 +35,7 @@ public final class Constants {
 	public static final String HOST = "host";
 	public static final String L_USERNAME = "uname";
 	public static final String L_PASSWORD = "passwd";
+	public static final String L_IPID = "ip_id";
 	public static final String L_GCMID = "gcmid";
 	public static final String MAP_NAME = "map";
 	public static final String MAP_SIZE = "size";

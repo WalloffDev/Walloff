@@ -43,8 +43,10 @@ public class GCMIntentService extends GCMBaseIntentService {
 				else {
 					return;
 				}
+				sendBroadcast( m_intent );
 			}	
-			sendBroadcast( m_intent );
+			else
+				Log.i( GCMIntentService.TAG, "unrecognized tag for message" );
 			
 		} catch( Exception e ) { e.printStackTrace( ); }
 	}

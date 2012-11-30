@@ -3,6 +3,7 @@ package com.walloff.android;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
@@ -175,14 +176,21 @@ public class NetworkingManager {
 			Toast.makeText( this.activity_cont, "No opponents available", Toast.LENGTH_SHORT ).show( );
 			return;
 		}
-		this.gc_mans = new GCManager[ this.players.length ];
+		this.gc_mans = new GCManager[ this.players.length - 1 ];
 		for( int i = 0; i < this.gc_mans.length; i++ )
 			this.gc_mans[ i ] = null;
 		
+		/* Get local player IP ID */
+		SharedPreferences prefs = this.activity_cont.getSharedPreferences( Constants.PREFS_FILENAME, this.activity_cont.MODE_PRIVATE );
+		String ip_id = prefs.getString( Constants.L_IPID, "" );
+		
+		int a = 0;
 		for( int i = 0; i < this.gc_mans.length; i++ ) {
-			if( this.players[ i ] == null ) break;
-			this.gc_mans[ i ] = new GCManager( this.players[ i ], i );
-			this.gc_mans[ i ].initialize( );
+			if( this.players[ a ] == null ) break;
+			else if( this.players[ a ].get_PrivIP( ).equals( ip_id ) ) continue;
+			this.gc_mans[ a ] = new GCManager( this.players[ i ], a );
+			this.gc_mans[ a ].initialize( );
+			a++;
 		}
 		
 		/* TODO: alert calling activity that it's connections are set up, safe to proceed, not a TOAST! */
