@@ -7,7 +7,7 @@ setup_environ( settings )				# Set server environment to Django instance environ
 #----------------------------------------------------------------------------------------------------------------------#
 
 # Imports -------------------------------------------------------------------------------------------------------------#
-import socket, threading, SocketServer, datetime, os
+import socket, threading, SocketServer, datetime, os, time
 from django.utils import simplejson
 from django.core import serializers
 from django.db import IntegrityError, DatabaseError
@@ -77,6 +77,7 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 					# If not, create new user
 					new_player = Player( )				
 					new_player.set_data( str( m_uname ).lower( ), str( m_passwd ), str( m_gcmid ) )	
+					
 					self.success( )
 
 				except IntegrityError:
@@ -105,14 +106,12 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 				player = Player.objects.get( django_user__username = m_host )
 				player.update_net_info( client_addr[ 0 ], client_addr[ 1 ], client_priv_ip, client_priv_port )
 				player.join_lobby( new_lobby )
+				
 				self.success( )
 
 				# send player array
 				self.send_parrays( players=[ player ], lobby=new_lobby )	
 					
-				# Schedule game start
-				self.server.timer_man.schedule_gs( new_lobby )
-	
 			except IntegrityError:
 				print 'Error: m_create - lobby name already exists'
 				self.fail( err_lname_exists )
@@ -169,7 +168,7 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 
 				if len( players.all( ) ) == 1:
 					# Cancel game start, not enough players
-					self.server.timer_man.cancel_gs( lobby )
+					self.server.timer_man.cancel_gs( m_lobby )
 
 				if len( players.all( ) ) == 0:
 					# Delete empty lobbies
@@ -218,7 +217,7 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 		else:
 			# unrecognized message received... ignore
 			print 'Error: message received with an unrecognized tag, ignoring ...'
-		
+	
 		return
 
 	def success( self, payload='' ):
@@ -244,16 +243,16 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 						  'priv_ip': players[ i ].priv_ip,
 						  'priv_port': players[ i ].priv_port } } )
 
-		self.gcm_send( players=players, msg=data_dict )		
+		self.gcm_send( players=players, collapse_key='lobby_update', msg=data_dict )		
 
-	def gcm_send( self, players, msg ):
+	def gcm_send( self, players, msg, collapse_key=None ):
 		
 		reg_ids = list( )
 		for player in players:
 			reg_ids.append( player.gcm_id )
 
 		print 'Sending push notification ...'
-		result = self.server.gcm.send_message( reg_ids=reg_ids, data=msg, retries=2 )
+		result = self.server.gcm.send_message( reg_ids=reg_ids, ck=collapse_key, data=msg, retries=2 )
 
 #-------------------------------------------------------------------------------------------------------------#
 
@@ -278,7 +277,8 @@ class TimerManager( object ):
 		print 'Starting game @ ' + lobby.name
 		lobby._in_game = True
 		lobby.save( )
-		self.gcm_send( players=lobby.player_set.all( ), msg={ 'tag': m_gs } )
+		del self.timers[ lobby.name ]
+		self.gcm_send( players=lobby.player_set.all( ), collapse_key='game_start', msg={ 'tag': m_gs } )
 
 	def schedule_gs( self, lobby ):
 		if self.timers.has_key( lobby.name ): return	
@@ -288,18 +288,19 @@ class TimerManager( object ):
 		print 'gs @ ' + lobby.name + ' scheduled'
 
 	def cancel_gs( self, lobby ):
+		if not self.timers.has_key( lobby.name ): return
 		self.timers[ lobby.name ].cancel( )
 		del self.timers[ lobby.name ]
 		print 'gs @ ' + lobby.name + ' canceled'
 
-	def gcm_send( self, players, msg ):
+	def gcm_send( self, players, msg, collapse_key=None ):
 		
 		reg_ids = list( )
 		for player in players:
 			reg_ids.append( player.gcm_id )
 
 		print 'Sending push notification ...'
-		result = self.server.gcm.send_message( reg_ids=reg_ids, data=msg, retries=2 )
+		result = self.server.gcm.send_message( reg_ids=reg_ids, ck=collapse_key, data=msg, retries=2 )
 
 #---------------------------------------------------------------------#
 
