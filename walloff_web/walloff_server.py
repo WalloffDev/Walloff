@@ -1,3 +1,7 @@
+# TODO:
+#	Need to implement player_die message handling --> when n-1 player_die message recvd record winning stat for last player etc...
+#	implent in_game leave message - count as player_die and remove from lobby .. etc
+
 # Lobby Manager Server for Walloff_Android
 
 # Setup server environment --------------------------------------------------------------------------------------------#
@@ -26,6 +30,7 @@ GCM_KEY = 'AIzaSyC5M-ip4-1pnm0gExQow1CS9xIPke7EvAw'
 # Constants ----------------------------------------------------------------#
 MAX_BUF = 1024		# Sets max buffer size to receive from request
 MAX_LOB_SIZE = 4	# Sets maximum number of allowed players in a lobby
+GS_DELAY = 15		# Game Start Delay
 #---------------------------------------------------------------------------#
 
 # Tags --------------------------------------------------------------------------------#
@@ -103,10 +108,9 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 				new_lobby.set_data( m_name, False, m_map, m_size, m_moving_obstacles, m_number_obstacles, m_shrinkable )
 
 				# get player by username ( auth_token ), add them to lobby
-				player = Player.objects.get( django_user__username = m_host )
+				player = Player.objects.get( django_user__username = str( m_host ).lower( ) )
 				player.update_net_info( client_addr[ 0 ], client_addr[ 1 ], client_priv_ip, client_priv_port )
 				player.join_lobby( new_lobby )
-				
 				self.success( )
 
 				# send player array
@@ -119,13 +123,13 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 				print e
 				self.fail( err_unknown )
 
-		elif tag == m_join:
+		elif tag == m_join:			
 
 			try:
 				# Obtain player that is joining the lobby
 				m_host = data[ 'uname' ]
 				m_lobby = data[ 'lname' ]
-				player = Player.objects.get( django_user__username = m_host )
+				player = Player.objects.get( django_user__username = str( m_host ).lower( ) )
 				
 				# Assure #players in lobby is less than MAX_LOB_SIZE
 				players = Lobby.objects.get( name = m_lobby ).player_set
@@ -156,7 +160,7 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 			try:
 				# Obtain the player that is currently leaving the lobby
 				m_host = data[ 'uname' ]
-				player = Player.objects.get( django_user__username = m_host )
+				player = Player.objects.get( django_user__username = str( m_host ).lower( ) )
 				m_lobby = player.lobby
 				
 				# Remove the player from the lobby
@@ -164,7 +168,8 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 				self.success( )
 		
 				# Check number of remaining players
-				players = Lobby.objects.get( name=m_lobby.name ).player_set
+				lobby = Lobby.objects.get( name=m_lobby )
+				players = lobby.player_set
 
 				if len( players.all( ) ) == 1:
 					# Cancel game start, not enough players
@@ -172,10 +177,10 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 
 				if len( players.all( ) ) == 0:
 					# Delete empty lobbies
-					m_lobby.delete( )
+					lobby.delete( )
 
 				else:	# Notify remaining players
-					self.send_parrays( players=players.all( ), lobby=m_lobby )
+					self.send_parrays( players=players.all( ), lobby=lobby )
 
 			except BaseException as e:
 				print e
@@ -249,6 +254,7 @@ class RequestHandler( SocketServer.BaseRequestHandler ):
 		
 		reg_ids = list( )
 		for player in players:
+			#reg_ids.append( Player.objects.get( django_user
 			reg_ids.append( player.gcm_id )
 
 		print 'Sending push notification ...'
@@ -278,7 +284,7 @@ class TimerManager( object ):
 		lobby._in_game = True
 		lobby.save( )
 		del self.timers[ lobby.name ]
-		self.gcm_send( players=lobby.player_set.all( ), collapse_key='game_start', msg={ 'tag': m_gs } )
+		self.gcm_send( players=lobby.player_set.all( ), collapse_key='game_start', msg={ 'tag': m_gs, 'gs_delay': str( long( time.time( ) + GS_DELAY ) ) } )
 
 	def schedule_gs( self, lobby ):
 		if self.timers.has_key( lobby.name ): return	

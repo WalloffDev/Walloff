@@ -84,6 +84,7 @@ class gcm( object ):
 			try:
                                 response = urllib2.urlopen( req ).read( )
 				response = json.loads( response )
+				print 'GCM Response: ' + str( response )
 				if response[ json_failure ] == 0 and response[ json_canonical_ids ] == 0:
 					return ( ) 
 				else:
