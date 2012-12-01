@@ -1,10 +1,16 @@
 package com.walloff.android;
 
 import org.json.JSONObject;
+
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
@@ -110,6 +116,7 @@ public class MainMenuActivity extends Activity {
 						
 						send_ws = new SendToWalloffServer( MainMenuActivity.this );
 						send_ws.setDialog( cred_store_dialog );
+						send_ws.setPDialog( new ProgressDialog( MainMenuActivity.this ) );
 				        send_ws.execute( to_send );
 						
 					} catch( Exception e ) {

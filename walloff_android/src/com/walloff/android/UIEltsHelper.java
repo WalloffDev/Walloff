@@ -32,7 +32,7 @@ public class UIEltsHelper {
 	
 	/* long press event listener */
 	private View.OnLongClickListener HoldListener = new OnLongClickListener() {
-		public boolean onLongClick(View v) {
+		public boolean onLongClick( View v ) {
 			Constants.gestureDetector.onLongPress(m_event);
 			m_event = null;
 			return true;
@@ -40,46 +40,44 @@ public class UIEltsHelper {
 	};
 	 
 	//create our on click listener
-	public android.view.View.OnTouchListener OnTouchListener = new OnTouchListener() {
+	public android.view.View.OnTouchListener OnTouchListener = new OnTouchListener( ) {
 		
-		public boolean onTouch(View v, MotionEvent event) {
+		public boolean onTouch( View v, MotionEvent event ) {
 			/* save the motion event. This can be used by the long click listener */			
 			m_event = event;
 			
 			/* switch on the ID of any clickable object for any of our views */
 			int id = v.getId();
-			switch ( id )
-			{
-				//multiplayer host button ( tab )
+			switch ( id ) {
+			
+				/* multiplayer host button ( tab ) */
 				case  R.id.main_menu_multi_btn_host:
 					if ( event.getAction() == MotionEvent.ACTION_UP && Constants.in_HUD == false )
 						multi_flipper.setDisplayedChild( 0 );
-					break;
-				//multiplayer join button ( tab )
+					return true;
+
+				/* multiplayer join button ( tab ) */
 				case R.id.main_menu_btn_join:
-					if ( event.getAction() == MotionEvent.ACTION_UP && Constants.in_HUD == false )
-					{
+					if ( event.getAction() == MotionEvent.ACTION_UP && Constants.in_HUD == false ) {
 						multi_flipper.setDisplayedChild( 1 );
 						avail_lobs = ( ListView )multi_flipper.getCurrentView( );
 						
 						try {
-							
 							JSONObject to_send = new JSONObject( );
 							to_send.put( Constants.M_TAG, Constants.GET_LOBBIES );
 							progress_dialog = new ProgressDialog( activity_context );
-							progress_dialog.setCancelable( false );
+							//progress_dialog.setCancelable( false );
 							send_ws = new SendToWalloffServer( activity_context );
 							send_ws.setListView( avail_lobs );
 							send_ws.setPDialog( progress_dialog );
 							send_ws.execute( to_send );
-							
 						} catch( JSONException e ) { e.printStackTrace( ); }
 					}
-					break;
-				//case for the create button
+					return true;
+					
+				/* case for the create button */
 				case R.id.create_lobby_btn_create:
-					if ( event.getAction() == MotionEvent.ACTION_UP && Constants.in_HUD == false )
-					{
+					if ( event.getAction( ) == MotionEvent.ACTION_UP && Constants.in_HUD == false ) {
 						try {
 							SharedPreferences prefs = activity_context.getSharedPreferences( Constants.PREFS_FILENAME, MainMenuActivity.MODE_PRIVATE );
 							String uname = prefs.getString( Constants.L_USERNAME, "" );
@@ -94,7 +92,7 @@ public class UIEltsHelper {
 							to_send.put( Constants.MAP_ONUM, ( String )multi_onum.getSelectedItem( ) );
 							to_send.put( Constants.MAP_MOVE, String.valueOf( multi_moving.isChecked( ) ) );
 							
-							/* Set Intent and progress dialog */
+							/* Set Intent and progress dialog and start task */
 							progress_dialog = new ProgressDialog( activity_context );
 							progress_dialog.setCancelable( false );
 							send_ws = new SendToWalloffServer( activity_context );
@@ -102,15 +100,16 @@ public class UIEltsHelper {
 							send_ws.setIntent( new Intent( activity_context, GameLobbyActivity.class ) );
 							send_ws.execute( to_send );
 							
-						} catch( JSONException e ) { e.printStackTrace( ); }
+						} catch( JSONException e ) { 
+							e.printStackTrace( ); 
+						} catch( Exception e ) {
+							  e.printStackTrace( );
+						}
 					}
-					break;
+					return true;
 				default:
-					break;
+					return false;
 			}
-			
-			
-			return false;
 		}
 	};
 	
@@ -193,5 +192,4 @@ public class UIEltsHelper {
     		break;
     	}
     }
-    
 }

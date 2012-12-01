@@ -27,6 +27,10 @@ public class GestureDetection implements OnGestureListener {
         return this.gesture.onTouchEvent( me );
     }
 	
+	public void setViewFlipper( ViewFlipper flipper ) {
+		this.viewFlipper = flipper;
+	}
+	
 	public GestureDetection( Context context, ViewFlipper flipper ) {
 		this.activity_context = context;
 		this.viewFlipper = flipper;

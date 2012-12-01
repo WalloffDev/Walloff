@@ -1,6 +1,7 @@
 package com.walloff.android;
 
 import android.content.Context;
+import android.net.wifi.WifiManager;
 import android.widget.Toast;
 
 public final class Constants {
@@ -12,7 +13,8 @@ public final class Constants {
 	public static final String BROADCAST_GS = "com.walloff.android.gs";
 	public static final String LOBBY_UPDATE = "lobby_update";
 	public static final String GS = "gs";
-	public static boolean in_lobby = false;
+	public static final String GS_DELAY = "gs_delay";
+	public static WifiManager.WifiLock w_lock = null;
 	
 	/* Preferences */
 	public static final String PREFS_FILENAME = "walloff_prefs";
@@ -66,6 +68,12 @@ public final class Constants {
 	
 	/* used to tell if we are in the HUD */
 	public static boolean in_HUD = false;
+	
+	/* used to delay lobby intent broadcast until gamelobbyactivity's oncreate */
+	public static boolean in_lobby = false;
+	
+	/* signifies host_player is in game */
+	public static boolean in_game = false;
 	
 	/* Generic helper functions */
 	public static boolean verify_credential_input( Context context, String username, String password, 

@@ -1,19 +1,19 @@
 package com.walloff.android;
 
 import org.json.JSONObject;
-
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
-
+import android.widget.Toast;
 import com.walloff.android.Tasks.SendToWalloffServer;
 
 public class GameLobbyActivity extends Activity {
@@ -24,7 +24,7 @@ public class GameLobbyActivity extends Activity {
 	private NetworkingManager n_man = null;
 	
 	/* UI elt(s) */
-	private TextView lname, p1_name, p2_name, p3_name, p4_name; //countdown, mname, ;
+	private TextView lname, p1_name, p2_name, p3_name, p4_name, countdown;//mname;
 	private View p1, p2, p3, p4;
 	
 	@Override
@@ -48,18 +48,29 @@ public class GameLobbyActivity extends Activity {
 				updateLobby( ( Bundle )arg1.getExtras( ).get( "payload" ) );
 			}
 		};
+		Constants.in_lobby = true;
+		
+		/** TODO: implement lobby countdown clock functionality and establish game conns with n_man, ** disable hardware back button **/
 		this.gs = new BroadcastReceiver( ) {
 			@Override
 			public void onReceive( Context context, Intent intent ) {
 				Log.i( "DEBUG", "GS received" );
-				n_man.init_gconns( );
+				
+				/* Set in_game flag */
+				Constants.in_game = true;
+				
+				/* Initialize game networking */
+				//n_man.init_gconns( ); 
+				
+				/* Start countdown */
+				new countdown().execute( intent.getExtras( ).getLong( Constants.GS_DELAY ) );
 			}
 		};
 	}
 
 	public void initUIElts( ) {
 		this.lname = ( TextView )findViewById( R.id.lobby_view_lobby_name );
-//		this.countdown = ( TextView )findViewById( R.id.lobby_view_countdown );
+		this.countdown = ( TextView )findViewById( R.id.lobby_view_countdown );
 //		this.mname = ( TextView )findViewById( R.id.lobby_view_map_name );
 		this.p1 = ( View )findViewById( R.id.lobby_view_p1 );
 		this.p1_name = ( TextView )this.p1.findViewById( R.id.lobby_view_pname );
@@ -130,23 +141,66 @@ public class GameLobbyActivity extends Activity {
 			
 		} catch( Exception e ) { e.printStackTrace( ); }
 	}
+	private class countdown extends AsyncTask< Long, Long, Void > {
+
+		@Override
+		protected Void doInBackground( Long... params ) {
+			
+			/* If message arrived late, start game immediately */
+			if( params[ 0 ] < ( System.currentTimeMillis( ) / 1000 ) ) 
+				return null;
+			
+			Long curr_time;
+			while( ( curr_time = ( System.currentTimeMillis( ) / 1000 ) ) < params[ 0 ] ) {
+				publishProgress( params[ 0 ] - curr_time );
+				try { 
+					Thread.sleep( 500 ); 
+				} 
+				catch( InterruptedException e ) {
+					e.printStackTrace( );
+				}
+			}
+			
+			return null;
+		}
+		
+		@Override
+		protected void onProgressUpdate( Long... values ) {
+			super.onProgressUpdate( values );
+			countdown.setText( "0:" + String.valueOf( values[ 0 ] ) );
+		}
+		
+		@Override
+		protected void onPostExecute( Void result ) {
+			super.onPostExecute( result );
+			Toast.makeText( GameLobbyActivity.this, "Game starting", Toast.LENGTH_SHORT ).show( );
+		}		
+	}
 	
 	/* Life-cycle func(s) */
 	@Override
 	protected void onResume( ) {
 		super.onResume( );
 		
-		Constants.in_lobby = true;
-		
 		/* Register broadcast receiver(s) */
 		registerReceiver( this.updater, new IntentFilter( Constants.BROADCAST_LOB_UPDATE ) );
 		registerReceiver( this.gs, new IntentFilter( Constants.BROADCAST_GS ) );
 	}
+	
+	@Override
+	public void onBackPressed( ) {
+		if( Constants.in_game ) return;
+		else super.onBackPressed( );
+	}
+
 	@Override
 	protected void onPause( ) {
 		super.onPause( );
 		
 		Constants.in_lobby = false;
+		
+		/* Remove sticky broadcasts */
+		removeStickyBroadcast( new Intent( Constants.BROADCAST_LOB_UPDATE ) );
 		
 		/* Unregister broadcast receiver(s) */
 		unregisterReceiver( this.updater );

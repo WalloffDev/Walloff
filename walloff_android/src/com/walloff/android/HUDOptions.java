@@ -90,7 +90,7 @@ public class HUDOptions extends View {
 			}
 		});
 	}
-		
+	
 	public void updateTouchLocation( float x, float y )
 	{
 		/* obtain where the person touched on the screen */

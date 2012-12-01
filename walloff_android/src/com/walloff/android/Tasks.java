@@ -34,7 +34,7 @@ public class Tasks {
 		DataOutputStream dos = null;
 		DataInputStream dis = null;
 		BufferedReader in = null;
-		String read = null;
+		String read = "";
 		JSONObject read_in = null, net_info = null;
 		JSONArray payload = null;
 		
@@ -75,9 +75,7 @@ public class Tasks {
 		protected void onPreExecute( ) {
 			super.onPreExecute( );
 			
-			if( this.dialog != null )
-				this.dialog.show( );
-			else if( this.p_dialog != null )
+			if( this.p_dialog != null )
 				this.p_dialog.show( );
 		}
 
@@ -103,9 +101,12 @@ public class Tasks {
 				this.dos.flush( );
 				
 				this.dis = new DataInputStream( this.soc.getInputStream( ) );
-				this.in = new BufferedReader( new InputStreamReader(dis));
-				this.read = this.in.readLine( );
+				this.in = new BufferedReader( new InputStreamReader( this.soc.getInputStream() ));
 				
+				int temp;
+				while( ( temp = this.in.read() ) != -1 ) {
+					this.read += ( char )temp;
+				}
 				this.read_in = parse_json( this.read );
 				
 			} catch( Exception e ) {
@@ -133,8 +134,10 @@ public class Tasks {
 		protected void onPostExecute( JSONObject result ) {
 			super.onPostExecute( result );
 			
-			if( result == null )
+			if( result == null ) {
+				Log.i( "DEBUG", "result was null" );
 				return;
+			}
 			
 			try {
 				if( result.has( Constants.RETURN ) ) {
@@ -153,8 +156,10 @@ public class Tasks {
 						Log.i( "DEBUG", "Unrecognized RETURN value" );
 					}
 				}
+				else {
+					Log.i( "DEBUG", "result wasn't null, but had unrecognized params" );
+				}
 			} catch( Exception e ) {
-				
 				e.printStackTrace( );
 			}
 			cleanup( true );
