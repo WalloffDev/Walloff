@@ -1,7 +1,7 @@
 package com.walloff.android;
 
 import android.content.Context;
-import android.net.wifi.WifiManager;
+//import android.net.wifi.WifiManager;
 import android.widget.Toast;
 
 public final class Constants {
@@ -14,7 +14,7 @@ public final class Constants {
 	public static final String LOBBY_UPDATE = "lobby_update";
 	public static final String GS = "gs";
 	public static final String GS_DELAY = "gs_delay";
-	public static WifiManager.WifiLock w_lock = null;
+	//public static WifiManager.WifiLock w_lock = null;
 	
 	/* Preferences */
 	public static final String PREFS_FILENAME = "walloff_prefs";

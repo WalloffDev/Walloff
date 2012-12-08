@@ -165,8 +165,7 @@ public class Tasks {
 			cleanup( true );
 		}
 	
-		public void cleanup( boolean result ) {
-			
+		public void cleanup( boolean result ) {			
 			/* Take care of necessary UI elt(s) */
 			if( this.list != null && this.payload != null ) {
 				LLAdapter adapter = new Adapters.LLAdapter( this.activity_context, this.payload, null );

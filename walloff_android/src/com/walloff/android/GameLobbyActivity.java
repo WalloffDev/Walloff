@@ -2,14 +2,9 @@ package com.walloff.android;
 
 import org.json.JSONObject;
 import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -17,15 +12,14 @@ import android.widget.Toast;
 import com.walloff.android.Tasks.SendToWalloffServer;
 
 public class GameLobbyActivity extends Activity {
-
-	private BroadcastReceiver updater = null, gs = null;
+	
 	private SendToWalloffServer send_ws = null;
 	private Player[ ] opos = null;
 	private NetworkingManager n_man = null;
 	
 	/* UI elt(s) */
 	private TextView lname, p1_name, p2_name, p3_name, p4_name, countdown;//mname;
-	private View p1, p2, p3, p4;
+	private View p1, p2, p3, p4;	
 	
 	@Override
 	protected void onCreate( Bundle savedInstanceState ) {
@@ -41,31 +35,7 @@ public class GameLobbyActivity extends Activity {
 		/* Setup NetworkingManager */
 		this.n_man = new NetworkingManager( this );
 		
-		/* Setup receivers for GCM */
-		this.updater = new BroadcastReceiver( ) {
-			@Override
-			public void onReceive( Context arg0, Intent arg1 ) {
-				updateLobby( ( Bundle )arg1.getExtras( ).get( "payload" ) );
-			}
-		};
-		Constants.in_lobby = true;
-		
 		/** TODO: implement lobby countdown clock functionality and establish game conns with n_man, ** disable hardware back button **/
-		this.gs = new BroadcastReceiver( ) {
-			@Override
-			public void onReceive( Context context, Intent intent ) {
-				Log.i( "DEBUG", "GS received" );
-				
-				/* Set in_game flag */
-				Constants.in_game = true;
-				
-				/* Initialize game networking */
-				//n_man.init_gconns( ); 
-				
-				/* Start countdown */
-				new countdown().execute( intent.getExtras( ).getLong( Constants.GS_DELAY ) );
-			}
-		};
 	}
 
 	public void initUIElts( ) {
@@ -81,6 +51,7 @@ public class GameLobbyActivity extends Activity {
 		this.p4 = ( View )findViewById( R.id.lobby_view_p4 );
 		this.p4_name = ( TextView )this.p4.findViewById( R.id.lobby_view_pname );
 	}
+	
 	public void updateLobby( Bundle payload ) {
 		JSONObject temp = null;
 		this.opos = new Player[ Constants.MAX_LOB_SIZE ];
@@ -141,6 +112,7 @@ public class GameLobbyActivity extends Activity {
 			
 		} catch( Exception e ) { e.printStackTrace( ); }
 	}
+	
 	private class countdown extends AsyncTask< Long, Long, Void > {
 
 		@Override
@@ -181,16 +153,15 @@ public class GameLobbyActivity extends Activity {
 	@Override
 	protected void onResume( ) {
 		super.onResume( );
-		
-		/* Register broadcast receiver(s) */
-		registerReceiver( this.updater, new IntentFilter( Constants.BROADCAST_LOB_UPDATE ) );
-		registerReceiver( this.gs, new IntentFilter( Constants.BROADCAST_GS ) );
+		Constants.in_lobby = true;
 	}
 	
 	@Override
 	public void onBackPressed( ) {
-		if( Constants.in_game ) return;
-		else super.onBackPressed( );
+		if( Constants.in_game ) 
+			return;
+		else
+			super.onBackPressed( );
 	}
 
 	@Override
@@ -198,13 +169,6 @@ public class GameLobbyActivity extends Activity {
 		super.onPause( );
 		
 		Constants.in_lobby = false;
-		
-		/* Remove sticky broadcasts */
-		removeStickyBroadcast( new Intent( Constants.BROADCAST_LOB_UPDATE ) );
-		
-		/* Unregister broadcast receiver(s) */
-		unregisterReceiver( this.updater );
-		unregisterReceiver( this.gs );
 		
 		/* Tell WalloffServer we are leaving */
 		try {

@@ -5,13 +5,8 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.provider.Settings;
-import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,7 +14,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ViewFlipper;
 
-import com.google.android.gcm.GCMRegistrar;
 import com.walloff.android.Tasks.SendToWalloffServer;
 
 public class MainMenuActivity extends Activity {
@@ -76,16 +70,6 @@ public class MainMenuActivity extends Activity {
 			
 			/* Prompt user for credentials */
 			this.cred_store_dialog.show( );
-			
-			/* Register with GCM */
-			GCMRegistrar.checkDevice( this );
-	        GCMRegistrar.checkManifest( this );
-	        final String regId = GCMRegistrar.getRegistrationId( MainMenuActivity.this );
-	        if( regId.equals( "" ) ) {
-	          GCMRegistrar.register( MainMenuActivity.this, Constants.project_id );
-	        } else {
-	        	Log.i( Constants.TAG, "Already registered" );
-	        }
 	        
 	        this.cred_store_save.setOnClickListener( new View.OnClickListener( ) {
 				public void onClick( View arg0 ) {
@@ -102,7 +86,6 @@ public class MainMenuActivity extends Activity {
 					editor.putString( Constants.PREFS_CREDS_KEY, "STORED" );
 					editor.putString( Constants.L_USERNAME, username.getText( ).toString( ) );
 					editor.putString( Constants.L_PASSWORD, password.getText( ).toString( ) );
-					editor.putString( Constants.L_GCMID, GCMRegistrar.getRegistrationId( MainMenuActivity.this ) );
 					editor.commit( );
 					
 					/* Send info to Walloff Server */
@@ -112,7 +95,6 @@ public class MainMenuActivity extends Activity {
 						to_send.put( Constants.M_TAG, Constants.LOGIN );
 						to_send.put( Constants.L_USERNAME, username.getText( ).toString( ) );
 						to_send.put( Constants.L_PASSWORD, password.getText( ).toString( ) );
-						to_send.put( Constants.L_GCMID, GCMRegistrar.getRegistrationId( MainMenuActivity.this ) );
 						
 						send_ws = new SendToWalloffServer( MainMenuActivity.this );
 						send_ws.setDialog( cred_store_dialog );

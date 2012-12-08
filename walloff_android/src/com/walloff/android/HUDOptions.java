@@ -74,23 +74,21 @@ public class HUDOptions extends View {
 		this.dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		
 		//set the dialog dismiss to remove the in_hud flag
-		dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-			
+		dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {			
 			public void onDismiss(DialogInterface dialog) {
 				Constants.in_HUD = false;
 			}
 		});
 		
 		
-		dialog.setOnShowListener(new DialogInterface.OnShowListener() {
-			
+		dialog.setOnShowListener(new DialogInterface.OnShowListener() {			
 			public void onShow(DialogInterface dialog) {
-				Constants.in_HUD = true;
-				
+				Constants.in_HUD = true;				
 			}
 		});
 	}
 	
+	/* called when the user presses on this screen. We use this to obtain the X and Y locations */
 	public void updateTouchLocation( float x, float y )
 	{
 		/* obtain where the person touched on the screen */
