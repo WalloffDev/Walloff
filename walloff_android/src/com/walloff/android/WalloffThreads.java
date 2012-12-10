@@ -134,6 +134,7 @@ public class WalloffThreads {
 					this.dos.flush( );
 					this.dos.write( payload.getBytes() );
 					this.dos.flush( );
+					
 					int next_byte;
 					String raw_payload = "";
 					Log.i(this.identity, "getting the payload length");
