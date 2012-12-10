@@ -1,7 +1,6 @@
 package com.walloff.android;
 
 import org.json.JSONObject;
-
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -14,12 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ViewFlipper;
 
-import com.walloff.android.Tasks.SendToWalloffServer;
-
 public class MainMenuActivity extends Activity {
-	
-	/* AsyncTask(s) */
-	private Tasks.SendToWalloffServer send_ws = null;
 	
 	/* Credential Store layout */
 	private Dialog cred_store_dialog = null;
@@ -44,14 +38,17 @@ public class MainMenuActivity extends Activity {
 
         /* Register our gesture listener */
 		Constants.gestureDetector = new GestureDetection( this, ( ViewFlipper )findViewById( R.id.main_menu_parent ) );	
+		
+		/* start the thread to send messages to our server */
+		Constants.sender = new WalloffThreads.Sender( MainMenuActivity.this );
+		Constants.sender.start();
     }
   
-    
-    /** Life Cycle func(s) **/
+	/** Life Cycle func(s) **/
 	@Override
 	protected void onResume( ) {
 		super.onResume( );
-		
+
 		/* Check SharedPreferences for existing user credentials */
 		SharedPreferences prefs = getSharedPreferences( Constants.PREFS_FILENAME, MainMenuActivity.MODE_PRIVATE );
 		String creds = prefs.getString( Constants.PREFS_CREDS_KEY, "" );
@@ -92,14 +89,15 @@ public class MainMenuActivity extends Activity {
 					try {
 						
 						JSONObject to_send = new JSONObject( );
-						to_send.put( Constants.M_TAG, Constants.LOGIN );
+						to_send.put( Constants.M_TAG, Constants.REGISTER );
 						to_send.put( Constants.L_USERNAME, username.getText( ).toString( ) );
 						to_send.put( Constants.L_PASSWORD, password.getText( ).toString( ) );
 						
-						send_ws = new SendToWalloffServer( MainMenuActivity.this );
-						send_ws.setDialog( cred_store_dialog );
-						send_ws.setPDialog( new ProgressDialog( MainMenuActivity.this ) );
-				        send_ws.execute( to_send );
+						ProgressDialog pDia = new ProgressDialog( MainMenuActivity.this );
+						pDia.show();
+						Constants.sender.setPDialog( pDia );
+						Constants.sender.setDialog( cred_store_dialog );
+						Constants.sender.sendMessage( to_send );
 						
 					} catch( Exception e ) {
 						e.printStackTrace( );
@@ -114,5 +112,11 @@ public class MainMenuActivity extends Activity {
 
 	protected void onPause( ) {
 		super.onPause( ); 
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		//Constants.sender.interrupt( );
 	}
 }

@@ -9,17 +9,18 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.walloff.android.Tasks.SendToWalloffServer;
 
 public class GameLobbyActivity extends Activity {
 	
-	private SendToWalloffServer send_ws = null;
 	private Player[ ] opos = null;
 	private NetworkingManager n_man = null;
 	
 	/* UI elt(s) */
 	private TextView lname, p1_name, p2_name, p3_name, p4_name, countdown;//mname;
 	private View p1, p2, p3, p4;	
+	
+	/* handler for heartbeates */
+	private WalloffThreads.Backdoor backdoor_task = null;
 	
 	@Override
 	protected void onCreate( Bundle savedInstanceState ) {
@@ -154,6 +155,10 @@ public class GameLobbyActivity extends Activity {
 	protected void onResume( ) {
 		super.onResume( );
 		Constants.in_lobby = true;
+		
+		/* Start WalloffBackdoorTask */
+		backdoor_task = new WalloffThreads.Backdoor( this );
+		backdoor_task.start();
 	}
 	
 	@Override
@@ -172,15 +177,16 @@ public class GameLobbyActivity extends Activity {
 		
 		/* Tell WalloffServer we are leaving */
 		try {
-		
+			// kill the heartbeats
+			this.backdoor_task.interrupt();
+			
 			SharedPreferences prefs = GameLobbyActivity.this.getSharedPreferences( Constants.PREFS_FILENAME, GameLobbyActivity.MODE_PRIVATE );
 			String uname = prefs.getString( Constants.L_USERNAME, "" );
 			
 			JSONObject to_send = new JSONObject( );
 			to_send.put( Constants.M_TAG, Constants.LEAVE );
 			to_send.put( Constants.L_USERNAME, uname );
-			send_ws = new SendToWalloffServer( GameLobbyActivity.this );
-			send_ws.execute( to_send );
+			Constants.sender.sendMessage( to_send );
 			
 		} catch( Exception e ) {
 			e.printStackTrace( );

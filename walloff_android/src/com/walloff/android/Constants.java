@@ -1,20 +1,11 @@
 package com.walloff.android;
 
 import android.content.Context;
+import android.os.Handler;
 //import android.net.wifi.WifiManager;
 import android.widget.Toast;
 
 public final class Constants {
-	
-	/* GCM */
-	public static final String project_id = "55756868908";
-	public static final String TAG = "GCM";
-	public static final String BROADCAST_LOB_UPDATE = "com.walloff.android.lobbyupdate";
-	public static final String BROADCAST_GS = "com.walloff.android.gs";
-	public static final String LOBBY_UPDATE = "lobby_update";
-	public static final String GS = "gs";
-	public static final String GS_DELAY = "gs_delay";
-	//public static WifiManager.WifiLock w_lock = null;
 	
 	/* Preferences */
 	public static final String PREFS_FILENAME = "walloff_prefs";
@@ -27,28 +18,28 @@ public final class Constants {
 	/* Server info */
 	public static final String server_url = "walloff.cslabs.clarkson.edu";
 	public static final Integer server_port = 8080;
-	public static final Integer MAX_BUF = 1024;
+	public static final Integer server_heartbeat_port = 8081;
+	public static final Integer backdoor_port = 8000;
+	public static final int HEARTBEAT_INTERVAL = 15000;
 	public static final int MAX_LOB_SIZE = 4;
 
 	/* Message TAG(s) */
 	public static final String M_TAG = "tag";
-	public static final String LOGIN = "login";
+	public static final String REGISTER = "register";
 	public static final String CREATE = "create";
 	public static final String HOST = "host";
 	public static final String L_USERNAME = "uname";
 	public static final String L_PASSWORD = "passwd";
 	public static final String L_IPID = "ip_id";
-	public static final String L_GCMID = "gcmid";
-	public static final String MAP_NAME = "map";
-	public static final String MAP_SIZE = "size";
-	public static final String MAP_SHRINK = "shrinkable";
-	public static final String MAP_ONUM = "number_obstacles";
-	public static final String MAP_MOVE = "moving_obstacles";
+	public static final String MAP_NAME = "mname";
+	public static final String MAP_SIZE = "msize";
+	public static final String MAP_SHRINK = "mshrinkable";
+	public static final String MAP_ONUM = "mnumber_obstacles";
+	public static final String MAP_MOVE = "mmoving_obstacles";
 	public static final String LOB_NAME = "lname";
-	public static final String RETURN = "return";
-	public static final String SUCCESS = "SUCCESS";
-	public static final String FAIL = "FAIL";
-	public static final String MESSAGE = "message";
+	public static final String STATUS = "status";
+	public static final String SUCCESS = "success";
+	public static final String FAIL = "failure";
 	public static final String PRI_IP = "priv_ip";
 	public static final String PRI_PORT = "priv_port";
 	public static final String GET_LOBBIES = "get_lobbies";
@@ -74,6 +65,8 @@ public final class Constants {
 	
 	/* signifies host_player is in game */
 	public static boolean in_game = false;
+	
+	public static WalloffThreads.Sender sender = null;
 	
 	/* Generic helper functions */
 	public static boolean verify_credential_input( Context context, String username, String password, 
