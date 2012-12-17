@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+<img class="studs" src="{% static 'img/creators.png' %}">
+
+	<div class="creator1">
+		<h1>Andrew C. Bodine</h1>
+		<p>My description</p>
+		<ul class="icons">
+		 	<li><a href="https://github.com/andrew-bodine"><img src="{% static 'icons/github-icon.png' %}"></a></li>&emsp;
+	  	 	<li><a href="http://www.linkedin.com/profile/view?id=163433552&authType=NAME_SEARCH&authToken=mW4b&locale=en_US&srchid=4ca975ba-c448-4928-b13e-3728a0f65785-0&srchindex=6&srchtotal=27&goback=%2Efps_PBCK_Andrew+Bodine_*1_*1_*1_*1_*1_*1_*2_*1_Y_*1_*1_*1_false_1_R_*1_*51_*1_*51_true_*2_*2_*2_*2_*2_*2_*2_*2_*2_*2_*2_*2_*2_*2_*2_*2_*2_*2_*2_*2_*2&pvs=ps&trk=pp_profile_name_link"><img src="{% static 'icons/linkedin-icon.png' %}"></a></li>
+		</ul>
+	</div>
+	<div class="creator2">
+		<h1>Daniel Lavine</h1>
+		<p>My description</p>
+		<ul class="icons">
+		 	<li><a href="https://github.com/lavineds"><img src="{% static 'icons/github-icon.png' %}"></a></li>&emsp;
+	  	 	<li><a href="#"><img src="{% static 'icons/linkedin-icon.png' %}"></a></li>
+		</ul>
+	</div>
+</div>
+{% endblock %}
