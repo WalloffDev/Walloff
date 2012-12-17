@@ -1,17 +1,11 @@
 package com.walloff.android;
 
 import org.json.JSONObject;
-
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.provider.Settings;
-import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,13 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ViewFlipper;
 
-import com.google.android.gcm.GCMRegistrar;
-import com.walloff.android.Tasks.SendToWalloffServer;
-
 public class MainMenuActivity extends Activity {
-	
-	/* AsyncTask(s) */
-	private Tasks.SendToWalloffServer send_ws = null;
 	
 	/* Credential Store layout */
 	private Dialog cred_store_dialog = null;
@@ -50,14 +38,17 @@ public class MainMenuActivity extends Activity {
 
         /* Register our gesture listener */
 		Constants.gestureDetector = new GestureDetection( this, ( ViewFlipper )findViewById( R.id.main_menu_parent ) );	
+		
+		/* start the thread to send messages to our server */
+		Constants.sender = new WalloffThreads.Sender( MainMenuActivity.this );
+		Constants.sender.start();
     }
   
-    
-    /** Life Cycle func(s) **/
+	/** Life Cycle func(s) **/
 	@Override
 	protected void onResume( ) {
 		super.onResume( );
-		
+
 		/* Check SharedPreferences for existing user credentials */
 		SharedPreferences prefs = getSharedPreferences( Constants.PREFS_FILENAME, MainMenuActivity.MODE_PRIVATE );
 		String creds = prefs.getString( Constants.PREFS_CREDS_KEY, "" );
@@ -76,16 +67,6 @@ public class MainMenuActivity extends Activity {
 			
 			/* Prompt user for credentials */
 			this.cred_store_dialog.show( );
-			
-			/* Register with GCM */
-			GCMRegistrar.checkDevice( this );
-	        GCMRegistrar.checkManifest( this );
-	        final String regId = GCMRegistrar.getRegistrationId( MainMenuActivity.this );
-	        if( regId.equals( "" ) ) {
-	          GCMRegistrar.register( MainMenuActivity.this, Constants.project_id );
-	        } else {
-	        	Log.i( Constants.TAG, "Already registered" );
-	        }
 	        
 	        this.cred_store_save.setOnClickListener( new View.OnClickListener( ) {
 				public void onClick( View arg0 ) {
@@ -102,22 +83,21 @@ public class MainMenuActivity extends Activity {
 					editor.putString( Constants.PREFS_CREDS_KEY, "STORED" );
 					editor.putString( Constants.L_USERNAME, username.getText( ).toString( ) );
 					editor.putString( Constants.L_PASSWORD, password.getText( ).toString( ) );
-					editor.putString( Constants.L_GCMID, GCMRegistrar.getRegistrationId( MainMenuActivity.this ) );
 					editor.commit( );
 					
 					/* Send info to Walloff Server */
 					try {
 						
 						JSONObject to_send = new JSONObject( );
-						to_send.put( Constants.M_TAG, Constants.LOGIN );
+						to_send.put( Constants.M_TAG, Constants.REGISTER );
 						to_send.put( Constants.L_USERNAME, username.getText( ).toString( ) );
 						to_send.put( Constants.L_PASSWORD, password.getText( ).toString( ) );
-						to_send.put( Constants.L_GCMID, GCMRegistrar.getRegistrationId( MainMenuActivity.this ) );
 						
-						send_ws = new SendToWalloffServer( MainMenuActivity.this );
-						send_ws.setDialog( cred_store_dialog );
-						send_ws.setPDialog( new ProgressDialog( MainMenuActivity.this ) );
-				        send_ws.execute( to_send );
+						ProgressDialog pDia = new ProgressDialog( MainMenuActivity.this );
+						pDia.show();
+						Constants.sender.setPDialog( pDia );
+						Constants.sender.setDialog( cred_store_dialog );
+						Constants.sender.sendMessage( to_send );
 						
 					} catch( Exception e ) {
 						e.printStackTrace( );
@@ -132,5 +112,11 @@ public class MainMenuActivity extends Activity {
 
 	protected void onPause( ) {
 		super.onPause( ); 
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		//Constants.sender.interrupt( );
 	}
 }

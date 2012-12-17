@@ -2,7 +2,6 @@ package com.walloff.android;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import com.walloff.android.Tasks.SendToWalloffServer;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -23,7 +22,6 @@ public class Adapters {
 		private Context context;
 		private JSONArray data = null;
 		//private String[ ] keys = null;
-		private Tasks.SendToWalloffServer send_ws = null;
 		private ProgressDialog progress_dialog;
 
 		/* Constructor(s) */
@@ -77,10 +75,9 @@ public class Adapters {
 				to_send.put( Constants.LOB_NAME, ( ( JSONObject )this.data.getJSONObject( position ) ).getString( "pk" ) );
 				progress_dialog = new ProgressDialog( context );
 				progress_dialog.setCancelable( false );
-				send_ws = new SendToWalloffServer( context );
-				send_ws.setPDialog( progress_dialog );
-				send_ws.setIntent( new Intent( context, GameLobbyActivity.class ) );
-				send_ws.execute( to_send );
+				Constants.sender.setPDialog( progress_dialog );
+				Constants.sender.setIntent( new Intent( context, GameLobbyActivity.class ) );
+				Constants.sender.sendMessage( to_send );
 				
 			} catch( Exception e ) {
 				e.printStackTrace( );

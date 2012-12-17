@@ -68,4 +68,6 @@
         <item>7</item>
         <item>8</item>
     </string-array>
+        <string name="profile_avitar_text">Avatar</string>
+        <string name="profile_character_text">Current Character</string>
 </resources>
