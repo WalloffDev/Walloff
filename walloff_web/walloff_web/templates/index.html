@@ -1,24 +1,38 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}	
 {% load static %}
 
-{% block swap %}
+{% block content %}
+<div class="news">
+	<ul>
+		<li><h1>News Updates</h1></li>
+		<li><h2>New Graphics</h2><p>New and improved graphics rendering improves the asthetic experienc as well as object recognition.</p></li>
+		<li><h2>Release Date</h2><p>At this time we are excited to share with you the rumored lauch dates for WallOff...</p></li>
+		<li><h2>Making Progress</h2><p>...</p></li>
+		<li><h2>Development Begins!</h2><p>And we're off! Visit our iterations page to get project updates.</p></li>
+	</ul>
+</div>
 
-	<div id="myCarousel" class="carousel slide">
- 		<!-- Carousel items -->
-  		<div class="carousel-inner">
-    			<div class="active item">
-				<img src="{% static 'img/armegatron1.jpg' %}">
-			</div>
-    			<div class="item">
-				<img src="{% static 'img/armegatron2.jpg' %}">
-			</div>
-    			<div class="item">
-				<img src="{% static 'img/armegatron3.jpg' %}">
-			</div>
-  		</div>
-  		<!-- Carousel nav -->
-  		<a class="carousel-control left" href="#myCarousel" data-slide="prev">&lsaquo;</a>
-  		<a class="carousel-control right" href="#myCarousel" data-slide="next">&rsaquo;</a>
-	</div>
+<!--
+<nav role="navigation">
+  <h1 onclick = "void(0);">Iterations</h1>
+  <ol>
+    <li><a href="#"><img src="images/home_icon.png"></a></li>
+    <li><a href="http://people.clarkson.edu/~beadlera/Final/walloff_internal_profile.html"><img src="http://icons.iconarchive.com/icons/ampeross/qetto-2/256/profile-icon.png"></a></li>
+    <li><a href="http://people.clarkson.edu/~beadlera/Final/walloff_internal_blog.html"><img src="http://www.iconsdb.com/icons/preview/black/speech-bubble-14-xxl.png"></a></li>
+    <li><a href="http://people.clarkson.edu/~beadlera/Final/walloff_internal_iterations.html"><img src="images/iterations_icon.png"></a></li>
+    <li><a href="http://people.clarkson.edu/~beadlera/Final/walloff_internal_about.html"><img src="images/about_icon.png"></a></li>
+    <li><a href="http://people.clarkson.edu/~beadlera/Final/walloff_internal_creators.html"><img src="images/creators_icon.png"></a></li>
+   </ol>
+</nav>-->
+<div class="lead">
+	<ul>
+		<li><h1>Leader Board</h1></li>
+		<li><h2>High Score!</h2><p>crankit789: 837468746893737462</p></li>
+		<li><h2>Most Plays</h2><p>doitup: 912 plays</p></li>
+		<li><h2>Win/Loss Ratio</h2><p>kanjam: 1.7</p></li>
+		<li><h2>Survival Time</h2><p>60827 seconds</p></li>
+		<li><h2>Winning Spree</h2><p>19 games</p></li>
+	</ul>
+</div>
 
 {% endblock %}

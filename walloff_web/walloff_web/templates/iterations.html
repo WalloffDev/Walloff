@@ -1,36 +1,59 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block swap %}
-	<h3>-- ITERATIONS --</h3><br>
-
-	<h4>- Iteration #1 -</h4>
-		<a target="_blank" href="http://people.clarkson.edu/~jsearlem/cs459/fa12/project/pr1.html" 
-			style="text-decoration: none;" id="utp">Understanding the Problem</a><br><br>
-		<a target="_blank" href="https://docs.google.com/document/d/14FSmAexL6S0mgK8DnS6WTeTU5xnliLHS06MT8DliHNo/edit" 
-			style="text-decoration: none;" id="rep">Report</a><br><br>
-		<a target="_blank" href="/surveys/1" style="text-decoration: none;" id="rs">Relevant Survey</a><br><br>
-		<a target="_blank" href="/data/" style="text-decoration: none;" id="sd">Survey Data</a><br><br>
-		<a target="_blank" href="https://docs.google.com/presentation/d/1L4TworNnG9yITCeM3t2dRjjUE0YxxPMpa5tZVVBsGDU/edit" 
-			style="text-decoration: none;" id="presi">It#1 Presentation</a><br><br>
-
-	<h4>- Iteration #2 -</h4>
-		<a target="_blank" href="http://people.clarkson.edu/~jsearlem/cs459/fa12/project/pr2.html" 
-			style="text-decoration: none;">Design Alternatives</a><br><br>
-		<a target="_blank" href="https://docs.google.com/document/d/14FSmAexL6S0mgK8DnS6WTeTU5xnliLHS06MT8DliHNo/edit" 
-			style="text-decoration: none;" id="rep">Report</a><br><br>
-		<a target="_blank" href="https://docs.google.com/presentation/d/1dllvjxgEudF5F-parV2FtG7A9EqZQSH1OjSNbyqmYN8/edit" 
-			style="text-decoration: none;" id="presi">It#2 Presentation</a><br><br>
-
-	<h4>- Iteration #3 -</h4>
-		<a target="_blank" href="http://people.clarkson.edu/~jsearlem/cs459/fa12/project/pr3.html" 
-			style="text-decoration: none;">Prototyping</a><br><br>	
-		<a target="_blank" href="https://docs.google.com/spreadsheet/ccc?key=0AqAmoWA0_-o8dHpUdm52YXhHY1RyMGdncU1UaWVxNEE" 
-			style="text-decoration: none;">Criteria Rubric</a><br><br>
-		<a target="_blank" href="https://docs.google.com/document/d/14FSmAexL6S0mgK8DnS6WTeTU5xnliLHS06MT8DliHNo/edit" 
-			style="text-decoration: none;">Report</a><br><br>	
-		<a target="_blank" href="/surveys/2" style="text-decoration: none;">Relavant Survey</a><br><br>	
-		<a target="_blank" href="/data/" style="text-decoration: none;">Survey Data</a><br><br>
-		<a target="_blank" href="https://docs.google.com/presentation/d/1CvWtl9M90jY_74B-J2bRlhnGGlOO83iw9WKnFcsr5ug/edit" 
-			style="text-decoration: none;">It#3 Presentation</a><br><br>
+{% block content %}
+<table class="iterations">
+	<caption align="top">Iterations</caption>
+	<thead>
+		<tr>
+	 		<th>Phase One</th>
+	 		<th>Phase Two</th>
+	 		<th>Phase Three</th>
+	 		<th>Phase Four</th>
+	 		<th>Phase Five</th>
+		</tr>
+	</thead>
+	<tfoot>
+		<tr>
+	 		<td><a href="http://people.clarkson.edu/~jsearlem/cs459/fa12/project/pr1.html">Understanding The Problem</a></td>
+	 		<td><a href="http://people.clarkson.edu/~jsearlem/cs459/fa12/project/pr2.html">Design Alternatives</a></td>
+	 		<td><a href="http://people.clarkson.edu/~jsearlem/cs459/fa12/project/pr3.html">Prototyping</a></td>
+	 		<td><a href="http://people.clarkson.edu/~jsearlem/cs459/fa12/project/pr4.html">Evaluating Designs</a></td>
+	 		<td><a href="http://people.clarkson.edu/~jsearlem/cs459/fa12/project/final.html">Final Report</a></td>
+		</tr>
+		<tr>
+	 		<td><a href="https://docs.google.com/document/d/14FSmAexL6S0mgK8DnS6WTeTU5xnliLHS06MT8DliHNo/edit">Report</a></td>
+	 		<td><a href="https://docs.google.com/document/d/14FSmAexL6S0mgK8DnS6WTeTU5xnliLHS06MT8DliHNo/edit">Report</a></td>
+	 		<td><a href="https://docs.google.com/spreadsheet/ccc?key=0AqAmoWA0_-o8dHpUdm52YXhHY1RyMGdncU1UaWVxNEE#gid=0">Criteria Ruberic</a></td>
+	 		<td><a href="https://docs.google.com/document/d/14FSmAexL6S0mgK8DnS6WTeTU5xnliLHS06MT8DliHNo/edit">Report</a></td>
+	 		<td><a href="https://docs.google.com/document/d/14FSmAexL6S0mgK8DnS6WTeTU5xnliLHS06MT8DliHNo/edit">Report</a></td>
+		</tr>
+		<tr>
+	 		<td><a href="http://walloff.cslabs.clarkson.edu/surveys/1/">Relevant Survey</a></td>
+	 		<td><a href="https://docs.google.com/presentation/d/1dllvjxgEudF5F-parV2FtG7A9EqZQSH1OjSNbyqmYN8/edit#slide=id.p">IT Presentation #2</a></td>
+	 		<td><a href="https://docs.google.com/document/d/14FSmAexL6S0mgK8DnS6WTeTU5xnliLHS06MT8DliHNo/edit">Report</a></td>
+	 		<td></td>
+	 		<td><a href="https://docs.google.com/presentation/d/173U3ZIlEgx9YYrtlDdDq7DILDjBBEmBN77ScCQAEudQ/edit">IT Presentation #5</a></td>
+		</tr>
+		<tr>
+	 		<td><a href="http://walloff.cslabs.clarkson.edu/data/">Survey Data</a></td>
+	 		<td></td>
+	 		<td><a href="http://walloff.cslabs.clarkson.edu/surveys/2/">Relevant Survey</a></td>
+	 		<td></td>
+	 		<td></td>
+		</tr>
+		<tr>
+	 		<td><a href="https://docs.google.com/presentation/d/1L4TworNnG9yITCeM3t2dRjjUE0YxxPMpa5tZVVBsGDU/edit#slide=id.p26">IT Presentation #1</a></td>
+	 		<td></td>
+	 		<td><a href="http://walloff.cslabs.clarkson.edu/data/">Survey Data</a></td>
+	 		<td></td>
+	 		<td></td>
+		</tr>
+		<tr>	
+	 		<td></td>
+	 		<td></td>
+	 		<td><a href="https://docs.google.com/presentation/d/1CvWtl9M90jY_74B-J2bRlhnGGlOO83iw9WKnFcsr5ug/edit">IT PResentation #3</a></td>
+		</tr>
+	</tfoot>
+</table>
 
 {% endblock %}

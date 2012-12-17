@@ -39,7 +39,6 @@ class Player( models.Model ):
 	User._meta.get_field( 'username' )._unique = True
 
 	# Player spec. info
-	gcm_id = models.TextField( )
 	pub_ip = models.CharField( max_length=15, default='0.0.0.0' )
 	priv_ip = models.CharField( max_length=15, default='0.0.0.0' )
 	pub_port = models.IntegerField( default=0 )
@@ -50,13 +49,12 @@ class Player( models.Model ):
 	def __unicode__( self ):
 		return self.django_user.username
 
-	def set_data( self, uname, passwd, gcmid ):
+	def set_data( self, uname, passwd ):
 		new_user = User( )
 		new_user.username = uname
 		new_user.set_password( passwd )
 		new_user.save( )
 		self.django_user = new_user
-		self.gcm_id = gcmid
 		self.save( )
 
 	def natural_key( self ):
