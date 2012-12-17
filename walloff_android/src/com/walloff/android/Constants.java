@@ -1,8 +1,6 @@
 package com.walloff.android;
 
 import android.content.Context;
-import android.os.Handler;
-//import android.net.wifi.WifiManager;
 import android.widget.Toast;
 
 public final class Constants {
@@ -10,27 +8,38 @@ public final class Constants {
 	/* Preferences */
 	public static final String PREFS_FILENAME = "walloff_prefs";
 	public static final String PREFS_CREDS_KEY = "credentials";
-	public static final String INVALID_USERNAME = "Username can't be blank and must be less than 30 characters!";
-	public static final String INVALID_PASSWORD = "Password can't be blank and must be at least 5 characters!";
-	public static final String MISMATCH_PASSWDS = "Passwords don't match, please retype them!";
 	public static final int MIN_PASS_LENGTH = 5;
 	
 	/* Server info */
 	public static final String server_url = "walloff.cslabs.clarkson.edu";
-	public static final Integer server_port = 8080;
+	public static final Integer server_lobby_port = 8080;
 	public static final Integer server_heartbeat_port = 8081;
-	public static final Integer backdoor_port = 8000;
+	
+	/* Nework Manager Plugin */
+	public static final int backdoor_port = 8089;
 	public static final int HEARTBEAT_INTERVAL = 15000;
+	public static final int BACKDOOR_BUFLEN = 512;
+	public static WalloffThreads.Sender sender;
+	
+	/* ? */
 	public static final int MAX_LOB_SIZE = 4;
 
+	//////////
+	public static final String L_IPID = "ip_id"; //
+	
 	/* Message TAG(s) */
-	public static final String M_TAG = "tag";
 	public static final String REGISTER = "register";
 	public static final String CREATE = "create";
-	public static final String HOST = "host";
+	public static final String SUCCESS = "success";
+	public static final String FAILURE = "failure";
+	public static final String GET_LOBBIES = "get_lobbies";
+	public static final String LEAVE = "leave";
+	public static final String JOIN = "join";
+	
+	/* Message key(s) */
+	public static final String M_TAG = "tag";
 	public static final String L_USERNAME = "uname";
 	public static final String L_PASSWORD = "passwd";
-	public static final String L_IPID = "ip_id";
 	public static final String MAP_NAME = "mname";
 	public static final String MAP_SIZE = "msize";
 	public static final String MAP_SHRINK = "mshrinkable";
@@ -38,14 +47,9 @@ public final class Constants {
 	public static final String MAP_MOVE = "mmoving_obstacles";
 	public static final String LOB_NAME = "lname";
 	public static final String STATUS = "status";
-	public static final String SUCCESS = "success";
-	public static final String FAIL = "failure";
 	public static final String PRI_IP = "priv_ip";
 	public static final String PRI_PORT = "priv_port";
-	public static final String GET_LOBBIES = "get_lobbies";
 	public static final String PAYLOAD = "payload";
-	public static final String LEAVE = "leave";
-	public static final String JOIN = "join";
 	
 	/* Lobby list var(s)  */
 	public static final String[ ] def_keys = { "" };
@@ -60,13 +64,14 @@ public final class Constants {
 	/* used to tell if we are in the HUD */
 	public static boolean in_HUD = false;
 	
-	/* used to delay lobby intent broadcast until gamelobbyactivity's oncreate */
-	public static boolean in_lobby = false;
-	
 	/* signifies host_player is in game */
 	public static boolean in_game = false;
 	
-	public static WalloffThreads.Sender sender = null;
+	
+	/* Error(s) */
+	public static final String INVALID_USERNAME = "Username can't be blank and must be less than 30 characters!";
+	public static final String INVALID_PASSWORD = "Password can't be blank and must be at least 5 characters!";
+	public static final String MISMATCH_PASSWDS = "Passwords don't match, please retype them!";
 	
 	/* Generic helper functions */
 	public static boolean verify_credential_input( Context context, String username, String password, 

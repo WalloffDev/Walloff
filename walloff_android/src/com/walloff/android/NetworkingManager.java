@@ -8,12 +8,9 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
-/** This class is a manager for the client-side networking
- * 		requirements including the necessary functionality for in game 
- * 		data flow 
- **/
-public class NetworkingManager {
-
+/** This class is a manager for the client-side networking requirements **/
+public class NetworkingManager {	
+	
 	/** CONSTANT(S) **/
 	private static final Integer BASE_R_PORT = 8000;	/* Receiver thread port number(s) increments from here */
 	private static final int STAT_ATTEMPT = 0;			/* Indicates socket is attempting connection */

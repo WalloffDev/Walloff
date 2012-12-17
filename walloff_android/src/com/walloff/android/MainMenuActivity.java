@@ -117,6 +117,6 @@ public class MainMenuActivity extends Activity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		//Constants.sender.interrupt( );
+		Constants.sender.interrupt( );
 	}
 }
