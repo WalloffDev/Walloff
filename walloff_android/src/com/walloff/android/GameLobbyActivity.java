@@ -5,12 +5,16 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class GameLobbyActivity extends Activity {
+	
+	/* Constant(s) */
+	private static final String identity = "GameLobbyActivity";
 	
 	private Player[ ] opos = null;
 	private NetworkingManager n_man = null;
@@ -19,7 +23,7 @@ public class GameLobbyActivity extends Activity {
 	private TextView lname, p1_name, p2_name, p3_name, p4_name, countdown;//mname;
 	private View p1, p2, p3, p4;	
 	
-	/* handler for heartbeates */
+	/* handler for backdoor traffic */
 	private WalloffThreads.Backdoor backdoor_task = null;
 	
 	@Override
@@ -154,10 +158,15 @@ public class GameLobbyActivity extends Activity {
 	@Override
 	protected void onResume( ) {
 		super.onResume( );
-		Constants.in_lobby = true;
 		
 		/* Start WalloffBackdoorTask */
 		backdoor_task = new WalloffThreads.Backdoor( this );
+		Log.i( GameLobbyActivity.identity, "DEBUG" );
+		this.backdoor_task.reset( );
+		if( !backdoor_task.initialize( ) ) {
+			Log.i( GameLobbyActivity.identity, "error during backdoor initializations" );
+			return;
+		}
 		backdoor_task.start();
 	}
 	
@@ -173,12 +182,9 @@ public class GameLobbyActivity extends Activity {
 	protected void onPause( ) {
 		super.onPause( );
 		
-		Constants.in_lobby = false;
-		
 		/* Tell WalloffServer we are leaving */
 		try {
-			// kill the heartbeats
-			this.backdoor_task.interrupt();
+			this.backdoor_task.die( );
 			
 			SharedPreferences prefs = GameLobbyActivity.this.getSharedPreferences( Constants.PREFS_FILENAME, GameLobbyActivity.MODE_PRIVATE );
 			String uname = prefs.getString( Constants.L_USERNAME, "" );

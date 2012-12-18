@@ -77,14 +77,6 @@ public class MainMenuActivity extends Activity {
 						return;
 					}
 					
-					/* Save info to preferences */
-					SharedPreferences prefs = getSharedPreferences( Constants.PREFS_FILENAME, MainMenuActivity.MODE_PRIVATE );
-					SharedPreferences.Editor editor = prefs.edit( );
-					editor.putString( Constants.PREFS_CREDS_KEY, "STORED" );
-					editor.putString( Constants.L_USERNAME, username.getText( ).toString( ) );
-					editor.putString( Constants.L_PASSWORD, password.getText( ).toString( ) );
-					editor.commit( );
-					
 					/* Send info to Walloff Server */
 					try {
 						
@@ -98,6 +90,14 @@ public class MainMenuActivity extends Activity {
 						Constants.sender.setPDialog( pDia );
 						Constants.sender.setDialog( cred_store_dialog );
 						Constants.sender.sendMessage( to_send );
+						
+						/* Save info to preferences */
+						SharedPreferences prefs = getSharedPreferences( Constants.PREFS_FILENAME, MainMenuActivity.MODE_PRIVATE );
+						SharedPreferences.Editor editor = prefs.edit( );
+						editor.putString( Constants.PREFS_CREDS_KEY, "STORED" );
+						editor.putString( Constants.L_USERNAME, username.getText( ).toString( ) );
+						editor.putString( Constants.L_PASSWORD, password.getText( ).toString( ) );
+						editor.commit( );
 						
 					} catch( Exception e ) {
 						e.printStackTrace( );
@@ -117,6 +117,6 @@ public class MainMenuActivity extends Activity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		//Constants.sender.interrupt( );
+		Constants.sender.interrupt( );
 	}
 }
