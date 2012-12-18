@@ -32,14 +32,10 @@ class monitor( threading.Thread ):
 	def receive_and_parse( self ):
 
 		payload, r_addr = self.monitor_socket.recvfrom( constants.MONITOR_RECV_LEN )
-		#print self.tag + 'received ' + str( len( payload ) ) + ' byte heartbeat from ' + str( r_addr )
-		print self.tag + 'recv: ' + str( payload )
-
-		#print self.tag + 'received ' + str( len( str( payload ) ) ) + ' byte heartbeat from ' + str( r_addr )
-		#payload = json.loads( payload )
-
-		#client = Player.objects.get( django_user__username=str( payload[ constants.uname ] ).lower( ) )
-		#client.update_net_info( r_addr[ 0 ], r_addr[ 1 ], str( payload[ constants.priv_ip ] ), str( payload[ constants.priv_port ] ) )
+		print self.tag + 'received ' + str( len( payload ) ) + ' byte heartbeat from ' + str( r_addr )
+		payload = json.loads( payload )
+		client = Player.objects.get( django_user__username=str( payload[ constants.uname ] ).lower( ) )
+		client.update_net_info( r_addr[ 0 ], r_addr[ 1 ], str( payload[ constants.priv_ip ] ), str( payload[ constants.priv_port ] ) )
 
 	def run( self ):
 		try:

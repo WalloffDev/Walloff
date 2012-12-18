@@ -120,7 +120,7 @@ class handler( threading.Thread ):
                                 self.respond( constants.success )
 
                                 # push lobby update
-                                #self.push_multiple( lobby=new_lobby, payload='test push message' )
+                                self.push_multiple( lobby=new_lobby, payload='test push message' )
 
                         except IntegrityError:
                                 self.respond( constants.failure, payload=constants.err_lname_exists )
@@ -181,25 +181,15 @@ class handler( threading.Thread ):
 
 	def push_multiple( self, lobby, payload ):
 		
-		players = Lobby.objects.get( name=lobby.name ).player_set
-		for player in players.all( ):
-	
-			tries = 5
-			while 1 and tries > 0 and not self.killed_flg.is_set( ):
-				try:
-					player = Player.objects.get( django_user__username=player.django_user.username )
-					print 'Trying to push ' + str( len( payload ) ) + ' byte message to ' + str( player.pub_ip ) + ':' + str( player.pub_port )
-					temp_conn = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
-					temp_conn.settimeout( 10 )		
-					temp_conn.connect( ( player.pub_ip, int( player.pub_port ) ) )
-					#temp_conn.sendto( 'NPL:' + str( len( payload ) ) + '\0' )
-					#temp_conn.sendall( payload )
-					temp_conn.close( )
-					break
-				except socket.timeout:
-					tries -= 1
-					continue
-				except socket.error as e:
-					tries -= 1
-					print self.tag + ( e )
-					break
+		try :
+			players = Lobby.objects.get( name=lobby.name ).player_set
+			temp_conn = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
+			#temp_conn.setsockopt( socket.SOL_SOCKET, socket.SO_REUSEADDR, 1 )
+			#temp_conn.bind( ( '', 8081 ) )
+
+			for player in players.all( ):
+				player = Player.objects.get( django_user__username=player.django_user.username )
+				print 'Trying to push ' + str( len( payload ) ) + ' byte message to ' + str( player.pub_ip ) + ':' + str( player.pub_port )
+				temp_conn.sendto( str( payload ), ( str( player.pub_ip ), int( player.pub_port ) ) )
+		except socket.error as e:
+			print self.tag + ( e )
