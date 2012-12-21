@@ -43,7 +43,7 @@ class mgmt( threading.Thread ):
 
 	def init_handlers( self ):
 		for i in range( constants.HANDLER_BANK_SIZE ):
-			handler = handlers.handler( )
+			handler = handlers.handler( self )
 			self.handlers_queue.append( handler )
 			handler.start( )
 

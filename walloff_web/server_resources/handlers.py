@@ -1,8 +1,10 @@
 # Request handler #
 
 # Import(s) #
-import threading, socket, json
+import threading, socket, json#, time
 from django.db import IntegrityError, DatabaseError
+from django.db.models import Count
+from django.core import serializers
 import constants
 from lobby_app.models import *
 
@@ -10,6 +12,7 @@ class handler( threading.Thread ):
 	
 	# Member(s)
 	tag = None
+	manager = None
 	socket = None
 	r_addr = None
 	cv_socket = None
@@ -17,8 +20,9 @@ class handler( threading.Thread ):
 	killed_flg = None
 
 	# MGMT methods #
-	def __init__( self ):
+	def __init__( self, manager ):
 		threading.Thread.__init__( self )
+		self.manager = manager
 		self.cv_socket = threading.Condition( )
 		self.ready_flg = threading.Event( )
 		self.killed_flg = threading.Event( )
@@ -68,11 +72,8 @@ class handler( threading.Thread ):
 
 	# Handler methods #
 	def receive_and_parse( self ):
-		print self.tag + 'getting npl'
 		npl = self.get_npl( )
-		print self.tag + 'getting payload: ' + str( npl )
 		payload = self.socket.recv( int( npl ) )
-		print self.tag + 'received payload: ' + str( len( payload ) )
 		payload = json.loads( str( payload ) )
 		tag = payload[ constants.tag ]
 
@@ -120,7 +121,7 @@ class handler( threading.Thread ):
                                 self.respond( constants.success )
 
                                 # push lobby update
-                                self.push_multiple( lobby=new_lobby, payload='test push message' )
+                                self.push_multiple( lobby=new_lobby, payload=self.construct_ppayload( new_lobby ) )
 
                         except IntegrityError:
                                 self.respond( constants.failure, payload=constants.err_lname_exists )
@@ -130,9 +131,34 @@ class handler( threading.Thread ):
 
 		elif tag == constants.join:
 			print 'Join lobby received'
-		elif tag == constants.leave:
-			print self.tag + 'Leave lobby received'
 
+			try:
+				uname = payload[ constants.uname ]
+				lname = payload[ constants.lname ]
+
+				# make sure lobby is still available
+				lobby = Lobby.objects.get( name = lname )
+				players = lobby.player_set
+				if len( players.all( ) ) < constants.MAX_LOBBY_SIZE:
+					
+					# add player to lobby
+					player = Player.objects.get( django_user__username = str( uname ).lower( ) )
+					player.join_lobby( lobby )
+					self.respond( constants.success )
+
+					# push lobby update
+					self.push_multiple( lobby=lobby, payload=self.construct_ppayload( lobby ) )
+	
+					# schedule game start
+					self.manager.gs_scheduler.add_todo( constants.T_SCHEDULE, lobby )
+				else:
+					self.respond( constants.failure, payload=constants.err_lobb_unavail )
+
+			except BaseException as e:
+				print self.tag + str( e )
+				self.respond( constants.failure, payload=constants.err_unknown )
+
+		elif tag == constants.leave:
 			try:
                                 # Obtain the player that is currently leaving the lobby
                                 uname = payload[ constants.uname ]
@@ -147,6 +173,7 @@ class handler( threading.Thread ):
                                 lobby = Lobby.objects.get( name=lname )
                                 players = lobby.player_set
 
+				#TODO
                                 #if len( players.all( ) ) == 1:
                                         # Cancel game start, not enough players
                                 #        self.server.timer_man.cancel_gs( m_lobby )
@@ -155,6 +182,7 @@ class handler( threading.Thread ):
                                         # Delete empty lobby
                                         lobby.delete( )
 
+				#TODO
                                 #else:   # Notify remaining players
                                 #        self.send_parrays( players=players.all( ), lobby=lobby )
 
@@ -164,17 +192,34 @@ class handler( threading.Thread ):
 
 
 		elif tag == constants.get_available_lobbies:
-			print 'Get available lobbies received'
+			try :
+				lobbies = Lobby.objects.annotate( num_players = Count( 'player' ) ).exclude( num_players=constants.MAX_LOBBY_SIZE )
+				payload = serializers.serialize( 'json', lobbies.all( ) )
+				self.respond( constants.success, payload=payload )
+			except BaseException as e:
+				print self.tag + str( e )
+				self.respond( constants.failure, payload=constants.err_unknown )
+
 		elif tag == constants.update_map:
 			print 'Map update received'
 		else:
 			print 'unrecognized message tag'
 
+	def construct_ppayload( self, lobby ):
+		ppayload = { }
+		ppayload.update( { constants.tag: constants.update_lobby, constants.lname: str( lobby.name ) } )
+		players = Lobby.objects.get( name=lobby.name ).player_set.all( )
+		ppayload.update( { constants.tag: constants.update_lobby, constants.lname: str( lobby.name ) } )
+		players = Lobby.objects.get( name=lobby.name ).player_set.all( )
+		for i in range( len( players ) ):
+			ppayload.update( { str( i ): json.dumps( { constants.uname: players[ i ].django_user.username } ) } )
+		return ppayload 
+
 	def respond( self, status, payload='' ):
 		if payload == '':
 			response = json.dumps( { constants.status: status } )
 		else:
-			response = json.dumps( { constants.status: status, constants.payload: json.dumps( str( payload ) ) } )
+			response = json.dumps( { constants.status: status, constants.payload: json.loads( str( payload ) ) } )
                 print self.tag + 'Sending: ' + str( response )
                 self.socket.sendall( 'NPL:' + str( len( response ) ) + '\0' )
                 self.socket.sendall( response )
@@ -184,12 +229,11 @@ class handler( threading.Thread ):
 		try :
 			players = Lobby.objects.get( name=lobby.name ).player_set
 			temp_conn = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
-			#temp_conn.setsockopt( socket.SOL_SOCKET, socket.SO_REUSEADDR, 1 )
-			#temp_conn.bind( ( '', 8081 ) )
 
 			for player in players.all( ):
 				player = Player.objects.get( django_user__username=player.django_user.username )
 				print 'Trying to push ' + str( len( payload ) ) + ' byte message to ' + str( player.pub_ip ) + ':' + str( player.pub_port )
-				temp_conn.sendto( str( payload ), ( str( player.pub_ip ), int( player.pub_port ) ) )
+				temp_conn.sendto( str( payload ), ( str( player.pub_ip ), int( str( player.pub_port ) ) ) )
+
 		except socket.error as e:
 			print self.tag + ( e )
