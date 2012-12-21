@@ -1,15 +1,20 @@
 package com.walloff.android;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -24,6 +29,22 @@ public class UIEltsHelper {
 	private ViewFlipper view_flipper = null;
 	private ProgressDialog progress_dialog = null;
 	private MotionEvent m_event = null;
+	
+	private Handler handler = new Handler( ) {
+
+		@Override
+		public void handleMessage( Message msg ) {
+			super.handleMessage( msg );
+			JSONArray temp = null;
+			try {
+				temp = new JSONArray( msg.getData( ).getString( Constants.PAYLOAD ) );
+			} catch ( JSONException e ) {
+				e.printStackTrace( );
+			}
+			avail_lobs.setAdapter( new Adapters.LLAdapter( activity_context, temp, null ) );
+			avail_lobs.setOnItemClickListener( ( OnItemClickListener ) avail_lobs.getAdapter( ) );
+		}
+	};
 	
 	/* long press event listener */
 	private View.OnLongClickListener HoldListener = new OnLongClickListener() {
@@ -61,11 +82,10 @@ public class UIEltsHelper {
 							JSONObject to_send = new JSONObject( );
 							to_send.put( Constants.M_TAG, Constants.GET_LOBBIES );
 							progress_dialog = new ProgressDialog( activity_context );
-							//progress_dialog.setCancelable( false );
-//							send_ws = new SendToWalloffServer( activity_context );
-//							send_ws.setListView( avail_lobs );
-//							send_ws.setPDialog( progress_dialog );
-//							send_ws.execute( to_send );
+							progress_dialog.show( );
+							Constants.sender.setPDialog( progress_dialog );
+							Constants.sender.setHandler( handler );
+							Constants.sender.sendMessage( to_send );
 						} catch( JSONException e ) { e.printStackTrace( ); }
 					}
 					return true;
@@ -87,12 +107,19 @@ public class UIEltsHelper {
 							to_send.put( Constants.MAP_ONUM, ( String )multi_onum.getSelectedItem( ) );
 							to_send.put( Constants.MAP_MOVE, String.valueOf( multi_moving.isChecked( ) ) );
 							
-							/* Set Intent and progress dialog and start task */
+							/* Start backdoor thread before sending message to server, fixes race condition */
+							Constants.backdoor = new WalloffThreads.Backdoor( activity_context );
+							Constants.backdoor.reset( );
+							if( !Constants.backdoor.initialize( ) ) {
+								Log.i( GameLobbyActivity.identity, "error during backdoor initializations" );
+								return true;
+							}
+							Constants.backdoor.start( );
+							
+							/* Set Intent and progress dialog and send message to WalloffServer */
 							progress_dialog = new ProgressDialog( activity_context );
 							progress_dialog.setCancelable( false );
 							progress_dialog.show( );
-							
-							
 							Constants.sender.setIntent( new Intent( activity_context, GameLobbyActivity.class ) );
 							Constants.sender.setPDialog( progress_dialog );
 							Constants.sender.sendMessage( to_send );
@@ -111,7 +138,6 @@ public class UIEltsHelper {
 	};
 	
 	/* Main menu View elements */
-	// Multiplayer
 	public Button multi_host = null, multi_join = null, multi_create = null;
 	public EditText multi_lname = null;
 	public TextView error_info = null;
@@ -188,6 +214,4 @@ public class UIEltsHelper {
     		break;
     	}
     }
-
-
 }

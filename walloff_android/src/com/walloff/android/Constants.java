@@ -15,11 +15,16 @@ public final class Constants {
 	public static final Integer server_lobby_port = 8080;
 	public static final Integer server_heartbeat_port = 8081;
 	
+	/* Broadcast Intent(s) */
+	public static final String BROADCAST_LOBBY_UPDATE = "com.walloff.android.lobbyupdate";
+	public static final String BROADCAST_LOBBY_GS = "com.walloff.android.gs";
+	
 	/* Nework Manager Plugin */
 	public static final int backdoor_port = 8089;
-	public static final int HEARTBEAT_INTERVAL = 15000;
+	public static final int HEARTBEAT_INTERVAL = 5000;
 	public static final int BACKDOOR_BUFLEN = 512;
 	public static WalloffThreads.Sender sender;
+	public static WalloffThreads.Backdoor backdoor;
 	
 	/* ? */
 	public static final int MAX_LOB_SIZE = 4;
@@ -27,7 +32,7 @@ public final class Constants {
 	//////////
 	public static final String L_IPID = "ip_id"; //
 	
-	/* Message TAG(s) */
+	/* Message intent(s) */
 	public static final String REGISTER = "register";
 	public static final String CREATE = "create";
 	public static final String SUCCESS = "success";
@@ -35,6 +40,8 @@ public final class Constants {
 	public static final String GET_LOBBIES = "get_lobbies";
 	public static final String LEAVE = "leave";
 	public static final String JOIN = "join";
+	public static final String LOBBY_UPDATE = "lobby_update";
+	public static final String LOBBY_GS = "lobby_gs";
 	
 	/* Message key(s) */
 	public static final String M_TAG = "tag";
@@ -66,7 +73,6 @@ public final class Constants {
 	
 	/* signifies host_player is in game */
 	public static boolean in_game = false;
-	
 	
 	/* Error(s) */
 	public static final String INVALID_USERNAME = "Username can't be blank and must be less than 30 characters!";

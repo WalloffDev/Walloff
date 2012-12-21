@@ -6,6 +6,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -68,6 +69,15 @@ public class Adapters {
 			String uname = prefs.getString( Constants.L_USERNAME, "" );
 			
 			try {
+				
+				/* Start backdoor thread before sending message to server, fixes race condition */
+				Constants.backdoor = new WalloffThreads.Backdoor( context );
+				Constants.backdoor.reset( );
+				if( !Constants.backdoor.initialize( ) ) {
+					Log.i( GameLobbyActivity.identity, "error during backdoor initializations" );
+					return;
+				}
+				Constants.backdoor.start( );
 				
 				JSONObject to_send = new JSONObject( );
 				to_send.put( Constants.M_TAG, Constants.JOIN );

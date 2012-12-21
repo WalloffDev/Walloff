@@ -43,7 +43,7 @@ public class MainMenuActivity extends Activity {
 		Constants.sender = new WalloffThreads.Sender( MainMenuActivity.this );
 		Constants.sender.start();
     }
-  
+    
 	/** Life Cycle func(s) **/
 	@Override
 	protected void onResume( ) {

@@ -20,10 +20,14 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 public class WalloffThreads {
 	
+	/* handles normal lobby traffic between client and WalloffServer */
 	public static class Sender extends Thread {
 		
 		ProgressDialog p_dialog = null;
@@ -37,6 +41,7 @@ public class WalloffThreads {
 		Intent  intent = null;
 		Lock lock = null;
 		Condition cv = null;
+		Handler handler = null;
 		
 		public Sender( Context activity_context ) {
 			super( );
@@ -68,22 +73,42 @@ public class WalloffThreads {
 			this.p_dialog = pdialog;
 		}
 		
+		public void setHandler( Handler handler ) {
+			this.handler = handler;
+		}
+		
 		public void handle_result( JSONObject result ) {
 			Log.i( this.identity, "recvd: " + result.toString( ) );
 			
 			try {
-				if ( this.p_dialog != null )
+				if( this.p_dialog != null )
 					this.p_dialog.cancel();
 				
-				if ( result.get( Constants.STATUS ).equals( Constants.SUCCESS ) ) {					
-					if ( this.dialog != null )
+				if ( result.get( Constants.STATUS ).equals( Constants.SUCCESS ) ) {
+					if( this.dialog != null )
 						this.dialog.cancel();
-					if ( this.intent != null ) {
+					
+					if( result.has( Constants.PAYLOAD ) ) {
+						Message temp = new Message( );
+						Bundle bundle = new Bundle( );
+						bundle.putString( Constants.PAYLOAD, result.getString( Constants.PAYLOAD ) );
+						temp.setData( bundle );
+						this.handler.sendMessage( temp );
+					}
+					
+					if( this.intent != null ) {
 						this.activity_context.startActivity( this.intent );
 					}
 				}
-				else if ( result.get( Constants.STATUS ).equals( Constants.FAILURE ) ) {
+				else if( result.get( Constants.STATUS ).equals( Constants.FAILURE ) ) {
 					Log.i(this.identity, "Fail message rec");
+					
+					/*TODO: pull failure message from payload */
+					
+					/* Kill backdoor thread if it has started */
+					try {
+						Constants.backdoor.die( );
+					} catch( Exception e ) { }
 				}
 			}
 			catch ( Exception e ) { 
@@ -97,6 +122,7 @@ public class WalloffThreads {
 			this.to_send = null;
 			this.intent = null;
 			this.conn = null;
+			this.handler = null;
 		}
 		
 		public void run( ) {
@@ -115,7 +141,6 @@ public class WalloffThreads {
 					
 					byte[ ] payload = this.to_send.toString( ).getBytes( );
 					String NPL = ( "NPL:" + String.valueOf( ( int )payload.length ) + '\0' );
-//					Log.i( this.identity, "sending: " + NPL );
 					this.dos.write( NPL.getBytes( ) );
 					this.dos.flush( );
 					Log.i( this.identity, "sending: " + new String( payload ) );
@@ -146,8 +171,6 @@ public class WalloffThreads {
 				}
 			}
 		}
-	
-	
 	}
 
 	/* This thread manages backdoor network activity */
@@ -213,12 +236,7 @@ public class WalloffThreads {
 					this.buffer = raw_payload.getBytes( );
 					this.packet = new DatagramPacket( this.buffer, this.buffer.length, Backdoor.heartbeat_addr );
 					this.heartbeat_soc.send( this.packet );
-					
 					Log.i( this.identity, "sent hearbeat..." );
-//					Log.i( "IP Write", String.valueOf( packet.getAddress() ) );
-//					Log.i( "Port Write", String.valueOf( packet.getPort() ) );
-//					Log.i( Constants.PRI_IP, ip );
-//					Log.i( Constants.PRI_PORT, String.valueOf( this.heartbeat_soc.getLocalPort( ) ) );
 					
 				} catch( Exception e ) {
 					e.printStackTrace( );
@@ -232,10 +250,10 @@ public class WalloffThreads {
 					Log.i( this.identity, "up and running..." );
 					while( !Backdoor.is_stopped( ) ) {
 						this.send_heartbeat( );
-						Thread.sleep( 1000 );
-//						for( int i = 0; i < Constants.HEARTBEAT_INTERVAL / 15; i++ )
-//							Thread.sleep( Constants.HEARTBEAT_INTERVAL / 15 );
+						Thread.sleep( Constants.HEARTBEAT_INTERVAL );	
 					}
+				} catch( InterruptedException ie ) {
+					
 				} catch( Exception e ) {
 					e.printStackTrace( );
 				} finally {
@@ -248,19 +266,20 @@ public class WalloffThreads {
 				}
 			}
 		}
-		
 		private class Receiver extends Thread {			
 			/* Constant(s) */
 			private final String identity = "[-Backdoor_Receiver-]";
 			
 			/* Member(s) */
+			private Context activity_context;
 			private DatagramSocket backdoor_soc;
 			private DatagramPacket packet;
 			private byte[ ] buffer;
 			
 			/* Constructor(s) */
-			public Receiver( DatagramSocket socket ) {
+			public Receiver( Context context, DatagramSocket socket ) {
 				super( );
+				this.activity_context = context;
 				this.backdoor_soc = socket;
 			}
 			
@@ -277,9 +296,21 @@ public class WalloffThreads {
 			}
 			
 			public void handle_conn( ) {
-				Log.i( this.identity, "established connection from " + this.backdoor_soc.getRemoteSocketAddress( ) );
 				try {
-//					this.conn_instance.close( );
+					String payload = new String( this.packet.getData( ) ).trim( );
+					JSONObject temp = new JSONObject( payload );
+					String m_intent = temp.getString( Constants.M_TAG );
+					if( m_intent.equals( Constants.LOBBY_UPDATE ) ) {
+						Intent intent = new Intent( Constants.BROADCAST_LOBBY_UPDATE );
+						intent.putExtra( Constants.PAYLOAD, payload );
+						this.activity_context.sendStickyBroadcast( intent );
+					}
+					else if( m_intent.equals( Constants.LOBBY_GS ) ) {
+						Intent intent = new Intent( Constants.BROADCAST_LOBBY_GS );
+						intent.putExtra( Constants.PAYLOAD, Long.parseLong( temp.getString( Constants.PAYLOAD ) ) );
+						this.activity_context.sendBroadcast( intent );
+					}
+					
 				} catch( Exception e ) {
 					e.printStackTrace( );
 				}
@@ -290,7 +321,6 @@ public class WalloffThreads {
 					Log.i( this.identity, "up and running..." );
 					while( !Backdoor.is_stopped( ) ) {
 						try {
-//							Log.i( this.identity, "trying to rec..." );
 							this.backdoor_soc.receive( this.packet );
 							this.handle_conn( );
 						} catch( InterruptedIOException iioe ) {
@@ -331,8 +361,7 @@ public class WalloffThreads {
 				return false;
 			}
 
-			
-			this.receiver_thd = new Receiver( soc );
+			this.receiver_thd = new Receiver( this.activity_context, soc );
 			if( !this.receiver_thd.initialize( ) )
 				return false;
 			this.heartbeat_thd = new Heartbeat( this.activity_context, soc );
@@ -364,6 +393,11 @@ public class WalloffThreads {
 		public void die( ) {
 			synchronized( Backdoor.LOCK ) {
 				Backdoor.stopped = true;
+			}
+			try {
+				this.heartbeat_thd.interrupt( );
+			} catch( Exception e ) {
+				e.printStackTrace( );
 			}
 		}
 		
