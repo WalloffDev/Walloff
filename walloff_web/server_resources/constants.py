@@ -1,6 +1,6 @@
 # Constants #
 
-# defualt
+# default
 THREAD_SSIZE = 1000000
 
 # mgmt #
@@ -50,6 +50,8 @@ status = 'status'
 payload = 'payload'
 uname = 'uname'
 passwd = 'passwd'
+pub_up = 'pub_ip'
+pub_port = 'pub_port'
 priv_ip = 'priv_ip'
 priv_port = 'priv_port'
 lname = 'lname'

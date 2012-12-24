@@ -78,10 +78,7 @@ class mgmt( threading.Thread ):
 				socket_instance, r_addr = self.server_socket.accept( )
 
 				if self.killed_flg.is_set( ): break				
-
 				print self.tag + 'Connection established from ' + str( r_addr )
-
-				######################### hand off
 				handler = self.handlers_queue.popleft( )
 				self.handlers_queue.append( handler )
 				handler.set_socket( socket_instance, r_addr )

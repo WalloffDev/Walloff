@@ -1,7 +1,7 @@
 # Request handler #
 
 # Import(s) #
-import threading, socket, json#, time
+import threading, socket, json
 from django.db import IntegrityError, DatabaseError
 from django.db.models import Count
 from django.core import serializers
@@ -173,18 +173,16 @@ class handler( threading.Thread ):
                                 lobby = Lobby.objects.get( name=lname )
                                 players = lobby.player_set
 
-				#TODO
-                                #if len( players.all( ) ) == 1:
+                                if len( players.all( ) ) < 2:
                                         # Cancel game start, not enough players
-                                #        self.server.timer_man.cancel_gs( m_lobby )
+					self.manager.gs_scheduler.add_todo( constants.T_CANCEL, lobby )
 
                                 if len( players.all( ) ) == 0:
                                         # Delete empty lobby
                                         lobby.delete( )
 
-				#TODO
-                                #else:   # Notify remaining players
-                                #        self.send_parrays( players=players.all( ), lobby=lobby )
+                                else:
+					self.push_multiple( lobby=lobby, payload=self.construct_ppayload( lobby ) )
 
                         except BaseException as e:
                                 print self.tag + str( e )
@@ -212,7 +210,9 @@ class handler( threading.Thread ):
 		ppayload.update( { constants.tag: constants.update_lobby, constants.lname: str( lobby.name ) } )
 		players = Lobby.objects.get( name=lobby.name ).player_set.all( )
 		for i in range( len( players ) ):
-			ppayload.update( { str( i ): json.dumps( { constants.uname: players[ i ].django_user.username } ) } )
+			ppayload.update( { str( i ): json.dumps( { constants.uname: players[ i ].django_user.username,
+				constants.pub_up: players[ i ].pub_ip, constants.pub_port: players[ i ].pub_port,
+				constants.priv_ip: players[ i ].priv_ip, constants.priv_port: players[ i ].priv_port } ) } )
 		return ppayload 
 
 	def respond( self, status, payload='' ):
