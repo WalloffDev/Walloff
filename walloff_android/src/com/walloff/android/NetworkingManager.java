@@ -1,7 +1,11 @@
 package com.walloff.android;
 
+import java.io.InterruptedIOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
+import org.json.JSONException;
+import org.json.JSONObject;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -12,11 +16,7 @@ import android.widget.Toast;
 public class NetworkingManager {	
 	
 	/** CONSTANT(S) **/
-	private static final Integer BASE_R_PORT = 8000;	/* Receiver thread port number(s) increments from here */
-	private static final int STAT_ATTEMPT = 0;			/* Indicates socket is attempting connection */
-	private static final int STAT_CONNECT = 1; 			/* Indicates socket connection has been established */
-	private static final int STAT_TERM = 2;				/* Indicates socket connection has been terminated */
-	private static final String N_MAN_TAG = "N_MAN";	/* Log tag */
+	public static final String N_MAN_TAG = "N_MAN";	/* Log tag */
 	
 	/** CLASS MEMBER(S) **/
 	private Context activity_cont = null;				/* Owner activity's context */
@@ -29,27 +29,25 @@ public class NetworkingManager {
 	}
 	
 	/** HELPER CLASS **/
-	private class GCManager {
+	public class GCManager {
 		
 		/* CLASS MEMBER(S) */
-		private int gc_id = 0;
 		private Player gc_opo = null;
 		private DatagramSocket gc_soc = null;
 		private Receiver gc_rec = null;
-		private Sender gc_sen = null;
+		private Sender gc_sen_priv = null, gc_sen_pub = null;
 		
 		/* CONSTRUCTOR(S) */
-		public GCManager( Player gc_opo, int gc_id ) {
+		public GCManager( Player gc_opo ) {
 			super( );
 			this.gc_opo = gc_opo;
-			this.gc_id = gc_id;
 		}
 
 		/* HELPER(S) */
 		public boolean initialize( ) {
 			
 			try {
-				this.gc_soc = new DatagramSocket( NetworkingManager.BASE_R_PORT + this.gc_id );
+				this.gc_soc = new DatagramSocket( );
 			} catch( Exception e ) {
 				e.printStackTrace( );
 				this.gc_soc = null;
@@ -57,101 +55,166 @@ public class NetworkingManager {
 			}
 			
 			if( this.gc_soc != null ) {
-				this.gc_rec = new Receiver( this.gc_id, this.gc_soc );
+				this.gc_rec = new Receiver( this.gc_soc );
 				this.gc_rec.execute( );
-//				this.gc_sen = new Sender( this.gc_id, this.gc_soc );
-//				this.gc_sen.execute( );
+				this.gc_sen_priv = new Sender( this.gc_soc, 0 );
+				this.gc_sen_pub = new Sender( this.gc_soc, 1 );
+//				this.gc_sen_priv.execute( );
+//				this.gc_sen_pub.execute( );
 			}
 			
 			return true;
 		}
 		public void terminate( ) {
 			this.gc_rec.cancel( true );
+			this.gc_sen_priv.cancel( true );
+			this.gc_sen_pub.cancel( true );
 		}
-		/* Receiver Thread: listens for game data from lobby opponents */
-		/* TODO: handle exceptions more nicely with UI features based on the exception */
-		/* TODO: use onPublishProgress to give UI cues to user as to status of connections */
+		public Player getOpponent( ) {
+			return this.gc_opo;
+		}
+		public void finish_init( ) {
+			this.gc_sen_priv.finish_initialization( );
+			this.gc_sen_pub.finish_initialization( );
+		}
+		
+		/* Receiver Thread: listens for game data from a lobby opponent */
 		private class Receiver extends AsyncTask< Void, Integer, Void > {
 
 			/* CLASS MEMBER(S) */
-			private DatagramSocket gc_soc = null;
-//			private DatagramPacket r_pac = null;
-//			private byte[ ] r_buf = null;
-			private int r_id = 0;
+			private DatagramSocket soc = null;
+			private DatagramPacket r_pac = null;
+			private byte[ ] r_buf = null;
 			
 			/* CONSTRUCTOR(S) */
-			public Receiver( int r_id, DatagramSocket gc_soc ) {
+			public Receiver( DatagramSocket gc_soc ) {
 				super( );
-				this.r_id = r_id;
-				this.gc_soc = gc_soc;
+				this.soc = gc_soc;
+				this.r_buf = new byte[ Constants.INGAME_BUFLEN ];
+				this.r_pac = new DatagramPacket( this.r_buf, this.r_buf.length );
 			}
 			
 			@Override
 			protected Void doInBackground( Void... params ) {
 				
-				publishProgress( NetworkingManager.STAT_ATTEMPT );
-				publishProgress( NetworkingManager.STAT_CONNECT );
+				
 				while( true ) {
 					if( isCancelled( ) ) break;
+					try {
+						this.soc.receive( this.r_pac );
+						Log.i( "GC_CON", "RECV: " + this.r_pac.getData( ).toString( ).trim( ) );
+						/* TODO: pass received player positions to game engine, or write to array directly depending on how Dan is doing that */
+						
+					} catch( InterruptedIOException iioe ) {
+						continue;
+					} catch( Exception e ) {
+						e.printStackTrace( );
+					}
 				}
 				
 				return null;
 			}
-
-			@Override
-			protected void onProgressUpdate( Integer... values ) {
-				super.onProgressUpdate( values );
-				switch( values[ 0 ] ) {
-				case NetworkingManager.STAT_ATTEMPT:
-					Log.i( NetworkingManager.N_MAN_TAG, "GC: " + this.r_id + " - initializing listener" );
-					break;
-				case NetworkingManager.STAT_CONNECT:
-					Log.i( NetworkingManager.N_MAN_TAG, "GC: " + this.r_id + " - listener waiting" );
-					break;
-				default:
-					break;
-				}
-			}
-
+			
 			@Override
 			protected void onCancelled( ) {
 				super.onCancelled( );
 				
 				try {
-					this.gc_soc.close( );
+					this.soc.close( );
 				} catch( Exception e ) { e.printStackTrace( ); }
-				Log.i( NetworkingManager.N_MAN_TAG, "GC: " + this.r_id + " - terminated" );
+				Log.i( NetworkingManager.N_MAN_TAG, "GC: - terminated" );
 			}
 		}
 		/* Sender Thread: sends game data to lobby opponents */
 		private class Sender extends AsyncTask< Void, Integer, Void > {
 
 			/* CLASS MEMBER(S) */
-			private int s_id = 0;
-			private DatagramSocket gc_soc = null;
+			private DatagramSocket soc = null;
+			private DatagramPacket s_pac = null;
+			private byte[ ] s_buf = null;
+			private boolean is_initializing = true;
+			private int target;							/* if 0: send to private net info, else: send to public net info */
 			
 			/* CONSTRUCTOR(S) */
-			public Sender( int s_id, DatagramSocket gc_soc ) {
+			public Sender( DatagramSocket gc_soc, int target ) {
 				super( );
-				this.s_id = s_id;
-				this.gc_soc = gc_soc;
+				this.soc = gc_soc;
+				this.target = target;
+			}
+			
+			public void finish_initialization( ) {
+				this.is_initializing = false;
 			}
 			
 			@Override
 			protected Void doInBackground( Void... params ) {
+				
+				/* Send game socket net info to pre-existing backdoor of opponent until we are notified by our backdoor to start sending to opponent's new game socket
+				 * should help with difference in initialization times between clients */
+				JSONObject init = new JSONObject( );
+				String uname = null;
+				try {
+					init.put( Constants.M_TAG, Constants.GC_INIT );
+					SharedPreferences prefs = activity_cont.getSharedPreferences( Constants.PREFS_FILENAME, MainMenuActivity.MODE_PRIVATE );
+					uname = prefs.getString( Constants.L_USERNAME, "" );
+					init.put( Constants.L_USERNAME, uname );
+					init.put( Constants.GC_PRI_PORT, this.soc.getLocalPort( ) );
+				} catch( Exception e ) {
+					e.printStackTrace( );
+				}
+				while( !this.isCancelled( ) && this.is_initializing ) {
+					try {
+						this.s_buf = init.toString( ).getBytes( );
+						if( this.target != 0 ) {
+							this.s_pac = new DatagramPacket( this.s_buf, this.s_buf.length, 
+									new InetSocketAddress( gc_opo.get_PubIP( ), gc_opo.get_PubPort( ) ) );
+						}
+						else {
+							this.s_pac = new DatagramPacket( this.s_buf, this.s_buf.length,
+									new InetSocketAddress( gc_opo.get_PrivIP( ), gc_opo.get_PrivPort( ) ) );
+						}
+						this.soc.send( this.s_pac );
+						Thread.sleep( Constants.GC_INIT_SLEEP );
+					} catch( Exception e ) {
+						e.printStackTrace( );
+					}
+				}
+				
+				init = new JSONObject( );
+				try {
+					init.put( Constants.L_USERNAME, uname );
+				} catch( JSONException e1 ) {
+					e1.printStackTrace( );
+				}
+				
+				/* TODO: will need to put position updates in somehow */
+				
+				while( !this.isCancelled( ) ) {
+					/* We now have the newly established hole net info, can start sending position updates */
+					try {
+						this.s_buf = init.toString( ).getBytes( );
+						if( this.target != 0 ) {
+							this.s_pac = new DatagramPacket( this.s_buf, this.s_buf.length,
+									new InetSocketAddress( gc_opo.get_PubIP( ), gc_opo.get_GC_PubPort( ) ) );
+						}
+						else {
+							this.s_pac = new DatagramPacket( this.s_buf, this.s_buf.length,
+									new InetSocketAddress( gc_opo.get_PrivIP( ), gc_opo.get_GC_PrivPort( ) ) );
+						}
+						this.soc.send( this.s_pac );
+						Thread.sleep( Constants.GC_INGAME_SLEEP );
+					} catch( Exception e ) {
+						e.printStackTrace( );
+					}
+				}
+				
 				return null;
-			}
-
-			@Override
-			protected void onProgressUpdate( Integer... values ) {
-				super.onProgressUpdate( values );
 			}
 
 			@Override
 			protected void onCancelled( ) {
 				super.onCancelled( );
 			}
-			
 		}
 	}
 	
@@ -163,6 +226,11 @@ public class NetworkingManager {
 		this.activity_cont = context;
 	}
 
+	/** GETTER(S) **/
+	public GCManager[ ] getGCMans( ) {
+		return this.gc_mans;
+	}
+	
 	/** MANAGEMENT METHOD(S) **/
 	/* Sets up all necessary game-play background connections */
 	public void init_gconns( ) {
@@ -178,14 +246,14 @@ public class NetworkingManager {
 			this.gc_mans[ i ] = null;
 		
 		/* Get local player IP ID */
-		SharedPreferences prefs = this.activity_cont.getSharedPreferences( Constants.PREFS_FILENAME, this.activity_cont.MODE_PRIVATE );
-		String ip_id = prefs.getString( Constants.L_IPID, "" );
+		SharedPreferences prefs = this.activity_cont.getSharedPreferences( Constants.PREFS_FILENAME, Context.MODE_PRIVATE );
+		String uname = prefs.getString( Constants.L_USERNAME, "" );
 		
 		int a = 0;
 		for( int i = 0; i < this.gc_mans.length; i++ ) {
 			if( this.players[ a ] == null ) break;
-			else if( this.players[ a ].get_PrivIP( ).equals( ip_id ) ) continue;
-			this.gc_mans[ a ] = new GCManager( this.players[ i ], a );
+			else if( this.players[ a ].get_Uname( ).equals( uname ) ) continue;
+			this.gc_mans[ a ] = new GCManager( this.players[ i ] );
 			this.gc_mans[ a ].initialize( );
 			a++;
 		}

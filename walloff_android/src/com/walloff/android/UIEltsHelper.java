@@ -1,13 +1,8 @@
 package com.walloff.android;
 
-import java.util.Random;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.walloff.game.WallOffEngine;
-
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;

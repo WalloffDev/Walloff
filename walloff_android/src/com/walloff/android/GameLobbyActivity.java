@@ -1,6 +1,9 @@
 package com.walloff.android;
 
 import org.json.JSONObject;
+
+import com.walloff.android.NetworkingManager.GCManager;
+
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -23,7 +26,7 @@ public class GameLobbyActivity extends Activity {
 	/* Member(s) */
 	private Player[ ] opos = null;
 	private NetworkingManager n_man = null;
-	private BroadcastReceiver lobbyupdate_rec, gs_rec;
+	private BroadcastReceiver lobbyupdate_rec, gs_rec, gc_init_rec;
 	private countdown gs_timer;
 	
 	/* UI elt(s) */
@@ -62,11 +65,31 @@ public class GameLobbyActivity extends Activity {
 				
 //				Constants.in_game = true;
 				Long gs = intent.getLongExtra( Constants.PAYLOAD, 0 );
-//				
-//				Long epoch = Long.valueOf( System.currentTimeMillis( ) / 1000 );
-//				Log.i( GameLobbyActivity.identity, String.valueOf( gs - epoch ));
 				gs_timer = new countdown( );
 				gs_timer.execute( gs );
+				
+				n_man.init_gconns( );
+			}
+		};
+		
+		/* Create gc initialization receiver */
+		this.gc_init_rec = new BroadcastReceiver( ) {
+			@Override
+			public void onReceive( Context context, Intent intent ) {
+				try {
+					JSONObject temp = new JSONObject( intent.getStringExtra( Constants.PAYLOAD ) );
+					GCManager[ ] gc_mans = n_man.getGCMans( );
+					for( int i = 0; i < gc_mans.length; i++ ) {
+						if( gc_mans[ i ].getOpponent( ).get_Uname( ).equals( temp.getString( Constants.L_USERNAME ) ) ) {
+							gc_mans[ i ].getOpponent( ).set_GC_PrivPort( Integer.parseInt( temp.getString( Constants.GC_PRI_PORT ) ) );
+							gc_mans[ i ].getOpponent( ).set_GC_PubPort( Integer.parseInt( temp.getString( Constants.GC_PUB_PORT ) ) );
+							gc_mans[ i ].finish_init( );
+							break;
+						}
+					}
+				} catch( Exception e ) {
+					e.printStackTrace( );
+				}
 			}
 		};
 		
@@ -101,10 +124,11 @@ public class GameLobbyActivity extends Activity {
 			if( json_payload.has( "0" ) ) {
 				temp = new JSONObject( json_payload.getString( "0" ) );
 				this.p1_name.setText( temp.getString( "uname" ) );
-//				this.opos[ 0 ] = new Player( temp.getString( "pub_ip" ), 
-//										Integer.parseInt( temp.getString( "pub_port" ) ), 
-//										temp.getString( "priv_ip" ), 
-//										Integer.parseInt( temp.getString( "priv_port" ) ) );	
+				this.opos[ 0 ] = new Player( temp.getString( "uname" ),
+										temp.getString( "pub_ip" ), 
+										Integer.parseInt( temp.getString( "pub_port" ) ), 
+										temp.getString( "priv_ip" ), 
+										Integer.parseInt( temp.getString( "priv_port" ) ) );	
 			}
 			else {
 				this.p1_name.setText( "" );
@@ -112,10 +136,11 @@ public class GameLobbyActivity extends Activity {
 			if( json_payload.has( "1" ) ) {
 				temp = new JSONObject( json_payload.getString( "1" ) );
 				this.p2_name.setText( temp.getString( "uname" ) );
-//				this.opos[ 1 ] = new Player( temp.getString( "pub_ip" ), 
-//										Integer.parseInt( temp.getString( "pub_port" ) ), 
-//										temp.getString( "priv_ip" ), 
-//										Integer.parseInt( temp.getString( "priv_port" ) ) );	
+				this.opos[ 1 ] = new Player( temp.getString( "uname" ),
+										temp.getString( "pub_ip" ), 
+										Integer.parseInt( temp.getString( "pub_port" ) ), 
+										temp.getString( "priv_ip" ), 
+										Integer.parseInt( temp.getString( "priv_port" ) ) );	
 			}
 			else {
 				this.p2_name.setText( "" );
@@ -123,10 +148,11 @@ public class GameLobbyActivity extends Activity {
 			if( json_payload.has( "2" ) ) {
 				temp = new JSONObject( json_payload.getString( "2" ) );
 				this.p3_name.setText( temp.getString( "uname" ) );
-//				this.opos[ 2 ] = new Player( temp.getString( "pub_ip" ), 
-//										Integer.parseInt( temp.getString( "pub_port" ) ), 
-//										temp.getString( "priv_ip" ), 
-//										Integer.parseInt( temp.getString( "priv_port" ) ) );	
+				this.opos[ 2 ] = new Player( temp.getString( "uname" ),
+										temp.getString( "pub_ip" ), 
+										Integer.parseInt( temp.getString( "pub_port" ) ), 
+										temp.getString( "priv_ip" ), 
+										Integer.parseInt( temp.getString( "priv_port" ) ) );	
 			}
 			else {
 				this.p3_name.setText( "" );
@@ -134,10 +160,11 @@ public class GameLobbyActivity extends Activity {
 			if( json_payload.has( "3" ) ) {
 				temp = new JSONObject( json_payload.getString( "3" ) );
 				this.p4_name.setText( temp.getString( "uname" ) );
-//				this.opos[ 3 ] = new Player( temp.getString( "pub_ip" ), 
-//										Integer.parseInt( temp.getString( "pub_port" ) ), 
-//										temp.getString( "priv_ip" ), 
-//										Integer.parseInt( temp.getString( "priv_port" ) ) );	
+				this.opos[ 3 ] = new Player( temp.getString( "uname" ),
+										temp.getString( "pub_ip" ), 
+										Integer.parseInt( temp.getString( "pub_port" ) ), 
+										temp.getString( "priv_ip" ), 
+										Integer.parseInt( temp.getString( "priv_port" ) ) );	
 			}
 			else {
 				this.p4_name.setText( "" );
@@ -193,6 +220,7 @@ public class GameLobbyActivity extends Activity {
 		/* Register broadcast reciever(s) */
 		this.registerReceiver( this.lobbyupdate_rec, new IntentFilter( Constants.BROADCAST_LOBBY_UPDATE ) );
 		this.registerReceiver( this.gs_rec, new IntentFilter( Constants.BROADCAST_LOBBY_GS ) );
+		this.registerReceiver( this.gc_init_rec, new IntentFilter( Constants.BROADCAST_GC_INIT ) );
 	}
 	
 	@Override
@@ -210,9 +238,14 @@ public class GameLobbyActivity extends Activity {
 		/* Unregister broadcast receiver(s) */
 		this.unregisterReceiver( this.lobbyupdate_rec );
 		this.unregisterReceiver( this.gs_rec );
+		this.unregisterReceiver( this.gc_init_rec );
 		
 		/* Tell WalloffServer we are leaving */
 		try {
+			
+			/* TODO: don't stop n_man's conns here!!! */
+			n_man.term_gconns( );
+			
 			Constants.backdoor.die( );
 			
 			SharedPreferences prefs = GameLobbyActivity.this.getSharedPreferences( Constants.PREFS_FILENAME, GameLobbyActivity.MODE_PRIVATE );

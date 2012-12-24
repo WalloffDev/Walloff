@@ -18,11 +18,15 @@ public final class Constants {
 	/* Broadcast Intent(s) */
 	public static final String BROADCAST_LOBBY_UPDATE = "com.walloff.android.lobbyupdate";
 	public static final String BROADCAST_LOBBY_GS = "com.walloff.android.gs";
+	public static final String BROADCAST_GC_INIT = "com.walloff.android.gcinit";
 	
 	/* Nework Manager Plugin */
 	public static final int backdoor_port = 8089;
 	public static final int HEARTBEAT_INTERVAL = 5000;
 	public static final int BACKDOOR_BUFLEN = 512;
+	public static final int INGAME_BUFLEN = 100;
+	public static final int GC_INIT_SLEEP = 1000;
+	public static final int GC_INGAME_SLEEP = 500;
 	public static WalloffThreads.Sender sender;
 	public static WalloffThreads.Backdoor backdoor;
 	
@@ -42,6 +46,7 @@ public final class Constants {
 	public static final String JOIN = "join";
 	public static final String LOBBY_UPDATE = "lobby_update";
 	public static final String LOBBY_GS = "lobby_gs";
+	public static final String GC_INIT = "gc_init";
 	
 	/* Message key(s) */
 	public static final String M_TAG = "tag";
@@ -56,6 +61,8 @@ public final class Constants {
 	public static final String STATUS = "status";
 	public static final String PRI_IP = "priv_ip";
 	public static final String PRI_PORT = "priv_port";
+	public static final String GC_PRI_PORT = "gc_priv_port";
+	public static final String GC_PUB_PORT = "gc_pub_port";
 	public static final String PAYLOAD = "payload";
 	
 	/* Lobby list var(s)  */
