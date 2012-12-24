@@ -39,6 +39,7 @@ class gs_scheduler( threading.Thread ):
 		timer.start( )
 	
 	def cancel_gs( self, lobby ):
+		if not self.timers.has_key( lobby.name ): return
 		print self.tag + 'canceling gs for ' + str( lobby )
 		self.timers[ lobby.name ].cancel( )
 		del self.timers[ lobby.name ]
