@@ -206,6 +206,11 @@ public class NetworkingManager {
 									new InetSocketAddress( gc_opo.get_PrivIP( ), gc_opo.get_GC_PrivPort( ) ) );
 						}
 						this.soc.send( this.s_pac );
+						if( this.target != 0 )
+							Log.i( NetworkingManager.N_MAN_TAG, "sending public player position" );
+						else
+							Log.i( NetworkingManager.N_MAN_TAG, "sending private player position" );
+						Thread.sleep( Constants.GC_INIT_SLEEP );
 						Thread.sleep( Constants.GC_INGAME_SLEEP );
 					} catch( Exception e ) {
 						e.printStackTrace( );

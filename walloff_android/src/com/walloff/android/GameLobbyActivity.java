@@ -76,6 +76,7 @@ public class GameLobbyActivity extends Activity {
 		this.gc_init_rec = new BroadcastReceiver( ) {
 			@Override
 			public void onReceive( Context context, Intent intent ) {
+				Log.i( GameLobbyActivity.identity, "received gc init" );
 				try {
 					JSONObject temp = new JSONObject( intent.getStringExtra( Constants.PAYLOAD ) );
 					GCManager[ ] gc_mans = n_man.getGCMans( );
