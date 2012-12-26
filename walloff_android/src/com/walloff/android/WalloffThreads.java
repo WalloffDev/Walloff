@@ -311,7 +311,6 @@ public class WalloffThreads {
 						this.activity_context.sendBroadcast( intent );
 					}
 					else if( m_intent.equals( Constants.GC_INIT ) ) {
-						Log.i( this.identity, "received gc init" );
 						Intent intent = new Intent( Constants.BROADCAST_GC_INIT );
 						temp.put( Constants.GC_PUB_PORT, this.packet.getPort( ) );
 						intent.putExtra( Constants.PAYLOAD, temp.toString( ) );

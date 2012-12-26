@@ -210,6 +210,7 @@ public class GameLobbyActivity extends Activity {
 		@Override
 		protected void onPostExecute( Void result ) {
 			super.onPostExecute( result );
+			Constants.in_game = true;
 			Toast.makeText( GameLobbyActivity.this, "Game starting", Toast.LENGTH_SHORT ).show( );
 		}		
 	}
@@ -225,13 +226,13 @@ public class GameLobbyActivity extends Activity {
 		this.registerReceiver( this.gc_init_rec, new IntentFilter( Constants.BROADCAST_GC_INIT ) );
 	}
 	
-	@Override
-	public void onBackPressed( ) {
-		if( Constants.in_game ) 
-			return;
-		else
-			super.onBackPressed( );
-	}
+//	@Override
+//	public void onBackPressed( ) {
+//		if( Constants.in_game ) 
+//			return;
+//		else
+//			super.onBackPressed( );
+//	}
 
 	@Override
 	protected void onPause( ) {

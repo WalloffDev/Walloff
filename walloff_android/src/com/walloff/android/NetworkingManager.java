@@ -162,7 +162,7 @@ public class NetworkingManager {
 				} catch( Exception e ) {
 					e.printStackTrace( );
 				}
-				while( !this.isCancelled( ) && this.is_initializing ) {
+				while( !this.isCancelled( ) && !Constants.in_game ) {
 					try {
 						this.s_buf = init.toString( ).getBytes( );
 						if( this.target != 0 ) {
@@ -207,9 +207,9 @@ public class NetworkingManager {
 						}
 						this.soc.send( this.s_pac );
 						if( this.target != 0 )
-							Log.i( NetworkingManager.N_MAN_TAG, "sending public player position" );
+							Log.i( NetworkingManager.N_MAN_TAG, "sending POST public player position" );
 						else
-							Log.i( NetworkingManager.N_MAN_TAG, "sending private player position" );
+							Log.i( NetworkingManager.N_MAN_TAG, "sending POST private player position" );
 						Thread.sleep( Constants.GC_INIT_SLEEP );
 						Thread.sleep( Constants.GC_INGAME_SLEEP );
 					} catch( Exception e ) {
@@ -261,7 +261,10 @@ public class NetworkingManager {
 		int a = 0;
 		for( int i = 0; i < this.gc_mans.length; i++ ) {
 			if( this.players[ a ] == null ) break;
-			else if( this.players[ a ].get_Uname( ).equals( uname ) ) continue;
+			else if( this.players[ a ].get_Uname( ).equals( uname ) ){
+				a++;
+				continue;
+			}
 			this.gc_mans[ a ] = new GCManager( this.players[ i ] );
 			this.gc_mans[ a ].initialize( );
 			a++;
