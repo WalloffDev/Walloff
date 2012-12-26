@@ -80,6 +80,7 @@ public class GameLobbyActivity extends Activity {
 					JSONObject temp = new JSONObject( intent.getStringExtra( Constants.PAYLOAD ) );
 					GCManager[ ] gc_mans = n_man.getGCMans( );
 					for( int i = 0; i < gc_mans.length; i++ ) {
+						if( gc_mans[ i ] == null ) break;
 						if( gc_mans[ i ].getOpponent( ).get_Uname( ).equals( temp.getString( Constants.L_USERNAME ) ) ) {
 							gc_mans[ i ].getOpponent( ).set_GC_PrivPort( Integer.parseInt( temp.getString( Constants.GC_PRI_PORT ) ) );
 							gc_mans[ i ].getOpponent( ).set_GC_PubPort( Integer.parseInt( temp.getString( Constants.GC_PUB_PORT ) ) );
