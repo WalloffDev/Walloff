@@ -6,7 +6,7 @@ public class Player {
 	private String uname;
 	private String pub_ip, priv_ip;
 	private int pub_port, priv_port;
-	private int gc_pub_port, gc_priv_port;
+	private int gc_pub_port = 8000, gc_priv_port = 8000;
 	
 	/* CONSTRUCTOR(S) */
 	public Player( ) {

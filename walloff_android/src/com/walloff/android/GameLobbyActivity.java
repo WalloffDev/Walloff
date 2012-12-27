@@ -1,9 +1,7 @@
 package com.walloff.android;
 
 import org.json.JSONObject;
-
 import com.walloff.android.NetworkingManager.GCManager;
-
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -62,8 +60,6 @@ public class GameLobbyActivity extends Activity {
 			
 			@Override
 			public void onReceive( Context context, Intent intent ) {
-				
-//				Constants.in_game = true;
 				Long gs = intent.getLongExtra( Constants.PAYLOAD, 0 );
 				gs_timer = new countdown( );
 				gs_timer.execute( gs );
@@ -81,11 +77,10 @@ public class GameLobbyActivity extends Activity {
 					JSONObject temp = new JSONObject( intent.getStringExtra( Constants.PAYLOAD ) );
 					GCManager[ ] gc_mans = n_man.getGCMans( );
 					for( int i = 0; i < gc_mans.length; i++ ) {
-						if( gc_mans[ i ] == null ) break;
+						if( gc_mans[ i ] == null ) break; 
 						if( gc_mans[ i ].getOpponent( ).get_Uname( ).equals( temp.getString( Constants.L_USERNAME ) ) ) {
 							gc_mans[ i ].getOpponent( ).set_GC_PrivPort( Integer.parseInt( temp.getString( Constants.GC_PRI_PORT ) ) );
 							gc_mans[ i ].getOpponent( ).set_GC_PubPort( Integer.parseInt( temp.getString( Constants.GC_PUB_PORT ) ) );
-							gc_mans[ i ].finish_init( );
 							break;
 						}
 					}
@@ -95,7 +90,7 @@ public class GameLobbyActivity extends Activity {
 			}
 		};
 		
-		/** TODO: implement lobby countdown clock functionality and establish game conns with n_man, ** disable hardware back button **/
+		/** TODO: implement lobby count down clock functionality and establish game conns with n_man, ** disable hardware back button **/
 	}
 
 	public void initUIElts( ) {

@@ -73,10 +73,6 @@ public class NetworkingManager {
 		public Player getOpponent( ) {
 			return this.gc_opo;
 		}
-		public void finish_init( ) {
-			this.gc_sen_priv.finish_initialization( );
-			this.gc_sen_pub.finish_initialization( );
-		}
 		
 		/* Receiver Thread: listens for game data from a lobby opponent */
 		private class Receiver extends AsyncTask< Void, Integer, Void > {
@@ -132,7 +128,6 @@ public class NetworkingManager {
 			private DatagramSocket soc = null;
 			private DatagramPacket s_pac = null;
 			private byte[ ] s_buf = null;
-			private boolean is_initializing = true;
 			private int target;							/* if 0: send to private net info, else: send to public net info */
 			
 			/* CONSTRUCTOR(S) */
@@ -140,10 +135,6 @@ public class NetworkingManager {
 				super( );
 				this.soc = gc_soc;
 				this.target = target;
-			}
-			
-			public void finish_initialization( ) {
-				this.is_initializing = false;
 			}
 			
 			@Override
@@ -254,17 +245,13 @@ public class NetworkingManager {
 		for( int i = 0; i < this.gc_mans.length; i++ )
 			this.gc_mans[ i ] = null;
 		
-		/* Get local player IP ID */
 		SharedPreferences prefs = this.activity_cont.getSharedPreferences( Constants.PREFS_FILENAME, Context.MODE_PRIVATE );
 		String uname = prefs.getString( Constants.L_USERNAME, "" );
 		
 		int a = 0;
-		for( int i = 0; i < this.gc_mans.length; i++ ) {
-			if( this.players[ a ] == null ) break;
-			else if( this.players[ a ].get_Uname( ).equals( uname ) ){
-				a++;
-				continue;
-			}
+		for( int i = 0; i < this.players.length; i++ ) {
+			if( this.players[ i ] == null ) break;
+			else if( this.players[ i ].get_Uname( ).equals( uname ) ) continue;
 			this.gc_mans[ a ] = new GCManager( this.players[ i ] );
 			this.gc_mans[ a ].initialize( );
 			a++;
@@ -283,7 +270,7 @@ public class NetworkingManager {
 			return;
 		}
 		for( int i = 0; i < this.gc_mans.length; i++ ) {
-			if( this.gc_mans[ i ] == null ) break;
+			if( this.gc_mans[ i ] == null ) continue;
 			this.gc_mans[ i ].terminate( );
 		}
 		
