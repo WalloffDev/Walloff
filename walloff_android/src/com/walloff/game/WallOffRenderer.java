@@ -41,7 +41,7 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
 	private Sphere[] start_lights = new Sphere[3];
 	
 	/* list of all our players */
-	private Player[] players = new Player[WallOffEngine.player_count];
+	private Player[] players = null;
 	private int playersAlive = 0;
 	private Cube[] m_obsticles = null;
 	private Player m_player;
@@ -50,7 +50,7 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
 	/* walls used for shrinking the game */
 	private Cube[] m_wall_shrink_cubes = null;
 	private boolean m_wall_shrink_show = false;
-	
+
 	/* loop variables */
 	private long loopStart = 0;
 	private long loopEnd = 0;
@@ -65,9 +65,10 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
 
     private Square m_square_ground, m_square_wall;
     
-    public WallOffRenderer(Context context, NetworkingManager man) 
+    public WallOffRenderer(Context context, NetworkingManager man, BroadcastReceiver rec) 
     {
     	int id = 0;
+    	this.m_player_updates = rec;
     	this.m_context = context;
     	this.n_man = man;
     	this.m_square_ground = new Square();
@@ -87,9 +88,12 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
     			{
     				id = i;
     			}
+    			Log.i("CREATING PLAYER", "CREATING PLAYER");
     			WallOffEngine.player_count++;
     		}
     	}
+    	
+    	players = new Player[WallOffEngine.player_count];
     	
     	//create a player object for the number of players
     	for( int i = 0; i < WallOffEngine.player_count; i++ ) { players[i] = new Player(i); }

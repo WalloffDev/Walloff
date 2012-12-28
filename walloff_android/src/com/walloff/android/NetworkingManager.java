@@ -41,7 +41,7 @@ public class NetworkingManager {
 		private DatagramSocket gc_soc = null;
 		private Receiver gc_rec = null;
 		private Sender gc_sen_priv = null, gc_sen_pub = null;
-		private Boolean ready_to_send = null;
+		private Boolean ready_to_send = false;
 		
 		/* CONSTRUCTOR(S) */
 		public GCManager( Player gc_opo ) {
@@ -254,6 +254,8 @@ public class NetworkingManager {
 	{
 		this.game_player = g_player;
 		for (GCManager g : gc_mans) {
+			if( g == null)
+				break;
 			g.setReadyToSend(true);
 		}
 	}

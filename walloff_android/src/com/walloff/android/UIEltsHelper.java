@@ -104,10 +104,8 @@ public class UIEltsHelper {
 							
 							/* Set the random moving constants for objects */
 							Random rand = new Random( );
-							int obs_init = rand.nextInt() % 360;
-							int move_pattern = rand.nextInt() % 360;
-							WallOffEngine.obstacles_init_pattern = obs_init;
-					        WallOffEngine.obstacles_move_pattern = move_pattern;
+							int obs_init = rand.nextInt(360) + 1;
+							int move_pattern = rand.nextInt(360) + 1;
 					        
 							JSONObject to_send = new JSONObject( );
 							to_send.put( Constants.M_TAG, Constants.CREATE );

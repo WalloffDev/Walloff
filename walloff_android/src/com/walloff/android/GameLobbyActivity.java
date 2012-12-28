@@ -28,7 +28,7 @@ public class GameLobbyActivity extends Activity {
 	/* Member(s) */
 	private Player[ ] opos = null;
 	private NetworkingManager n_man = null;
-	private BroadcastReceiver lobbyupdate_rec, gs_rec, gc_init_rec;
+	private BroadcastReceiver lobbyupdate_rec, gs_rec, gc_init_rec, m_player_updates;
 	private countdown gs_timer;
 	
 	/* UI elt(s) */
@@ -175,14 +175,14 @@ public class GameLobbyActivity extends Activity {
 			}
 			
 			//get the game setup options
-			WallOffEngine.obstacles_init_pattern = Integer.parseInt( temp.getString(WallOffEngine.obstacles_init_pattern_string) );
-			WallOffEngine.obstacles_move_pattern = Integer.parseInt( temp.getString(WallOffEngine.obstacles_move_pattern_string) );
-			WallOffEngine.setGameConstants(temp.getString(Constants.MAP_NAME), 
-										   temp.getString(Constants.MAP_SIZE), 
-										   Boolean.parseBoolean( temp.getString(Constants.MAP_SHRINK) ),
+			WallOffEngine.obstacles_init_pattern = Integer.parseInt( json_payload.getString(WallOffEngine.obstacles_init_pattern_string) );
+			WallOffEngine.obstacles_move_pattern = Integer.parseInt( json_payload.getString(WallOffEngine.obstacles_move_pattern_string) );
+			WallOffEngine.setGameConstants(json_payload.getString(Constants.MAP_NAME), 
+										   json_payload.getString(Constants.MAP_SIZE), 
+										   Boolean.parseBoolean( json_payload.getString(Constants.MAP_SHRINK) ),
 										   true,
-										   Integer.parseInt( temp.getString(Constants.MAP_ONUM) ), 
-										   Boolean.parseBoolean( temp.getString(Constants.MAP_MOVE) ) );
+										   Integer.parseInt( json_payload.getString(Constants.MAP_ONUM) ), 
+										   Boolean.parseBoolean( json_payload.getString(Constants.MAP_MOVE) ) );
 			
 			/* Set n_man player array */
 			this.n_man.set_players( this.opos );	
@@ -230,7 +230,7 @@ public class GameLobbyActivity extends Activity {
 			
 			//start the game rendering
 			GLSurfaceView view = new GLSurfaceView(activity_context);
-	        view.setRenderer(new WallOffRenderer(activity_context, n_man)); //the 0 is the player id (position in lobby)
+	        view.setRenderer(new WallOffRenderer(activity_context, n_man, m_player_updates)); //the 0 is the player id (position in lobby)
 	        setContentView(view);
 		}		
 	}
@@ -262,6 +262,7 @@ public class GameLobbyActivity extends Activity {
 		this.unregisterReceiver( this.lobbyupdate_rec );
 		this.unregisterReceiver( this.gs_rec );
 		this.unregisterReceiver( this.gc_init_rec );
+		this.unregisterReceiver( this.m_player_updates );
 		
 		/* Tell WalloffServer we are leaving */
 		try {
