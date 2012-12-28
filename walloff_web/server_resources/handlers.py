@@ -90,7 +90,7 @@ class handler( threading.Thread ):
 				# if not, create new user
 				new_user = Player( )
 				new_user.set_data( str( uname ).lower( ), str( payload[ constants.passwd ] ) )
-				self.respond( constants.success ) # generate reg_id and return !!!
+				self.respond( constants.success )
 	
 			except IntegrityError:
 				self.respond( constants.failure, payload=constants.err_uname_exists )
@@ -110,10 +110,12 @@ class handler( threading.Thread ):
                                 mmoving_obstacles = payload[ constants.mmoving_obstacles ]
                                 mnumber_obstacles = payload[ constants.mnumber_obstacles ]
                                 mshrinkable = payload[ constants.mshrinkable ]
+				obstacle_init = payload[ constants.mobstacle_init_pattern ]
+				obstacle_move = payload[ constants.mobstacle_move_pattern ]
 
                                 # Create the lobby and populate it with parsed info     
                                 new_lobby = Lobby( )
-                                new_lobby.set_data( lname, False, mname, msize, mmoving_obstacles, mnumber_obstacles, mshrinkable )
+                                new_lobby.set_data( lname, False, mname, msize, mmoving_obstacles, mnumber_obstacles, mshrinkable, obstacle_init, obstacle_move )
 
                                 # get player by username ( auth_token ), add them to lobby
                                 player = Player.objects.get( django_user__username = str( uname ).lower( ) )
@@ -206,6 +208,13 @@ class handler( threading.Thread ):
 	def construct_ppayload( self, lobby ):
 		ppayload = { }
 		ppayload.update( { constants.tag: constants.update_lobby, constants.lname: str( lobby.name ) } )
+
+		###
+		ppayload.update( { constants.mname: str( lobby._map ), constants.msize: str( lobby.size ),
+			constants.mmoving_obstacles: str( lobby.moving_obstacles ), constants.mnumber_obstacles: str( lobby.obstacle_count ),
+			constants.mshrinkable: str( lobby.shrinkable ), constants.mobstacle_init_pattern: str( lobby.obstacle_init_pattern ),
+			constants.mobstacle_move_pattern: str( lobby.obstacle_move_pattern ) } )
+
 		players = Lobby.objects.get( name=lobby.name ).player_set.all( )
 		ppayload.update( { constants.tag: constants.update_lobby, constants.lname: str( lobby.name ) } )
 		players = Lobby.objects.get( name=lobby.name ).player_set.all( )

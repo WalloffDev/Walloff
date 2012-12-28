@@ -16,7 +16,7 @@ class Lobby( models.Model ):
 	def __unicode__( self ):
 		return self.name
 
-	def set_data( self, name, ig, _map, size, mo, oc, shrink ):
+	def set_data( self, name, ig, _map, size, mo, oc, shrink, obs_init, obs_move ):
 		self.name = name
 		self._in_game = ig
 		self._map = _map
@@ -24,8 +24,11 @@ class Lobby( models.Model ):
 		self.moving_obstacles = mo
 		self.obstacle_count = oc
 		self.shrinkable = shrink
+		self.obstacle_init_pattern = obs_init
+		self.obstacle_move_pattern = obs_move
 		self.save( )
 
+	# Update this function for obstacle_init, obstacle_move
 	def update( self, _map, size, mo, oc, shrink ):
                 self._map = _map
                 self.size = size
