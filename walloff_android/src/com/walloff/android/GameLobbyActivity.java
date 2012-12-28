@@ -115,7 +115,7 @@ public class GameLobbyActivity extends Activity {
 	}
 	
 	public void updateLobby( String payload ) {
-		JSONObject temp;
+		JSONObject temp = null;
 		this.opos = new Player[ Constants.MAX_LOB_SIZE ];
 		
 		for( int i = 0; i < this.opos.length; i++ )
@@ -174,6 +174,16 @@ public class GameLobbyActivity extends Activity {
 				this.p4_name.setText( "" );
 			}
 			
+			//get the game setup options
+			WallOffEngine.obstacles_init_pattern = temp.getInt(WallOffEngine.obstacles_init_pattern_string);
+			WallOffEngine.obstacles_move_pattern = temp.getInt(WallOffEngine.obstacles_move_pattern_string);
+			WallOffEngine.setGameConstants(temp.getString(Constants.MAP_NAME), 
+										   temp.getString(Constants.MAP_SIZE), 
+										   temp.getBoolean(Constants.MAP_SHRINK),
+										   true,
+										   temp.getInt(Constants.MAP_ONUM), 
+										   temp.getBoolean(Constants.MAP_MOVE));
+			
 			/* Set n_man player array */
 			this.n_man.set_players( this.opos );	
 			
@@ -220,7 +230,7 @@ public class GameLobbyActivity extends Activity {
 			
 			//start the game rendering
 			GLSurfaceView view = new GLSurfaceView(activity_context);
-	        view.setRenderer(new WallOffRenderer(activity_context, 0)); //the 0 is the player id (position in lobby)
+	        view.setRenderer(new WallOffRenderer(activity_context, n_man)); //the 0 is the player id (position in lobby)
 	        setContentView(view);
 		}		
 	}

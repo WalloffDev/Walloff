@@ -26,6 +26,7 @@ public class NetworkingManager {
 	private Context activity_cont = null;				/* Owner activity's context */
 	private Player[ ] players = null;					/* Holds current client's neighbor players */
 	private GCManager[ ] gc_mans = null;				/* Holds game connection managers for each opponent */
+	private com.walloff.game.Player game_player = null;
 	
 	/** CONSTRUCTOR **/
 	public NetworkingManager( Context context ) {
@@ -40,6 +41,7 @@ public class NetworkingManager {
 		private DatagramSocket gc_soc = null;
 		private Receiver gc_rec = null;
 		private Sender gc_sen_priv = null, gc_sen_pub = null;
+		private Boolean ready_to_send = null;
 		
 		/* CONSTRUCTOR(S) */
 		public GCManager( Player gc_opo ) {
@@ -77,6 +79,7 @@ public class NetworkingManager {
 		public Player getOpponent( ) {
 			return this.gc_opo;
 		}
+		public void setReadyToSend ( boolean b ) { ready_to_send = b; }
 		
 		/* Receiver Thread: listens for game data from a lobby opponent */
 		private class Receiver extends AsyncTask< Void, Integer, Void > {
@@ -183,7 +186,7 @@ public class NetworkingManager {
 							Log.i( NetworkingManager.N_MAN_TAG, "sending public player position" );
 						else
 							Log.i( NetworkingManager.N_MAN_TAG, "sending private player position" );
-						Thread.sleep( Constants.GC_INIT_SLEEP );
+						Thread.sleep( Constants.GC_INGAME_SLEEP );
 					} catch( Exception e ) {
 						e.printStackTrace( );
 					}
@@ -201,6 +204,15 @@ public class NetworkingManager {
 				while( !this.isCancelled( ) ) {
 					/* We now have the newly established hole net info, can start sending position updates */
 					try {
+						if( ready_to_send )
+						{
+							init.put( Constants.M_TAG, WallOffEngine.players_send_position );
+							init.put( WallOffEngine.tag_player, game_player.getID() );
+							init.put( WallOffEngine.tag_x_pos, game_player.getX() );
+							init.put( WallOffEngine.tag_z_pos, game_player.getZ() );
+							init.put( WallOffEngine.tag_tail_index, game_player.getTail().getTailLength() ); 
+							ready_to_send = false;
+						}
 						this.s_buf = init.toString( ).getBytes( );
 						if( this.target != 0 ) {
 							this.s_pac = new DatagramPacket( this.s_buf, this.s_buf.length,
@@ -211,12 +223,11 @@ public class NetworkingManager {
 									new InetSocketAddress( gc_opo.get_PrivIP( ), gc_opo.get_GC_PrivPort( ) ) );
 						}
 						this.soc.send( this.s_pac );
-						if( this.target != 0 )
-							Log.i( NetworkingManager.N_MAN_TAG, "sending POST public player position" );
-						else
-							Log.i( NetworkingManager.N_MAN_TAG, "sending POST private player position" );
-						Thread.sleep( Constants.GC_INIT_SLEEP );
-						Thread.sleep( Constants.GC_INGAME_SLEEP );
+//						if( this.target != 0 )
+//							Log.i( NetworkingManager.N_MAN_TAG, "sending POST public player position" );
+//						else
+//							Log.i( NetworkingManager.N_MAN_TAG, "sending POST private player position" );
+						Thread.sleep( WallOffEngine.GAME_THREAD_FPS_SLEEP);
 					} catch( Exception e ) {
 						e.printStackTrace( );
 					}
@@ -239,10 +250,21 @@ public class NetworkingManager {
 	public void set_context( Context context ) {
 		this.activity_cont = context;
 	}
-
+	public void sendToAll(com.walloff.game.Player g_player )
+	{
+		this.game_player = g_player;
+		for (GCManager g : gc_mans) {
+			g.setReadyToSend(true);
+		}
+	}
+	
 	/** GETTER(S) **/
 	public GCManager[ ] getGCMans( ) {
 		return this.gc_mans;
+	}
+	public Player[ ] getPlayers( )
+	{
+		return players;
 	}
 	
 	/** MANAGEMENT METHOD(S) **/

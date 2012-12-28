@@ -3,12 +3,16 @@ package com.walloff.game;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import com.walloff.android.Constants;
+import com.walloff.android.MainMenuActivity;
+import com.walloff.android.NetworkingManager;
 import com.walloff.android.R;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.util.FloatMath;
@@ -55,15 +59,37 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
 	
 	/* camera locations */
 	private Camera m_camera = null;
+	
+	/* network manager */
+	NetworkingManager n_man = null;
 
     private Square m_square_ground, m_square_wall;
     
-    public WallOffRenderer(Context context, int id) 
+    public WallOffRenderer(Context context, NetworkingManager man) 
     {
-    	this.m_context = context;	
+    	int id = 0;
+    	this.m_context = context;
+    	this.n_man = man;
     	this.m_square_ground = new Square();
     	this.m_square_wall = new Square();
     	this.line = new Line();
+    	
+    	SharedPreferences prefs = this.m_context.getSharedPreferences( Constants.PREFS_FILENAME, MainMenuActivity.MODE_PRIVATE );
+		String uname = prefs.getString( Constants.L_USERNAME, "" );
+    	
+    	for (int i=0; i<n_man.getPlayers().length; i++)
+    	{
+    		if ( n_man.getPlayers()[i] == null )
+    			break;
+    		else
+    		{
+    			if ( n_man.getPlayers()[i].equals(uname) )
+    			{
+    				id = i;
+    			}
+    			WallOffEngine.player_count++;
+    		}
+    	}
     	
     	//create a player object for the number of players
     	for( int i = 0; i < WallOffEngine.player_count; i++ ) { players[i] = new Player(i); }
@@ -146,6 +172,7 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
 		    		{
 		    			/* update the character location */
 		    			m_player.updatePlayer();
+		    			n_man.sendToAll(m_player);
 						/* update each of the cubes */
 						for (Cube cube : m_obsticles) { cube.randomMove(gl); }
 					}
