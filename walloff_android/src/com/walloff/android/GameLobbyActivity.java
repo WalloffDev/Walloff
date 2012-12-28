@@ -28,7 +28,7 @@ public class GameLobbyActivity extends Activity {
 	/* Member(s) */
 	private Player[ ] opos = null;
 	private NetworkingManager n_man = null;
-	private BroadcastReceiver lobbyupdate_rec, gs_rec, gc_init_rec;
+	private BroadcastReceiver lobbyupdate_rec, gs_rec, gc_init_rec, player_pos_rec;
 	private countdown gs_timer;
 	
 	/* UI elt(s) */
@@ -94,6 +94,29 @@ public class GameLobbyActivity extends Activity {
 					}
 				} catch( Exception e ) {
 					e.printStackTrace( );
+				}
+			}
+		};
+		
+		/* Create player position update receiver */
+		this.player_pos_rec = new BroadcastReceiver( ) {
+			@Override
+			public void onReceive( Context arg0, Intent arg1 ) {
+				int player_index = arg1.getIntExtra(WallOffEngine.tag_player, 1000);
+				if( player_index > WallOffEngine.player_count)
+					Log.i("MESSAGE ERROR REC FROM OTHER PLAYER", "REC MESSAGE FROM A PLAYER THAT should not exist");
+				else
+				{
+					float x = arg1.getFloatExtra(WallOffEngine.tag_x_pos, 0);
+					float z = arg1.getFloatExtra(WallOffEngine.tag_z_pos, 0);
+					renderer.getPlayers( )[player_index].getTail().insertPointAt( x, z, 
+													arg1.getIntExtra(WallOffEngine.tag_tail_index, renderer.getPlayers( )[player_index].getTail().getTailLength()));
+					if( arg1.getIntExtra( WallOffEngine.tag_tail_index, renderer.getPlayers( )[player_index].getTail().getTailLength() ) 
+										  == renderer.getPlayers( )[player_index].getTail().getTailLength() )
+					{
+						renderer.getPlayers( )[player_index].setX(x);
+						renderer.getPlayers( )[player_index].setZ(z);
+					}
 				}
 			}
 		};
@@ -231,7 +254,7 @@ public class GameLobbyActivity extends Activity {
 			
 			//start the game rendering
 			GLSurfaceView view = new GLSurfaceView(activity_context);
-			renderer = new WallOffRenderer(activity_context, n_man);
+			renderer = new WallOffRenderer(activity_context, n_man, player_pos_rec );
 	        view.setRenderer( renderer ); //the 0 is the player id (position in lobby)
 	        setContentView(view);
 		}		
@@ -246,6 +269,7 @@ public class GameLobbyActivity extends Activity {
 		this.registerReceiver( this.lobbyupdate_rec, new IntentFilter( Constants.BROADCAST_LOBBY_UPDATE ) );
 		this.registerReceiver( this.gs_rec, new IntentFilter( Constants.BROADCAST_LOBBY_GS ) );
 		this.registerReceiver( this.gc_init_rec, new IntentFilter( Constants.BROADCAST_GC_INIT ) );
+		this.registerReceiver( this.player_pos_rec, new IntentFilter( WallOffEngine.players_send_position ) );
 	}
 	
 //	@Override
@@ -264,8 +288,9 @@ public class GameLobbyActivity extends Activity {
 		this.unregisterReceiver( this.lobbyupdate_rec );
 		this.unregisterReceiver( this.gs_rec );
 		this.unregisterReceiver( this.gc_init_rec );
-		if ( this.renderer != null)
-			this.unregisterReceiver( this.renderer.getBrodcastRec() );
+		this.unregisterReceiver( this.player_pos_rec );
+//		if ( this.renderer != null)
+//			this.unregisterReceiver( this.renderer.getBrodcastRec() );
 		
 		/* Tell WalloffServer we are leaving */
 		try {

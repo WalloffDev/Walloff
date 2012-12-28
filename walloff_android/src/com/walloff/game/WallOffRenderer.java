@@ -29,7 +29,8 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
 	private Context m_context;
 
 	/* broadcast receiver for ourplayer updates */
-	private BroadcastReceiver m_player_updates;
+//	private BroadcastReceiver m_player_updates;
+	private BroadcastReceiver m_player_pos_rec;
 	
 	/* variables for keeping track of the start of the game */
 	private boolean m_countdown = true;
@@ -65,11 +66,12 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
 
     private Square m_square_ground, m_square_wall;
     
-    public WallOffRenderer(Context context, NetworkingManager man) 
+    public WallOffRenderer(Context context, NetworkingManager man, BroadcastReceiver player_pos_rec ) 
     {
     	int id = 0;
     	this.m_context = context;
     	this.n_man = man;
+    	this.m_player_pos_rec = player_pos_rec;
     	this.m_square_ground = new Square();
     	this.m_square_wall = new Square();
     	this.line = new Line();
@@ -122,29 +124,27 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
     	playersAlive = WallOffEngine.player_count;
     	
     	/* Create player update receiver (this reads in data sent from other players in our game) */
-		this.m_player_updates = new BroadcastReceiver( ) {
-			@Override
-			public void onReceive( Context arg0, Intent arg1 ) {
-				int player_index = arg1.getIntExtra(WallOffEngine.tag_player, 1000);
-				if( player_index > WallOffEngine.player_count)
-					Log.i("MESSAGE ERROR REC FROM OTHER PLAYER", "REC MESSAGE FROM A PLAYER THAT should not exist");
-				else
-				{
-					float x = arg1.getFloatExtra(WallOffEngine.tag_x_pos, 0);
-					float z = arg1.getFloatExtra(WallOffEngine.tag_z_pos, 0);
-					players[player_index].getTail().insertPointAt( x, z, 
-													arg1.getIntExtra(WallOffEngine.tag_tail_index, players[player_index].getTail().getTailLength()));
-					if( arg1.getIntExtra( WallOffEngine.tag_tail_index, players[player_index].getTail().getTailLength() ) 
-										  == players[player_index].getTail().getTailLength() )
-					{
-						players[player_index].setX(x);
-						players[player_index].setZ(z);
-					}
-				}
-			}
-		};
-		/* will need another rec for when a player dies */
-		this.m_context.registerReceiver( this.m_player_updates, new IntentFilter( WallOffEngine.players_send_position ) );
+//		this.m_player_updates = new BroadcastReceiver( ) {
+//			@Override
+//			public void onReceive( Context arg0, Intent arg1 ) {
+//				int player_index = arg1.getIntExtra(WallOffEngine.tag_player, 1000);
+//				if( player_index > WallOffEngine.player_count)
+//					Log.i("MESSAGE ERROR REC FROM OTHER PLAYER", "REC MESSAGE FROM A PLAYER THAT should not exist");
+//				else
+//				{
+//					float x = arg1.getFloatExtra(WallOffEngine.tag_x_pos, 0);
+//					float z = arg1.getFloatExtra(WallOffEngine.tag_z_pos, 0);
+//					players[player_index].getTail().insertPointAt( x, z, 
+//													arg1.getIntExtra(WallOffEngine.tag_tail_index, players[player_index].getTail().getTailLength()));
+//					if( arg1.getIntExtra( WallOffEngine.tag_tail_index, players[player_index].getTail().getTailLength() ) 
+//										  == players[player_index].getTail().getTailLength() )
+//					{
+//						players[player_index].setX(x);
+//						players[player_index].setZ(z);
+//					}
+//				}
+//			}
+//		};
     }
 
     /* the main rendering function for our game */
@@ -618,8 +618,5 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
 
     }
 
-    public BroadcastReceiver getBrodcastRec( )
-    {
-    	return this.m_player_updates;
-    }
+    public Player[ ] getPlayers( ) { return this.players; }
 } 
