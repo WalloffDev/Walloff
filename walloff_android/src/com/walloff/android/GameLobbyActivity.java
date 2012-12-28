@@ -35,7 +35,7 @@ public class GameLobbyActivity extends Activity {
 	private TextView lname, p1_name, p2_name, p3_name, p4_name, countdown;//mname;
 	private View p1, p2, p3, p4;
 	private Context activity_context;
-	private WallOffRenderer renderer = null;
+	private WallOffRenderer renderer;
 	
 	@Override
 	protected void onCreate( Bundle savedInstanceState ) {
@@ -282,27 +282,23 @@ public class GameLobbyActivity extends Activity {
 
 	@Override
 	protected void onPause( ) {
-		super.onPause( );
-		
-		/* Unregister broadcast receiver(s) */
-		this.unregisterReceiver( this.lobbyupdate_rec );
-		this.unregisterReceiver( this.gs_rec );
-		this.unregisterReceiver( this.gc_init_rec );
-		this.unregisterReceiver( this.player_pos_rec );
-//		if ( this.renderer != null)
-//			this.unregisterReceiver( this.renderer.getBrodcastRec() );
-		
-		/* Tell WalloffServer we are leaving */
+		super.onPause( );		
 		try {
-			
 			/* TODO: don't stop n_man's conns here!!! */
 			n_man.term_gconns( );
+			
+			/* Unregister broadcast receiver(s) */
+			this.unregisterReceiver( this.lobbyupdate_rec );
+			this.unregisterReceiver( this.gs_rec );
+			this.unregisterReceiver( this.gc_init_rec );
+			this.unregisterReceiver( this.player_pos_rec );
 			
 			Constants.backdoor.die( );
 			
 			SharedPreferences prefs = GameLobbyActivity.this.getSharedPreferences( Constants.PREFS_FILENAME, GameLobbyActivity.MODE_PRIVATE );
 			String uname = prefs.getString( Constants.L_USERNAME, "" );
-			
+		
+			/* Tell WalloffServer we are leaving */
 			JSONObject to_send = new JSONObject( );
 			to_send.put( Constants.M_TAG, Constants.LEAVE );
 			to_send.put( Constants.L_USERNAME, uname );
