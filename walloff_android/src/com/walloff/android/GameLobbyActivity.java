@@ -175,14 +175,14 @@ public class GameLobbyActivity extends Activity {
 			}
 			
 			//get the game setup options
-			WallOffEngine.obstacles_init_pattern = temp.getInt(WallOffEngine.obstacles_init_pattern_string);
-			WallOffEngine.obstacles_move_pattern = temp.getInt(WallOffEngine.obstacles_move_pattern_string);
+			WallOffEngine.obstacles_init_pattern = Integer.parseInt( temp.getString(WallOffEngine.obstacles_init_pattern_string) );
+			WallOffEngine.obstacles_move_pattern = Integer.parseInt( temp.getString(WallOffEngine.obstacles_move_pattern_string) );
 			WallOffEngine.setGameConstants(temp.getString(Constants.MAP_NAME), 
 										   temp.getString(Constants.MAP_SIZE), 
-										   temp.getBoolean(Constants.MAP_SHRINK),
+										   Boolean.parseBoolean( temp.getString(Constants.MAP_SHRINK) ),
 										   true,
-										   temp.getInt(Constants.MAP_ONUM), 
-										   temp.getBoolean(Constants.MAP_MOVE));
+										   Integer.parseInt( temp.getString(Constants.MAP_ONUM) ), 
+										   Boolean.parseBoolean( temp.getString(Constants.MAP_MOVE) ) );
 			
 			/* Set n_man player array */
 			this.n_man.set_players( this.opos );	
