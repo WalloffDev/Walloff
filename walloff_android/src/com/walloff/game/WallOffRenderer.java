@@ -182,10 +182,9 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
 		    			n_man.sendToAll(m_player);
 						/* update each of the cubes */
 						for (Cube cube : m_obsticles) { cube.randomMove(gl); }
+						/* check collisions */
+						checkCollisions();
 					}
-					
-					/* check collisions */
-					checkCollisions();
 					
 					/* update the camera location */
 					m_camera.updateCamera( m_player.getX(), m_player.getY(), m_player.getZ(), m_player.getTheta() );
@@ -441,13 +440,25 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
     {
 		/* wall collisions */
 		if ( m_player.getX() >= WallOffEngine.map_size - m_player.getCharacter().getRadius() )
+		{
+			Log.i("DIED", "DIED WALL COLLISION 1");
 			m_player.setAlive( false );
+		}
 		else if ( m_player.getX() <= -WallOffEngine.map_size + m_player.getCharacter().getRadius() )
+		{
+			Log.i("DIED", "DIED WALL COLLISION 2");
 			m_player.setAlive( false );
+		}
 		else if ( m_player.getZ() >= WallOffEngine.map_size - m_player.getCharacter().getRadius() )
+		{
+			Log.i("DIED", "DIED WALL COLLISION 3");
 			m_player.setAlive( false );
-		else if ( m_player.getZ() <= -WallOffEngine.map_size + m_player.getCharacter().getRadius() )			
+		}
+		else if ( m_player.getZ() <= -WallOffEngine.map_size + m_player.getCharacter().getRadius() )		
+		{
+			Log.i("DIED", "DIED WALL COLLISION 4");
 			m_player.setAlive( false );
+		}
 		
 		/* Collisions for each of our box objects */
 		for (Cube cube : m_obsticles) {
@@ -455,7 +466,10 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
 			     m_player.getX() + m_player.getCharacter().getRadius() >= cube.getX() - cube.getMidToSide() && // left side
 			     m_player.getZ() - m_player.getCharacter().getRadius() <= cube.getZ() + cube.getMidToSide() && // bottom
 			     m_player.getZ() + m_player.getCharacter().getRadius() >= cube.getZ() - cube.getMidToSide()) //top side
+			{
+				Log.i("DIED", "Obstacles");
 				m_player.setAlive(false);
+			}
 		}
 		
 		/* collisions for each of the other players */
@@ -467,6 +481,7 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
 				    2*m_player.getCharacter().getRadius() )
 				{
 					m_player.setAlive( false );
+					Log.i("DIED", "players");
 				}
 			}
 		}
@@ -494,7 +509,10 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
                                                  Math.pow( player.getTail().getTailEntry(i+2) - player.getTail().getTailEntry(i+5) , 2) ) );
 					
 					// kill the player
-					if ( m_player.getCharacter().getRadius() + B >= L1 + L2 ) { m_player.setAlive(false); }
+					if ( m_player.getCharacter().getRadius() + B >= L1 + L2 ) { 
+						Log.i("DIED", "Tail");
+						m_player.setAlive(false); 
+					}
 				}
 			}
 		}
