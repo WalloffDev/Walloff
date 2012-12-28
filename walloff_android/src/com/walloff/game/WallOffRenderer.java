@@ -85,7 +85,7 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
     			break;
     		else
     		{
-    			if ( n_man.getPlayers()[i].equals(uname) )
+    			if ( n_man.getPlayers()[i].get_Uname( ).equals(uname) )
     			{
     				id = i;
     			}
@@ -489,32 +489,36 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
 		/* Detection for the players tail */
 		float L1, L2, B;
 		int player_tail_correction;
-		for (Player player : players) 
-		{
-			//we don't want the player to check the last few positions of their own tail. this will always kill them
-			if ( player.isAlive() )
+		try {
+			for (Player player : players) 
 			{
-				if ( player.equals(m_player) ) 
-					player_tail_correction = 35; 
-				else
-					player_tail_correction = 0;
-					
-				for ( int i = 0; i < player.getTail().getTailLength() - player_tail_correction; i += 3 )
+				//we don't want the player to check the last few positions of their own tail. this will always kill them
+				if ( player.isAlive() )
 				{
-					L1 = FloatMath.sqrt( (float)(Math.pow( m_player.getTail().getTailEntry(i) - player.getX() , 2) +
-						                         Math.pow( m_player.getTail().getTailEntry(i+2) - player.getZ() , 2)) );
-					L2 = FloatMath.sqrt( (float)(Math.pow( m_player.getX() - player.getTail().getTailEntry(i+3), 2) +
-		                                         Math.pow( m_player.getZ() - player.getTail().getTailEntry(i+5) , 2)) );
-					B =  FloatMath.sqrt( (float)(Math.pow( player.getTail().getTailEntry(i) - player.getTail().getTailEntry(i+3), 2) +
-                                                 Math.pow( player.getTail().getTailEntry(i+2) - player.getTail().getTailEntry(i+5) , 2) ) );
-					
-					// kill the player
-					if ( m_player.getCharacter().getRadius() + B >= L1 + L2 ) { 
-						Log.i("DIED", "Tail");
-						m_player.setAlive(false); 
+					if ( player.equals(m_player) ) 
+						player_tail_correction = 35; 
+					else
+						player_tail_correction = 9;
+						
+					for ( int i = 0; i < player.getTail().getTailLength() - player_tail_correction; i += 3 )
+					{
+						L1 = FloatMath.sqrt( (float)(Math.pow( m_player.getTail().getTailEntry(i) - player.getX() , 2) +
+							                         Math.pow( m_player.getTail().getTailEntry(i+2) - player.getZ() , 2)) );
+						L2 = FloatMath.sqrt( (float)(Math.pow( m_player.getX() - player.getTail().getTailEntry(i+3), 2) +
+			                                         Math.pow( m_player.getZ() - player.getTail().getTailEntry(i+5) , 2)) );
+						B =  FloatMath.sqrt( (float)(Math.pow( player.getTail().getTailEntry(i) - player.getTail().getTailEntry(i+3), 2) +
+			                                         Math.pow( player.getTail().getTailEntry(i+2) - player.getTail().getTailEntry(i+5) , 2) ) );
+						
+						// kill the player
+						if ( m_player.getCharacter().getRadius() + B >= L1 + L2 ) { 
+							Log.i("DIED", "Tail");
+							m_player.setAlive(false); 
+						}
 					}
 				}
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		
 		if (!m_player.isAlive()) { playersAlive = playersAlive - 1; }

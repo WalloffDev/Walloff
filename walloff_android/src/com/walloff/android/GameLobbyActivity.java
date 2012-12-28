@@ -1,5 +1,6 @@
 package com.walloff.android;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import com.walloff.android.NetworkingManager.GCManager;
 import com.walloff.game.*;
@@ -102,21 +103,28 @@ public class GameLobbyActivity extends Activity {
 		this.player_pos_rec = new BroadcastReceiver( ) {
 			@Override
 			public void onReceive( Context arg0, Intent arg1 ) {
-				int player_index = arg1.getIntExtra(WallOffEngine.tag_player, 1000);
-				if( player_index > WallOffEngine.player_count)
-					Log.i("MESSAGE ERROR REC FROM OTHER PLAYER", "REC MESSAGE FROM A PLAYER THAT should not exist");
-				else
-				{
-					float x = arg1.getFloatExtra(WallOffEngine.tag_x_pos, 0);
-					float z = arg1.getFloatExtra(WallOffEngine.tag_z_pos, 0);
-					renderer.getPlayers( )[player_index].getTail().insertPointAt( x, z, 
-													arg1.getIntExtra(WallOffEngine.tag_tail_index, renderer.getPlayers( )[player_index].getTail().getTailLength()));
-					if( arg1.getIntExtra( WallOffEngine.tag_tail_index, renderer.getPlayers( )[player_index].getTail().getTailLength() ) 
-										  == renderer.getPlayers( )[player_index].getTail().getTailLength() )
+				try {
+					String payload = arg1.getStringExtra( Constants.PAYLOAD );
+					JSONObject temp = new JSONObject( payload );
+					Log.i( "______________", String.valueOf(temp.getInt( WallOffEngine.tag_player)) );
+					int player_index = temp.getInt( WallOffEngine.tag_player);
+					if( player_index > WallOffEngine.player_count)
+						Log.i("MESSAGE ERROR REC FROM OTHER PLAYER", "REC MESSAGE FROM A PLAYER THAT should not exist");
+					else
 					{
-						renderer.getPlayers( )[player_index].setX(x);
-						renderer.getPlayers( )[player_index].setZ(z);
+						float x = Float.parseFloat( temp.getString( WallOffEngine.tag_x_pos ) );
+						float z = Float.parseFloat( temp.getString( WallOffEngine.tag_z_pos ) );
+						renderer.getPlayers( )[player_index].getTail().insertPointAt( x, z, 
+														temp.getInt(WallOffEngine.tag_tail_index));
+						if( temp.getInt( WallOffEngine.tag_tail_index ) 
+											  == renderer.getPlayers( )[player_index].getTail().getTailLength() )
+						{
+							renderer.getPlayers( )[player_index].setX(x);
+							renderer.getPlayers( )[player_index].setZ(z);
+						}
 					}
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 			}
 		};

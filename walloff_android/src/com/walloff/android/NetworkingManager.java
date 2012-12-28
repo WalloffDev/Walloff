@@ -104,8 +104,6 @@ public class NetworkingManager {
 					if( isCancelled( ) ) break;
 					try {
 						this.soc.receive( this.r_pac );
-//						Log.i( "GC_CON", "RECV: " + this.r_pac.getData( ).toString( ).trim( ) );
-						/* TODO: pass received player positions to game engine, or write to array directly depending on how Dan is doing that */
 						String payload = new String( this.r_pac.getData( ) ).trim( );
 						JSONObject temp = new JSONObject( payload );
 						String m_intent = temp.getString( Constants.M_TAG );
