@@ -65,10 +65,9 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
 
     private Square m_square_ground, m_square_wall;
     
-    public WallOffRenderer(Context context, NetworkingManager man, BroadcastReceiver rec) 
+    public WallOffRenderer(Context context, NetworkingManager man) 
     {
     	int id = 0;
-    	this.m_player_updates = rec;
     	this.m_context = context;
     	this.n_man = man;
     	this.m_square_ground = new Square();
@@ -151,10 +150,13 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
     /* the main rendering function for our game */
     public void onDrawFrame(GL10 gl) 
     {
+    	Log.i("Rendering", "1");
     	if( game_number <= 5)
     	{
+    		Log.i("Rendering", "2");
     		if ( playersAlive > 1 )
     		{
+    			Log.i("Rendering", "3");
 		    	//thread the game to run at 60 fps
 				loopStart = System.currentTimeMillis();
 				try
@@ -171,6 +173,7 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
 				
 		    	if( m_player.isAlive() )
 		    	{
+		    		Log.i("Rendering", "4");
 		    		/* make sure that the countdown timer has ended */
 		    		if ( !m_countdown )
 		    		{
@@ -614,5 +617,9 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
 		}
 
     }
-    
+
+    public BroadcastReceiver getBrodcastRec( )
+    {
+    	return this.m_player_updates;
+    }
 } 

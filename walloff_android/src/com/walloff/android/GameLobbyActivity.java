@@ -28,13 +28,14 @@ public class GameLobbyActivity extends Activity {
 	/* Member(s) */
 	private Player[ ] opos = null;
 	private NetworkingManager n_man = null;
-	private BroadcastReceiver lobbyupdate_rec, gs_rec, gc_init_rec, m_player_updates;
+	private BroadcastReceiver lobbyupdate_rec, gs_rec, gc_init_rec;
 	private countdown gs_timer;
 	
 	/* UI elt(s) */
 	private TextView lname, p1_name, p2_name, p3_name, p4_name, countdown;//mname;
 	private View p1, p2, p3, p4;
 	private Context activity_context;
+	private WallOffRenderer renderer = null;
 	
 	@Override
 	protected void onCreate( Bundle savedInstanceState ) {
@@ -230,7 +231,8 @@ public class GameLobbyActivity extends Activity {
 			
 			//start the game rendering
 			GLSurfaceView view = new GLSurfaceView(activity_context);
-	        view.setRenderer(new WallOffRenderer(activity_context, n_man, m_player_updates)); //the 0 is the player id (position in lobby)
+			renderer = new WallOffRenderer(activity_context, n_man);
+	        view.setRenderer( renderer ); //the 0 is the player id (position in lobby)
 	        setContentView(view);
 		}		
 	}
@@ -262,7 +264,8 @@ public class GameLobbyActivity extends Activity {
 		this.unregisterReceiver( this.lobbyupdate_rec );
 		this.unregisterReceiver( this.gs_rec );
 		this.unregisterReceiver( this.gc_init_rec );
-		this.unregisterReceiver( this.m_player_updates );
+		if ( this.renderer != null)
+			this.unregisterReceiver( this.renderer.getBrodcastRec() );
 		
 		/* Tell WalloffServer we are leaving */
 		try {

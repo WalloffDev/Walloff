@@ -24,7 +24,7 @@ public final class Constants {
 	public static final int backdoor_port = 8089;
 	public static final int HEARTBEAT_INTERVAL = 5000;
 	public static final int BACKDOOR_BUFLEN = 512;
-	public static final int INGAME_BUFLEN = 100;
+	public static final int INGAME_BUFLEN = 512;
 	public static final int GC_INIT_SLEEP = 2000;
 	public static final int GC_INGAME_SLEEP = 500;
 	public static WalloffThreads.Sender sender;
