@@ -10,8 +10,6 @@ class Lobby( models.Model ):
 	moving_obstacles = models.BooleanField( default=False )
 	obstacle_count = models.IntegerField( default = 0 )
 	shrinkable = models.BooleanField( default=False )
-	obstacle_init_pattern = models.IntegerField( default = 1 )
-	obstacle_move_pattern = models.IntegerField( default = 1 )
 
 	def __unicode__( self ):
 		return self.name

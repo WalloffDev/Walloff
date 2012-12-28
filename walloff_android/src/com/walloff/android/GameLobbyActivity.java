@@ -2,19 +2,23 @@ package com.walloff.android;
 
 import org.json.JSONObject;
 import com.walloff.android.NetworkingManager.GCManager;
+import com.walloff.game.*;
+
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.hardware.SensorManager;
+import android.opengl.GLSurfaceView;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
-import android.widget.Toast;
+//import android.widget.Toast;
 
 public class GameLobbyActivity extends Activity {
 	
@@ -29,12 +33,15 @@ public class GameLobbyActivity extends Activity {
 	
 	/* UI elt(s) */
 	private TextView lname, p1_name, p2_name, p3_name, p4_name, countdown;//mname;
-	private View p1, p2, p3, p4;	
+	private View p1, p2, p3, p4;
+	private Context activity_context;
 	
 	@Override
 	protected void onCreate( Bundle savedInstanceState ) {
 		super.onCreate( savedInstanceState );
 		setContentView( R.layout.lobby_view );
+		
+		this.activity_context = this;
 		
 		/* Keep screen on during lobbying and gameplay */
 		getWindow( ).addFlags( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON );
@@ -206,7 +213,15 @@ public class GameLobbyActivity extends Activity {
 		protected void onPostExecute( Void result ) {
 			super.onPostExecute( result );
 			Constants.in_game = true;
-			Toast.makeText( GameLobbyActivity.this, "Game starting", Toast.LENGTH_SHORT ).show( );
+			//Toast.makeText( GameLobbyActivity.this, "Game starting", Toast.LENGTH_SHORT ).show( );
+			/* obtain the information to obtain everything our game will need */
+			
+			WallOffEngine.accelerometer = new Accelerometer( (SensorManager)getSystemService(Context.SENSOR_SERVICE) );
+			
+			//start the game rendering
+			GLSurfaceView view = new GLSurfaceView(activity_context);
+	        view.setRenderer(new WallOffRenderer(activity_context, 0)); //the 0 is the player id (position in lobby)
+	        setContentView(view);
 		}		
 	}
 	

@@ -28,8 +28,8 @@ public class WallOffGameActivity extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         WallOffEngine.player_count = 3; // number of players in the lobby
-        WallOffEngine.obsticles_init_pattern = 213;
-        WallOffEngine.obsticles_move_pattern = 167;
+        WallOffEngine.obstacles_init_pattern = 213;
+        WallOffEngine.obstacles_move_pattern = 167;
         WallOffEngine.setGameConstants("default", "normal", true, true, 6, true);
         
         WallOffEngine.accelerometer = new Accelerometer( (SensorManager)getSystemService(Context.SENSOR_SERVICE) );

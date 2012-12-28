@@ -21,7 +21,7 @@ public class WallOffEngine {
 	public static final float player_speed = .3f;
 	
 	/* list of available map names */
-	public static final String map_Original = "default";
+	public static final String map_Original = "Original";
 	
 	/* map properties */
 	public static String map_name;
@@ -31,9 +31,9 @@ public class WallOffEngine {
 	public static final float map_size_constant_large = 85f;
 	public static final float map_size_constant_normal = 75f;
 	public static final float map_size_constant_small = 65f;
-	public static final String map_small = "small";
-	public static final String map_normal = "normal";
-	public static final String map_large = "large";
+	public static final String map_small = "Small";
+	public static final String map_medium = "Medium";
+	public static final String map_large = "Large";
 	public static final int map_shrink_ticks = GAME_THREAD_FPS_SLEEP * 10;
 	public static final float map_shrink_length = 5f; //the total length we wish to shrink the map after one shrink iteration
 	public static final int map_shrink_count = 15; //used to count how many iterations our wall should project out
@@ -41,13 +41,25 @@ public class WallOffEngine {
 	public static final int map_max_shrink_times = 5; //max number of times the map will shrink
 	
 	/* random object properties */
-	public static boolean obsticles;
-	public static int obsticles_number;
-	public static boolean obsticles_moving;
-	public static int obsticles_move_pattern;
-	public static String obsticles_move_pattern_string = "MOVING OBS PATTERN";
-	public static int obsticles_init_pattern;
-	public static String obsticles_init_pattern_string = "OBS INIT PATTERN";
+	public static boolean obstacles;
+	public static int obstacles_number;
+	public static boolean obstacles_moving;
+	public static int obstacles_move_pattern;
+	public static String obstacles_move_pattern_string = "moving_obs_pattern";
+	public static int obstacles_init_pattern;
+	public static String obstacles_init_pattern_string = "obs_init_pattern";
+	
+	/* constants for sending and rec data from other players */
+	public static String players_send_position = "PLAYER POSITION";
+	public static String players_send_dead = "PLAYER DEAD";
+		//these are used to tag information being sent
+		public static String tag_dead = "DEAD";
+		public static String tag_player = "PLAYER";
+		public static String tag_player_index = "INDEX";
+		public static String tag_x_pos = "X";
+		public static String tag_z_pos = "Z";
+		public static String tag_tail_index = "TAIL INDEX";
+		
 	
 	/* set the constants of our map that the host created */
 	public static void setGameConstants(String mapName, String mapSize, boolean shrink, boolean obs, int obsNum, boolean moveObs)
@@ -56,16 +68,16 @@ public class WallOffEngine {
 		
 		if ( mapSize.equals(map_small) )
 			WallOffEngine.map_size = map_size_constant_small;
-		else if ( mapSize.equals( map_normal )  )
+		else if ( mapSize.equals( map_medium )  )
 			WallOffEngine.map_size = map_size_constant_normal;
 		else
 			WallOffEngine.map_size = map_size_constant_large;
 		
 		WallOffEngine.map_initial_size = map_size;
 		WallOffEngine.map_shrinkable = shrink;
-		WallOffEngine.obsticles = obs;
-		WallOffEngine.obsticles_number = obsNum;
-		WallOffEngine.obsticles_moving = moveObs;
+		WallOffEngine.obstacles = obs;
+		WallOffEngine.obstacles_number = obsNum;
+		WallOffEngine.obstacles_moving = moveObs;
 	}
 	
 }

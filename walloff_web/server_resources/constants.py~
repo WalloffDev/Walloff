@@ -60,8 +60,6 @@ msize = 'msize'
 mmoving_obstacles = 'mmoving_obstacles'
 mnumber_obstacles = 'mnumber_obstacles'
 mshrinkable = 'mshrinkable'
-mobstacle_init_pattern = 'obs_init_pattern'
-mobstacle_move_pattern = 'moving_obs_pattern'
 #-------------------------------------------------------#
 
 # error messages ---------------------------------------#

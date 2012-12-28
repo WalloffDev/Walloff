@@ -46,7 +46,7 @@
 	
     <string-array name="map_select">
         <item>Map</item>
-        <item>1</item>
+        <item>Original</item>
         <item>2</item>
         <item>3</item>
         <item>FU</item>

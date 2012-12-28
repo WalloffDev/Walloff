@@ -4,20 +4,28 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import com.walloff.android.R;
+
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.util.FloatMath;
+import android.util.Log;
 
 
 /**
  * Main class for rendering our actual game.
  *
  */
-class WallOffRenderer implements GLSurfaceView.Renderer 
+public class WallOffRenderer implements GLSurfaceView.Renderer 
 {
 	/* context for the renderer */
 	private Context m_context;
+
+	/* broadcast receiver for ourplayer updates */
+	private BroadcastReceiver m_player_updates;
 	
 	/* variables for keeping track of the start of the game */
 	private boolean m_countdown = true;
@@ -61,10 +69,10 @@ class WallOffRenderer implements GLSurfaceView.Renderer
     	for( int i = 0; i < WallOffEngine.player_count; i++ ) { players[i] = new Player(i); }
     	
     	//if we have obstacles, create an array containing them
-    	if ( WallOffEngine.obsticles )
+    	if ( WallOffEngine.obstacles )
     	{
-    		this.m_obsticles = new Cube[WallOffEngine.obsticles_number];
-    		for ( int i = 0; i<WallOffEngine.obsticles_number; i++ ) { m_obsticles[i] = new Cube(i, players); }
+    		this.m_obsticles = new Cube[WallOffEngine.obstacles_number];
+    		for ( int i = 0; i<WallOffEngine.obstacles_number; i++ ) { m_obsticles[i] = new Cube(i, players); }
     	}
     	
     	//create our new wall object array
@@ -83,6 +91,31 @@ class WallOffRenderer implements GLSurfaceView.Renderer
     	for( int i = 0; i <  start_lights.length; i++ ) { start_lights[i] = new Sphere(); }
     	
     	playersAlive = WallOffEngine.player_count;
+    	
+    	/* Create player update receiver (this reads in data sent from other players in our game) */
+		this.m_player_updates = new BroadcastReceiver( ) {
+			@Override
+			public void onReceive( Context arg0, Intent arg1 ) {
+				int player_index = arg1.getIntExtra(WallOffEngine.tag_player, 1000);
+				if( player_index > WallOffEngine.player_count)
+					Log.i("MESSAGE ERROR REC FROM OTHER PLAYER", "REC MESSAGE FROM A PLAYER THAT should not exist");
+				else
+				{
+					float x = arg1.getFloatExtra(WallOffEngine.tag_x_pos, 0);
+					float z = arg1.getFloatExtra(WallOffEngine.tag_z_pos, 0);
+					players[player_index].getTail().insertPointAt( x, z, 
+													arg1.getIntExtra(WallOffEngine.tag_tail_index, players[player_index].getTail().getTailLength()));
+					if( arg1.getIntExtra( WallOffEngine.tag_tail_index, players[player_index].getTail().getTailLength() ) 
+										  == players[player_index].getTail().getTailLength() )
+					{
+						players[player_index].setX(x);
+						players[player_index].setZ(z);
+					}
+				}
+			}
+		};
+		/* will need another rec for when a player dies */
+		this.m_context.registerReceiver( this.m_player_updates, new IntentFilter( WallOffEngine.players_send_position ) );
     }
 
     /* the main rendering function for our game */
@@ -188,9 +221,9 @@ class WallOffRenderer implements GLSurfaceView.Renderer
     	    	m_camera.updateCamera( m_player.getX(), m_player.getY(), m_player.getZ(), m_player.getTheta() );
     	    	
     	    	//reset our obstacles if we have them
-    	    	if ( WallOffEngine.obsticles )
+    	    	if ( WallOffEngine.obstacles )
     	    	{
-    	    		for ( int i = 0; i<WallOffEngine.obsticles_number; i++ )
+    	    		for ( int i = 0; i<WallOffEngine.obstacles_number; i++ )
     	    		{
     	    			m_obsticles[i].setX( m_obsticles[i].getXInit() );
     	    			m_obsticles[i].setY( m_obsticles[i].getYInit() );
@@ -534,9 +567,9 @@ class WallOffRenderer implements GLSurfaceView.Renderer
 		/* load the necessary textures */
 		this.m_square_ground.loadGLTexture(gl, m_context, R.drawable.floor_new);
 		this.m_square_wall.loadGLTexture(gl, m_context, R.drawable.wall_new);
-		if ( WallOffEngine.obsticles )
+		if ( WallOffEngine.obstacles )
     	{
-    		for ( int i = 0; i<WallOffEngine.obsticles_number; i++ )
+    		for ( int i = 0; i<WallOffEngine.obstacles_number; i++ )
     		{
     			m_obsticles[i].loadGLTexture(gl, m_context, R.drawable.square_collision_objects_new);
     		}

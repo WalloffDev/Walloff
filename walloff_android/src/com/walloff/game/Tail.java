@@ -87,9 +87,22 @@ public class Tail {
 	
 	/* insert a point into our tail array */
 	public void insertPointAt(float X, float Z, int i){
-		vertices2.add(i, X);
-		vertices2.add(i+1, 0f);
-		vertices2.add(i+2, Z);
+		try
+		{
+			vertices2.add(i, X);
+			vertices2.add(i+1, 0f);
+			vertices2.add(i+2, Z);
+		}
+		catch ( IndexOutOfBoundsException e )
+		{
+			vertices2.add(X);
+			vertices2.add(0f);
+			vertices2.add(Z);
+		}
+		catch ( Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 	
 	public int getTailLength(){ return vertices2.size();}

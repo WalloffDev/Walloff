@@ -156,12 +156,12 @@ public class Cube {
 	{	
 		this.ID = id;
 		
-		m_place_theta = (float)Math.toRadians( WallOffEngine.obsticles_init_pattern ) + (2*WallOffEngine.PI*id)/WallOffEngine.obsticles_number;
+		m_place_theta = (float)Math.toRadians( WallOffEngine.obstacles_init_pattern ) + (2*WallOffEngine.PI*id)/WallOffEngine.obstacles_number;
 		if (m_place_theta > 2*WallOffEngine.PI)
 			m_place_theta -= 2*WallOffEngine.PI;
 		
-		this.x_init = ( ( WallOffEngine.map_size*FloatMath.sin(m_place_theta) + WallOffEngine.obsticles_init_pattern)*FloatMath.cos(m_place_theta) ) % (WallOffEngine.map_size - this.m_mid_to_side);
-		this.z_init = ( ( WallOffEngine.map_size*FloatMath.cos(m_place_theta) + WallOffEngine.obsticles_init_pattern)*FloatMath.sin(m_place_theta) ) % (WallOffEngine.map_size - this.m_mid_to_side);
+		this.x_init = ( ( WallOffEngine.map_size*FloatMath.sin(m_place_theta) + WallOffEngine.obstacles_init_pattern)*FloatMath.cos(m_place_theta) ) % (WallOffEngine.map_size - this.m_mid_to_side);
+		this.z_init = ( ( WallOffEngine.map_size*FloatMath.cos(m_place_theta) + WallOffEngine.obstacles_init_pattern)*FloatMath.sin(m_place_theta) ) % (WallOffEngine.map_size - this.m_mid_to_side);
 		
 		/* create a safe zone around our initial player location a 5 by 5 box*/	
 		for (Player player : players) { // the box is within the 5 x 5 safe zone somewhere
@@ -184,8 +184,8 @@ public class Cube {
 		this.x = this.x_init;
 		this.z = this.z_init;
 		
-		m_move_theta = (float)Math.toRadians( WallOffEngine.obsticles_move_pattern )
-				        + (2*WallOffEngine.PI*id)/WallOffEngine.obsticles_number;
+		m_move_theta = (float)Math.toRadians( WallOffEngine.obstacles_move_pattern )
+				        + (2*WallOffEngine.PI*id)/WallOffEngine.obstacles_number;
 		m_move_z = - FloatMath.sin( m_move_theta ) * m_move_speed;
 		m_move_x = - FloatMath.cos( m_move_theta ) * m_move_speed;
 		
@@ -301,8 +301,8 @@ public class Cube {
     public void setScaleZ(float z) { this.m_scale_z = z; }
     public void resetMovement()
     {
-    	m_move_theta = (float)Math.toRadians( WallOffEngine.obsticles_move_pattern )
-		        + (2*WallOffEngine.PI*this.ID)/WallOffEngine.obsticles_number;
+    	m_move_theta = (float)Math.toRadians( WallOffEngine.obstacles_move_pattern )
+		        + (2*WallOffEngine.PI*this.ID)/WallOffEngine.obstacles_number;
     	m_move_z = - FloatMath.sin( m_move_theta ) * m_move_speed;
     	m_move_x = - FloatMath.cos( m_move_theta ) * m_move_speed;
     }

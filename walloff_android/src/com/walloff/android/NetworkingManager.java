@@ -6,7 +6,11 @@ import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.walloff.game.WallOffEngine;
+
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -100,6 +104,16 @@ public class NetworkingManager {
 						this.soc.receive( this.r_pac );
 						Log.i( "GC_CON", "RECV: " + this.r_pac.getData( ).toString( ).trim( ) );
 						/* TODO: pass received player positions to game engine, or write to array directly depending on how Dan is doing that */
+						String payload = new String( this.r_pac.getData( ) ).trim( );
+						JSONObject temp = new JSONObject( payload );
+						String m_intent = temp.getString( Constants.M_TAG );
+						
+						//send the player update position to our WallOffRender
+						if( m_intent.equals( WallOffEngine.players_send_position ) ) {
+							Intent intent = new Intent( WallOffEngine.players_send_position );
+							intent.putExtra( Constants.PAYLOAD, payload );
+							activity_cont.sendBroadcast( intent );
+						}
 						
 					} catch( InterruptedIOException iioe ) {
 						continue;
