@@ -36,7 +36,7 @@ public class WallOffGameActivity extends Activity {
     	
         
         GLSurfaceView view = new GLSurfaceView(this);
-        view.setRenderer(new WallOffRenderer(this, 0)); //the 0 is the player id (position in lobby)
+        //view.setRenderer(new WallOffRenderer(this, 0)); //the 0 is the player id (position in lobby)
         setContentView(view);
     }
 }

@@ -3,12 +3,16 @@ package com.walloff.game;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import com.walloff.android.Constants;
+import com.walloff.android.MainMenuActivity;
+import com.walloff.android.NetworkingManager;
 import com.walloff.android.R;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.util.FloatMath;
@@ -25,7 +29,8 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
 	private Context m_context;
 
 	/* broadcast receiver for ourplayer updates */
-	private BroadcastReceiver m_player_updates;
+//	private BroadcastReceiver m_player_updates;
+	private BroadcastReceiver m_player_pos_rec;
 	
 	/* variables for keeping track of the start of the game */
 	private boolean m_countdown = true;
@@ -37,7 +42,7 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
 	private Sphere[] start_lights = new Sphere[3];
 	
 	/* list of all our players */
-	private Player[] players = new Player[WallOffEngine.player_count];
+	private Player[] players = null;
 	private int playersAlive = 0;
 	private Cube[] m_obsticles = null;
 	private Player m_player;
@@ -46,7 +51,7 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
 	/* walls used for shrinking the game */
 	private Cube[] m_wall_shrink_cubes = null;
 	private boolean m_wall_shrink_show = false;
-	
+
 	/* loop variables */
 	private long loopStart = 0;
 	private long loopEnd = 0;
@@ -55,15 +60,41 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
 	
 	/* camera locations */
 	private Camera m_camera = null;
+	
+	/* network manager */
+	NetworkingManager n_man = null;
 
     private Square m_square_ground, m_square_wall;
     
-    public WallOffRenderer(Context context, int id) 
+    public WallOffRenderer(Context context, NetworkingManager man, BroadcastReceiver player_pos_rec ) 
     {
-    	this.m_context = context;	
+    	int id = 0;
+    	this.m_context = context;
+    	this.n_man = man;
+    	this.m_player_pos_rec = player_pos_rec;
     	this.m_square_ground = new Square();
     	this.m_square_wall = new Square();
     	this.line = new Line();
+    	
+    	SharedPreferences prefs = this.m_context.getSharedPreferences( Constants.PREFS_FILENAME, MainMenuActivity.MODE_PRIVATE );
+		String uname = prefs.getString( Constants.L_USERNAME, "" );
+    	
+    	for (int i=0; i<n_man.getPlayers().length; i++)
+    	{
+    		if ( n_man.getPlayers()[i] == null )
+    			break;
+    		else
+    		{
+    			if ( n_man.getPlayers()[i].get_Uname( ).equals(uname) )
+    			{
+    				id = i;
+    			}
+    			Log.i("CREATING PLAYER", "CREATING PLAYER");
+    			WallOffEngine.player_count++;
+    		}
+    	}
+    	
+    	players = new Player[WallOffEngine.player_count];
     	
     	//create a player object for the number of players
     	for( int i = 0; i < WallOffEngine.player_count; i++ ) { players[i] = new Player(i); }
@@ -93,38 +124,39 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
     	playersAlive = WallOffEngine.player_count;
     	
     	/* Create player update receiver (this reads in data sent from other players in our game) */
-		this.m_player_updates = new BroadcastReceiver( ) {
-			@Override
-			public void onReceive( Context arg0, Intent arg1 ) {
-				int player_index = arg1.getIntExtra(WallOffEngine.tag_player, 1000);
-				if( player_index > WallOffEngine.player_count)
-					Log.i("MESSAGE ERROR REC FROM OTHER PLAYER", "REC MESSAGE FROM A PLAYER THAT should not exist");
-				else
-				{
-					float x = arg1.getFloatExtra(WallOffEngine.tag_x_pos, 0);
-					float z = arg1.getFloatExtra(WallOffEngine.tag_z_pos, 0);
-					players[player_index].getTail().insertPointAt( x, z, 
-													arg1.getIntExtra(WallOffEngine.tag_tail_index, players[player_index].getTail().getTailLength()));
-					if( arg1.getIntExtra( WallOffEngine.tag_tail_index, players[player_index].getTail().getTailLength() ) 
-										  == players[player_index].getTail().getTailLength() )
-					{
-						players[player_index].setX(x);
-						players[player_index].setZ(z);
-					}
-				}
-			}
-		};
-		/* will need another rec for when a player dies */
-		this.m_context.registerReceiver( this.m_player_updates, new IntentFilter( WallOffEngine.players_send_position ) );
+//		this.m_player_updates = new BroadcastReceiver( ) {
+//			@Override
+//			public void onReceive( Context arg0, Intent arg1 ) {
+//				int player_index = arg1.getIntExtra(WallOffEngine.tag_player, 1000);
+//				if( player_index > WallOffEngine.player_count)
+//					Log.i("MESSAGE ERROR REC FROM OTHER PLAYER", "REC MESSAGE FROM A PLAYER THAT should not exist");
+//				else
+//				{
+//					float x = arg1.getFloatExtra(WallOffEngine.tag_x_pos, 0);
+//					float z = arg1.getFloatExtra(WallOffEngine.tag_z_pos, 0);
+//					players[player_index].getTail().insertPointAt( x, z, 
+//													arg1.getIntExtra(WallOffEngine.tag_tail_index, players[player_index].getTail().getTailLength()));
+//					if( arg1.getIntExtra( WallOffEngine.tag_tail_index, players[player_index].getTail().getTailLength() ) 
+//										  == players[player_index].getTail().getTailLength() )
+//					{
+//						players[player_index].setX(x);
+//						players[player_index].setZ(z);
+//					}
+//				}
+//			}
+//		};
     }
 
     /* the main rendering function for our game */
     public void onDrawFrame(GL10 gl) 
     {
+    	Log.i("Rendering", "1");
     	if( game_number <= 5)
     	{
+    		Log.i("Rendering", "2");
     		if ( playersAlive > 1 )
     		{
+    			Log.i("Rendering", "3");
 		    	//thread the game to run at 60 fps
 				loopStart = System.currentTimeMillis();
 				try
@@ -141,17 +173,18 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
 				
 		    	if( m_player.isAlive() )
 		    	{
+		    		Log.i("Rendering", "4");
 		    		/* make sure that the countdown timer has ended */
 		    		if ( !m_countdown )
 		    		{
 		    			/* update the character location */
 		    			m_player.updatePlayer();
+		    			n_man.sendToAll(m_player);
 						/* update each of the cubes */
 						for (Cube cube : m_obsticles) { cube.randomMove(gl); }
+						/* check collisions */
+						checkCollisions();
 					}
-					
-					/* check collisions */
-					checkCollisions();
 					
 					/* update the camera location */
 					m_camera.updateCamera( m_player.getX(), m_player.getY(), m_player.getZ(), m_player.getTheta() );
@@ -407,13 +440,25 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
     {
 		/* wall collisions */
 		if ( m_player.getX() >= WallOffEngine.map_size - m_player.getCharacter().getRadius() )
+		{
+			Log.i("DIED", "DIED WALL COLLISION 1");
 			m_player.setAlive( false );
+		}
 		else if ( m_player.getX() <= -WallOffEngine.map_size + m_player.getCharacter().getRadius() )
+		{
+			Log.i("DIED", "DIED WALL COLLISION 2");
 			m_player.setAlive( false );
+		}
 		else if ( m_player.getZ() >= WallOffEngine.map_size - m_player.getCharacter().getRadius() )
+		{
+			Log.i("DIED", "DIED WALL COLLISION 3");
 			m_player.setAlive( false );
-		else if ( m_player.getZ() <= -WallOffEngine.map_size + m_player.getCharacter().getRadius() )			
+		}
+		else if ( m_player.getZ() <= -WallOffEngine.map_size + m_player.getCharacter().getRadius() )		
+		{
+			Log.i("DIED", "DIED WALL COLLISION 4");
 			m_player.setAlive( false );
+		}
 		
 		/* Collisions for each of our box objects */
 		for (Cube cube : m_obsticles) {
@@ -421,7 +466,10 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
 			     m_player.getX() + m_player.getCharacter().getRadius() >= cube.getX() - cube.getMidToSide() && // left side
 			     m_player.getZ() - m_player.getCharacter().getRadius() <= cube.getZ() + cube.getMidToSide() && // bottom
 			     m_player.getZ() + m_player.getCharacter().getRadius() >= cube.getZ() - cube.getMidToSide()) //top side
+			{
+				Log.i("DIED", "Obstacles");
 				m_player.setAlive(false);
+			}
 		}
 		
 		/* collisions for each of the other players */
@@ -433,6 +481,7 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
 				    2*m_player.getCharacter().getRadius() )
 				{
 					m_player.setAlive( false );
+					Log.i("DIED", "players");
 				}
 			}
 		}
@@ -440,29 +489,36 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
 		/* Detection for the players tail */
 		float L1, L2, B;
 		int player_tail_correction;
-		for (Player player : players) 
-		{
-			//we don't want the player to check the last few positions of their own tail. this will always kill them
-			if ( player.isAlive() )
+		try {
+			for (Player player : players) 
 			{
-				if ( player.equals(m_player) ) 
-					player_tail_correction = 35; 
-				else
-					player_tail_correction = 0;
-					
-				for ( int i = 0; i < player.getTail().getTailLength() - player_tail_correction; i += 3 )
+				//we don't want the player to check the last few positions of their own tail. this will always kill them
+				if ( player.isAlive() )
 				{
-					L1 = FloatMath.sqrt( (float)(Math.pow( m_player.getTail().getTailEntry(i) - player.getX() , 2) +
-						                         Math.pow( m_player.getTail().getTailEntry(i+2) - player.getZ() , 2)) );
-					L2 = FloatMath.sqrt( (float)(Math.pow( m_player.getX() - player.getTail().getTailEntry(i+3), 2) +
-		                                         Math.pow( m_player.getZ() - player.getTail().getTailEntry(i+5) , 2)) );
-					B =  FloatMath.sqrt( (float)(Math.pow( player.getTail().getTailEntry(i) - player.getTail().getTailEntry(i+3), 2) +
-                                                 Math.pow( player.getTail().getTailEntry(i+2) - player.getTail().getTailEntry(i+5) , 2) ) );
-					
-					// kill the player
-					if ( m_player.getCharacter().getRadius() + B >= L1 + L2 ) { m_player.setAlive(false); }
+					if ( player.equals(m_player) ) 
+						player_tail_correction = 35; 
+					else
+						player_tail_correction = 9;
+						
+					for ( int i = 0; i < player.getTail().getTailLength() - player_tail_correction; i += 3 )
+					{
+						L1 = FloatMath.sqrt( (float)(Math.pow( m_player.getTail().getTailEntry(i) - player.getX() , 2) +
+							                         Math.pow( m_player.getTail().getTailEntry(i+2) - player.getZ() , 2)) );
+						L2 = FloatMath.sqrt( (float)(Math.pow( m_player.getX() - player.getTail().getTailEntry(i+3), 2) +
+			                                         Math.pow( m_player.getZ() - player.getTail().getTailEntry(i+5) , 2)) );
+						B =  FloatMath.sqrt( (float)(Math.pow( player.getTail().getTailEntry(i) - player.getTail().getTailEntry(i+3), 2) +
+			                                         Math.pow( player.getTail().getTailEntry(i+2) - player.getTail().getTailEntry(i+5) , 2) ) );
+						
+						// kill the player
+						if ( m_player.getCharacter().getRadius() + B >= L1 + L2 ) { 
+							Log.i("DIED", "Tail");
+							m_player.setAlive(false); 
+						}
+					}
 				}
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		
 		if (!m_player.isAlive()) { playersAlive = playersAlive - 1; }
@@ -583,5 +639,6 @@ public class WallOffRenderer implements GLSurfaceView.Renderer
 		}
 
     }
-    
+
+    public Player[ ] getPlayers( ) { return this.players; }
 } 

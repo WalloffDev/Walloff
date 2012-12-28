@@ -1,5 +1,6 @@
 package com.walloff.android;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import com.walloff.android.NetworkingManager.GCManager;
 import com.walloff.game.*;
@@ -28,13 +29,14 @@ public class GameLobbyActivity extends Activity {
 	/* Member(s) */
 	private Player[ ] opos = null;
 	private NetworkingManager n_man = null;
-	private BroadcastReceiver lobbyupdate_rec, gs_rec, gc_init_rec;
+	private BroadcastReceiver lobbyupdate_rec, gs_rec, gc_init_rec, player_pos_rec;
 	private countdown gs_timer;
 	
 	/* UI elt(s) */
 	private TextView lname, p1_name, p2_name, p3_name, p4_name, countdown;//mname;
 	private View p1, p2, p3, p4;
 	private Context activity_context;
+	private WallOffRenderer renderer;
 	
 	@Override
 	protected void onCreate( Bundle savedInstanceState ) {
@@ -97,6 +99,36 @@ public class GameLobbyActivity extends Activity {
 			}
 		};
 		
+		/* Create player position update receiver */
+		this.player_pos_rec = new BroadcastReceiver( ) {
+			@Override
+			public void onReceive( Context arg0, Intent arg1 ) {
+				try {
+					String payload = arg1.getStringExtra( Constants.PAYLOAD );
+					JSONObject temp = new JSONObject( payload );
+					Log.i( "______________", String.valueOf(temp.getInt( WallOffEngine.tag_player)) );
+					int player_index = temp.getInt( WallOffEngine.tag_player);
+					if( player_index > WallOffEngine.player_count)
+						Log.i("MESSAGE ERROR REC FROM OTHER PLAYER", "REC MESSAGE FROM A PLAYER THAT should not exist");
+					else
+					{
+						float x = Float.parseFloat( temp.getString( WallOffEngine.tag_x_pos ) );
+						float z = Float.parseFloat( temp.getString( WallOffEngine.tag_z_pos ) );
+						renderer.getPlayers( )[player_index].getTail().insertPointAt( x, z, 
+														temp.getInt(WallOffEngine.tag_tail_index));
+						if( temp.getInt( WallOffEngine.tag_tail_index ) 
+											  == renderer.getPlayers( )[player_index].getTail().getTailLength() )
+						{
+							renderer.getPlayers( )[player_index].setX(x);
+							renderer.getPlayers( )[player_index].setZ(z);
+						}
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		
 		/** TODO: implement lobby count down clock functionality and establish game conns with n_man, ** disable hardware back button **/
 	}
 
@@ -115,7 +147,7 @@ public class GameLobbyActivity extends Activity {
 	}
 	
 	public void updateLobby( String payload ) {
-		JSONObject temp;
+		JSONObject temp = null;
 		this.opos = new Player[ Constants.MAX_LOB_SIZE ];
 		
 		for( int i = 0; i < this.opos.length; i++ )
@@ -174,6 +206,16 @@ public class GameLobbyActivity extends Activity {
 				this.p4_name.setText( "" );
 			}
 			
+			//get the game setup options
+			WallOffEngine.obstacles_init_pattern = Integer.parseInt( json_payload.getString(WallOffEngine.obstacles_init_pattern_string) );
+			WallOffEngine.obstacles_move_pattern = Integer.parseInt( json_payload.getString(WallOffEngine.obstacles_move_pattern_string) );
+			WallOffEngine.setGameConstants(json_payload.getString(Constants.MAP_NAME), 
+										   json_payload.getString(Constants.MAP_SIZE), 
+										   Boolean.parseBoolean( json_payload.getString(Constants.MAP_SHRINK) ),
+										   true,
+										   Integer.parseInt( json_payload.getString(Constants.MAP_ONUM) ), 
+										   Boolean.parseBoolean( json_payload.getString(Constants.MAP_MOVE) ) );
+			
 			/* Set n_man player array */
 			this.n_man.set_players( this.opos );	
 			
@@ -220,7 +262,8 @@ public class GameLobbyActivity extends Activity {
 			
 			//start the game rendering
 			GLSurfaceView view = new GLSurfaceView(activity_context);
-	        view.setRenderer(new WallOffRenderer(activity_context, 0)); //the 0 is the player id (position in lobby)
+			renderer = new WallOffRenderer(activity_context, n_man, player_pos_rec );
+	        view.setRenderer( renderer ); //the 0 is the player id (position in lobby)
 	        setContentView(view);
 		}		
 	}
@@ -234,6 +277,7 @@ public class GameLobbyActivity extends Activity {
 		this.registerReceiver( this.lobbyupdate_rec, new IntentFilter( Constants.BROADCAST_LOBBY_UPDATE ) );
 		this.registerReceiver( this.gs_rec, new IntentFilter( Constants.BROADCAST_LOBBY_GS ) );
 		this.registerReceiver( this.gc_init_rec, new IntentFilter( Constants.BROADCAST_GC_INIT ) );
+		this.registerReceiver( this.player_pos_rec, new IntentFilter( WallOffEngine.players_send_position ) );
 	}
 	
 //	@Override
@@ -246,24 +290,23 @@ public class GameLobbyActivity extends Activity {
 
 	@Override
 	protected void onPause( ) {
-		super.onPause( );
-		
-		/* Unregister broadcast receiver(s) */
-		this.unregisterReceiver( this.lobbyupdate_rec );
-		this.unregisterReceiver( this.gs_rec );
-		this.unregisterReceiver( this.gc_init_rec );
-		
-		/* Tell WalloffServer we are leaving */
+		super.onPause( );		
 		try {
-			
 			/* TODO: don't stop n_man's conns here!!! */
 			n_man.term_gconns( );
+			
+			/* Unregister broadcast receiver(s) */
+			this.unregisterReceiver( this.lobbyupdate_rec );
+			this.unregisterReceiver( this.gs_rec );
+			this.unregisterReceiver( this.gc_init_rec );
+			this.unregisterReceiver( this.player_pos_rec );
 			
 			Constants.backdoor.die( );
 			
 			SharedPreferences prefs = GameLobbyActivity.this.getSharedPreferences( Constants.PREFS_FILENAME, GameLobbyActivity.MODE_PRIVATE );
 			String uname = prefs.getString( Constants.L_USERNAME, "" );
-			
+		
+			/* Tell WalloffServer we are leaving */
 			JSONObject to_send = new JSONObject( );
 			to_send.put( Constants.M_TAG, Constants.LEAVE );
 			to_send.put( Constants.L_USERNAME, uname );

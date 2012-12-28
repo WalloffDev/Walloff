@@ -1,8 +1,13 @@
 package com.walloff.android;
 
+import java.util.Random;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.walloff.game.WallOffEngine;
+
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -98,11 +103,9 @@ public class UIEltsHelper {
 							String uname = prefs.getString( Constants.L_USERNAME, "" );
 							
 							/* Set the random moving constants for objects */
-//							Random rand = new Random( );
-//							int obs_init = rand.nextInt() % 360;
-//							int move_pattern = rand.nextInt() % 360;
-//							WallOffEngine.obstacles_init_pattern = obs_init;
-//					        WallOffEngine.obstacles_move_pattern = move_pattern;
+							Random rand = new Random( );
+							int obs_init = rand.nextInt(360) + 1;
+							int move_pattern = rand.nextInt(360) + 1;
 					        
 							JSONObject to_send = new JSONObject( );
 							to_send.put( Constants.M_TAG, Constants.CREATE );
@@ -113,8 +116,8 @@ public class UIEltsHelper {
 							to_send.put( Constants.MAP_SHRINK, String.valueOf( multi_mshrink.isChecked( ) ) );
 							to_send.put( Constants.MAP_ONUM, ( String )multi_onum.getSelectedItem( ) );
 							to_send.put( Constants.MAP_MOVE, String.valueOf( multi_moving.isChecked( ) ) );
-//							to_send.put( WallOffEngine.obstacles_init_pattern, obs_init);
-//							to_send.put( WallOffEngine.obstacles_move_pattern_string, move_pattern );
+							to_send.put( WallOffEngine.obstacles_init_pattern_string, obs_init );
+							to_send.put( WallOffEngine.obstacles_move_pattern_string, move_pattern );
 							
 							/* Start backdoor thread before sending message to server, fixes race condition */
 							Constants.backdoor = new WalloffThreads.Backdoor( activity_context );

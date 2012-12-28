@@ -17,7 +17,7 @@ public class WallOffEngine {
 	public static final float PI = 3.141592654f;	
 	public static final long NANOSECOND = 1000000000;
 	public static final int MAX_NUMBER_PLAYERS = 4;
-	public static int player_count;
+	public static int player_count = 0;
 	public static final float player_speed = .3f;
 	
 	/* list of available map names */

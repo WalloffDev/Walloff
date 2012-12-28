@@ -4,11 +4,8 @@ import java.io.InterruptedIOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
-import org.json.JSONException;
 import org.json.JSONObject;
-
 import com.walloff.game.WallOffEngine;
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -26,6 +23,7 @@ public class NetworkingManager {
 	private Context activity_cont = null;				/* Owner activity's context */
 	private Player[ ] players = null;					/* Holds current client's neighbor players */
 	private GCManager[ ] gc_mans = null;				/* Holds game connection managers for each opponent */
+	private com.walloff.game.Player game_player = null;
 	
 	/** CONSTRUCTOR **/
 	public NetworkingManager( Context context ) {
@@ -77,6 +75,10 @@ public class NetworkingManager {
 		public Player getOpponent( ) {
 			return this.gc_opo;
 		}
+		public void notify_senders( ) {
+			this.gc_sen_priv.set_rts( true );
+			this.gc_sen_pub.set_rts( true );
+		}
 		
 		/* Receiver Thread: listens for game data from a lobby opponent */
 		private class Receiver extends AsyncTask< Void, Integer, Void > {
@@ -102,8 +104,6 @@ public class NetworkingManager {
 					if( isCancelled( ) ) break;
 					try {
 						this.soc.receive( this.r_pac );
-						Log.i( "GC_CON", "RECV: " + this.r_pac.getData( ).toString( ).trim( ) );
-						/* TODO: pass received player positions to game engine, or write to array directly depending on how Dan is doing that */
 						String payload = new String( this.r_pac.getData( ) ).trim( );
 						JSONObject temp = new JSONObject( payload );
 						String m_intent = temp.getString( Constants.M_TAG );
@@ -143,6 +143,11 @@ public class NetworkingManager {
 			private DatagramPacket s_pac = null;
 			private byte[ ] s_buf = null;
 			private int target;							/* if 0: send to private net info, else: send to public net info */
+			private Boolean ready_to_send = false;
+			
+			public void set_rts( boolean b ) {
+				this.ready_to_send = b;
+			}
 			
 			/* CONSTRUCTOR(S) */
 			public Sender( DatagramSocket gc_soc, int target ) {
@@ -183,17 +188,10 @@ public class NetworkingManager {
 							Log.i( NetworkingManager.N_MAN_TAG, "sending public player position" );
 						else
 							Log.i( NetworkingManager.N_MAN_TAG, "sending private player position" );
-						Thread.sleep( Constants.GC_INIT_SLEEP );
+						Thread.sleep( Constants.GC_INGAME_SLEEP );
 					} catch( Exception e ) {
 						e.printStackTrace( );
 					}
-				}
-				
-				init = new JSONObject( );
-				try {
-					init.put( Constants.L_USERNAME, uname );
-				} catch( JSONException e1 ) {
-					e1.printStackTrace( );
 				}
 				
 				/* TODO: will need to put position updates in somehow */
@@ -201,27 +199,35 @@ public class NetworkingManager {
 				while( !this.isCancelled( ) ) {
 					/* We now have the newly established hole net info, can start sending position updates */
 					try {
-						this.s_buf = init.toString( ).getBytes( );
-						if( this.target != 0 ) {
-							this.s_pac = new DatagramPacket( this.s_buf, this.s_buf.length,
-									new InetSocketAddress( gc_opo.get_PubIP( ), gc_opo.get_GC_PubPort( ) ) );
+						if( ready_to_send )
+						{
+							init = new JSONObject( );
+							init.put( Constants.L_USERNAME, uname );
+							init.put( Constants.M_TAG, WallOffEngine.players_send_position );
+							init.put( WallOffEngine.tag_player, game_player.getID() );
+							init.put( WallOffEngine.tag_x_pos, game_player.getX() );
+							init.put( WallOffEngine.tag_z_pos, game_player.getZ() );
+							init.put( WallOffEngine.tag_tail_index, game_player.getTail().getTailLength() );
+							
+							/***********************/
+							this.ready_to_send = false;
+
+							this.s_buf = init.toString( ).getBytes( );
+							if( this.target != 0 ) {
+								this.s_pac = new DatagramPacket( this.s_buf, this.s_buf.length,
+										new InetSocketAddress( gc_opo.get_PubIP( ), gc_opo.get_GC_PubPort( ) ) );
+							}
+							else {
+								this.s_pac = new DatagramPacket( this.s_buf, this.s_buf.length,
+										new InetSocketAddress( gc_opo.get_PrivIP( ), gc_opo.get_GC_PrivPort( ) ) );
+							}
+							this.soc.send( this.s_pac );
+							Thread.sleep( WallOffEngine.GAME_THREAD_FPS_SLEEP);
 						}
-						else {
-							this.s_pac = new DatagramPacket( this.s_buf, this.s_buf.length,
-									new InetSocketAddress( gc_opo.get_PrivIP( ), gc_opo.get_GC_PrivPort( ) ) );
-						}
-						this.soc.send( this.s_pac );
-						if( this.target != 0 )
-							Log.i( NetworkingManager.N_MAN_TAG, "sending POST public player position" );
-						else
-							Log.i( NetworkingManager.N_MAN_TAG, "sending POST private player position" );
-						Thread.sleep( Constants.GC_INIT_SLEEP );
-						Thread.sleep( Constants.GC_INGAME_SLEEP );
 					} catch( Exception e ) {
 						e.printStackTrace( );
 					}
 				}
-				
 				return null;
 			}
 
@@ -239,10 +245,22 @@ public class NetworkingManager {
 	public void set_context( Context context ) {
 		this.activity_cont = context;
 	}
-
+	public void sendToAll(com.walloff.game.Player g_player )
+	{
+		this.game_player = g_player;
+		for (GCManager g : gc_mans) {
+			if( g == null) break;
+			g.notify_senders( );
+		}
+	}
+	
 	/** GETTER(S) **/
 	public GCManager[ ] getGCMans( ) {
 		return this.gc_mans;
+	}
+	public Player[ ] getPlayers( )
+	{
+		return players;
 	}
 	
 	/** MANAGEMENT METHOD(S) **/
